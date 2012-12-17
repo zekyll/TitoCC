@@ -1,0 +1,5 @@
+LA 15.12.2012:
+	(8h) Aiheeseen perehtymistä, tokenisoijan ja parserin prototyypin koodausta. 
+MA 17.12.2012:
+	(2h) Repositorion luonti ja aihemäärittely.
+
