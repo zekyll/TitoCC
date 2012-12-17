@@ -5,7 +5,7 @@ public abstract class Token
 	private String string;
 	private int line, column;
 
-	public Token(String string, int line, int column)
+	protected Token(String string, int line, int column)
 	{
 		this.string = string;
 		this.line = line;

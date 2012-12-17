@@ -40,11 +40,7 @@ public class Tokenizer
 		if (token != null)
 			return token;
 
-		token = IdentifierToken.parse(input);
-		if (token != null)
-			return token;
-
-		token = KeywordToken.parse(input);
+		token = WordToken.parse(input); // KeywordToken or IdentifierToken
 		if (token != null)
 			return token;
 

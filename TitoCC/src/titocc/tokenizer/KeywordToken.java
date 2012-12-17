@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import titocc.util.AsciiUtil;
 
-public class KeywordToken extends Token
+public class KeywordToken extends WordToken
 {
 	private static final String[] keywords = {
 		// In use:
@@ -46,32 +46,13 @@ public class KeywordToken extends Token
 	};
 	private static Set<String> keywordSet = new HashSet<String>(Arrays.asList(keywords));
 
-	private KeywordToken(String string, int line, int column)
+	public KeywordToken(String string, int line, int column)
 	{
 		super(string, line, column);
 	}
 
-	public static KeywordToken parse(CodeReader reader) throws IOException
+	public static boolean isKeyword(String s)
 	{
-		KeywordToken token = null;
-		int line = reader.getLineNumber(), column = reader.getColumn();
-
-		char c = reader.read();
-
-		if (AsciiUtil.isIdentifierStart(c)) {
-			StringBuilder tokenString = new StringBuilder();
-			do {
-				tokenString.append((char) c);
-				c = reader.read();
-			} while (AsciiUtil.isIdentifierCharacter(c));
-
-			if (keywordSet.contains(tokenString.toString()))
-				token = new KeywordToken(tokenString.toString(), line, column);
-		}
-
-		if (c != '\0')
-			reader.unread();
-
-		return token;
+		return keywordSet.contains(s);
 	}
 }
