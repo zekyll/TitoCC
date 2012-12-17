@@ -6,11 +6,14 @@ import titocc.util.AsciiUtil;
 public class IntegerLiteralToken extends Token
 {
 	private int value;
+	private String suffix;
 
-	private IntegerLiteralToken(String string, int line, int column)
+	private IntegerLiteralToken(String string, int line, int column,
+			int value, String suffix)
 	{
 		super(string, line, column);
-		value = Integer.parseInt(string);
+		this.value = value;
+		this.suffix = suffix;
 	}
 
 	public int getValue()
@@ -18,27 +21,43 @@ public class IntegerLiteralToken extends Token
 		return value;
 	}
 
+	public String getSuffix()
+	{
+		return suffix;
+	}
+
 	public static IntegerLiteralToken parse(CodeReader reader) throws IOException
 	{
 		IntegerLiteralToken token = null;
 		int line = reader.getLineNumber(), column = reader.getColumn();
 
-		StringBuilder tokenString = new StringBuilder();
+		StringBuilder digits = new StringBuilder();
+
 
 		char c = reader.read();
 		if (c == '-') {
-			tokenString.append(c);
+			digits.append(c);
 			c = reader.read();
 		}
 
 		while (Character.isDigit(c)) {
-			tokenString.append(c);
+			digits.append(c);
 			c = reader.read();
 		}
 
-		if (tokenString.length() > 0 && (tokenString.charAt(0) != '-'
-				|| tokenString.length() > 2) && !AsciiUtil.isAsciiAlphabet(c))
-			token = new IntegerLiteralToken(tokenString.toString(), line, column);
+		String digitStr = digits.toString();
+		if (digitStr.length() > 0 && (digitStr.charAt(0) != '-' || digitStr.length() > 2)) {
+			StringBuilder suffix = new StringBuilder();
+			while (AsciiUtil.isIdentifierCharacter(c)) {
+				suffix.append(c);
+				c = reader.read();
+			}
+
+			int value = Integer.parseInt(digitStr);
+			String tokenString = digitStr + suffix.toString();
+			token = new IntegerLiteralToken(tokenString,
+					line, column, value, suffix.toString());
+		}
 
 		if (c != '\0')
 			reader.unread();
