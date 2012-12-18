@@ -44,7 +44,7 @@ public class FunctionCallExpression extends Expression
 		int line = tokens.getLine(), column = tokens.getColumn();
 		tokens.pushMark();
 
-		Expression expr = Expression.parse(tokens);
+		Expression expr = PostfixExpression.parse(tokens);
 		if (expr != null) {
 			ArgumentList argList = ArgumentList.parse(tokens);
 			if (argList != null)
