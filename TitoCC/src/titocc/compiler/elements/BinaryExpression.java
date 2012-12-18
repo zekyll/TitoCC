@@ -20,21 +20,21 @@ public class BinaryExpression extends Expression
 		{"+", "-"},
 		{"*", "/", "%"}
 	};
-	private String operation;
+	private String operator;
 	private Expression left, right;
 
-	public BinaryExpression(String operation, Expression left, Expression right,
+	public BinaryExpression(String operator, Expression left, Expression right,
 			int line, int column)
 	{
 		super(line, column);
-		this.operation = operation;
+		this.operator = operator;
 		this.left = left;
 		this.right = right;
 	}
 
-	public String operation()
+	public String getOperator()
 	{
-		return operation;
+		return operator;
 	}
 
 	public Expression getLeft()
@@ -56,7 +56,7 @@ public class BinaryExpression extends Expression
 	@Override
 	public String toString()
 	{
-		return "(BIN_EXPR " + left + " " + right + ")";
+		return "(BIN_EXPR " + operator + " " + left + " " + right + ")";
 	}
 
 	public static Expression parse(TokenStream tokens)

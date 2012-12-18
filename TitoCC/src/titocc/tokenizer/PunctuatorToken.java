@@ -18,6 +18,8 @@ public class PunctuatorToken extends Token
 		"*=",
 		"/",
 		"/=",
+		"%",
+		"%=",
 		"|",
 		"||",
 		"&",

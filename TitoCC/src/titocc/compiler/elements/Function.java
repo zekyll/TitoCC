@@ -80,7 +80,6 @@ public class Function extends Declaration
 					}
 				}
 			}
-
 		}
 
 		tokens.popMark(function == null);

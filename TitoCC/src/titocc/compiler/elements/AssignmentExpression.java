@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import java.io.Writer;
+import java.util.Arrays;
 import titocc.compiler.Scope;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
@@ -58,13 +59,13 @@ public class AssignmentExpression extends Expression
 		if (expr != null) {
 			tokens.pushMark();
 			Expression right = null;
-			Token op = tokens.read();
-			if (op.toString().equals("||"))
+			String op = tokens.read().toString();
+			if (Arrays.asList(assignmentOperators).contains(op))
 				right = AssignmentExpression.parse(tokens);
 
 			tokens.popMark(right == null);
 			if (right != null)
-				expr = new AssignmentExpression(op.toString(), expr, right, line, column);
+				expr = new AssignmentExpression(op, expr, right, line, column);
 		}
 
 		tokens.popMark(expr == null);

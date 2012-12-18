@@ -6,9 +6,17 @@ import titocc.tokenizer.TokenStream;
 
 public class ExpressionStatement extends Statement
 {
-	public ExpressionStatement(int line, int column)
+	private Expression expression;
+
+	public ExpressionStatement(Expression expression, int line, int column)
 	{
 		super(line, column);
+		this.expression = expression;
+	}
+
+	public Expression expression()
+	{
+		return expression;
 	}
 
 	@Override
@@ -17,8 +25,24 @@ public class ExpressionStatement extends Statement
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public String toString()
+	{
+		return "(EXPR_ST " + expression + ")";
+	}
+
 	public static ExpressionStatement parse(TokenStream tokens)
 	{
-		return null;
+		int line = tokens.getLine(), column = tokens.getColumn();
+		tokens.pushMark();
+		ExpressionStatement exprStatement = null;
+
+		Expression expr = Expression.parse(tokens);
+		if (expr != null)
+			if (tokens.read().toString().equals(";"))
+				exprStatement = new ExpressionStatement(expr, line, column);
+
+		tokens.popMark(exprStatement == null);
+		return exprStatement;
 	}
 }
