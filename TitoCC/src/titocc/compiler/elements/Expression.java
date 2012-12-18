@@ -11,12 +11,6 @@ public abstract class Expression extends CodeElement
 		super(line, column);
 	}
 
-	@Override
-	public void compile(Writer writer, Scope scope)
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
 	public static Expression parse(TokenStream tokens)
 	{
 		return AssignmentExpression.parse(tokens);

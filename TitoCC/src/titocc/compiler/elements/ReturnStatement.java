@@ -13,7 +13,7 @@ public class ReturnStatement extends Statement
 		super(line, column);
 	}
 
-	public Expression expression()
+	public Expression getExpression()
 	{
 		return expression;
 	}

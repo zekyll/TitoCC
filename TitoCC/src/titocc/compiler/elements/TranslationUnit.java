@@ -18,7 +18,7 @@ public class TranslationUnit extends CodeElement
 		this.declarations = declarations;
 	}
 
-	public List<Declaration> declarations()
+	public List<Declaration> getDeclarations()
 	{
 		return declarations;
 	}

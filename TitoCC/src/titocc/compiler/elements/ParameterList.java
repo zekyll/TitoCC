@@ -17,7 +17,7 @@ public class ParameterList extends CodeElement
 		this.parameters = parameters;
 	}
 
-	public List<VariableDeclaration> parameters()
+	public List<VariableDeclaration> getParameters()
 	{
 		return parameters;
 	}

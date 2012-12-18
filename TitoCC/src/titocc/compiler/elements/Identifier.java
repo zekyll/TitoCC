@@ -16,7 +16,7 @@ public class Identifier extends CodeElement
 		this.name = name;
 	}
 
-	public String name()
+	public String getName()
 	{
 		return name;
 	}

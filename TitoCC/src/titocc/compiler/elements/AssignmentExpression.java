@@ -1,5 +1,7 @@
 package titocc.compiler.elements;
 
+import java.io.Writer;
+import titocc.compiler.Scope;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
@@ -33,6 +35,12 @@ public class AssignmentExpression extends Expression
 	public Expression right()
 	{
 		return right;
+	}
+
+	@Override
+	public void compile(Writer writer, Scope scope)
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override

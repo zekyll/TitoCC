@@ -19,17 +19,17 @@ public class VariableDeclaration extends Declaration
 		this.initializer = initializer;
 	}
 
-	private Type type()
+	private Type getType()
 	{
 		return type;
 	}
 
-	private Identifier identifier()
+	private Identifier getIdentifier()
 	{
 		return identifier;
 	}
 
-	private Expression initializer()
+	private Expression getInitializer()
 	{
 		return initializer;
 	}

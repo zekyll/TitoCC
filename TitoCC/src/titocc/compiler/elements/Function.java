@@ -21,22 +21,22 @@ public class Function extends Declaration
 		this.body = body;
 	}
 
-	public Type returnType()
+	public Type getReturnType()
 	{
 		return returnType;
 	}
 
-	public Identifier identifier()
+	public Identifier getIdentifier()
 	{
 		return identifier;
 	}
 
-	public ParameterList parameterList()
+	public ParameterList getParameterList()
 	{
 		return parameterList;
 	}
 
-	public BlockStatement body()
+	public BlockStatement getBody()
 	{
 		return body;
 	}

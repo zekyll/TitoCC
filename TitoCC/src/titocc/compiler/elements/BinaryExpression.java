@@ -1,6 +1,8 @@
 package titocc.compiler.elements;
 
+import java.io.Writer;
 import java.util.Arrays;
+import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
 public class BinaryExpression extends Expression
@@ -35,14 +37,20 @@ public class BinaryExpression extends Expression
 		return operation;
 	}
 
-	public Expression left()
+	public Expression getLeft()
 	{
 		return left;
 	}
 
-	public Expression right()
+	public Expression getRight()
 	{
 		return right;
+	}
+
+	@Override
+	public void compile(Writer writer, Scope scope)
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override
@@ -59,7 +67,7 @@ public class BinaryExpression extends Expression
 	private static Expression parseImpl(TokenStream tokens, int priority)
 	{
 		if (priority == binaryOperators.length)
-			return RTLUnaryExpression.parse(tokens);
+			return PrefixExpression.parse(tokens);
 
 		int line = tokens.getLine(), column = tokens.getColumn();
 		tokens.pushMark();
