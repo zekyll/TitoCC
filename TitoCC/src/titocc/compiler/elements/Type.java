@@ -1,12 +1,17 @@
 package titocc.compiler.elements;
 
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import titocc.compiler.Scope;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class Type extends CodeElement
 {
+	static final String[] types = {"void", "int"};
+	static final Set<String> typesSet = new HashSet<String>(Arrays.asList(types));
 	private String name;
 
 	public Type(String name, int line, int column)
@@ -39,7 +44,7 @@ public class Type extends CodeElement
 		Type type = null;
 
 		Token token = tokens.read();
-		if (token.toString().equals("int"))
+		if (typesSet.contains(token.toString()))
 			type = new Type(token.toString(), line, column);
 
 		tokens.popMark(type == null);

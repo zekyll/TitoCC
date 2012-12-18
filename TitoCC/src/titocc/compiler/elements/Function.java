@@ -8,16 +8,16 @@ public class Function extends Declaration
 {
 	private Type returnType;
 	private Identifier identifier;
-	private ArgumentList argumentList;
+	private ParameterList parameterList;
 	private BlockStatement body;
 
-	public Function(Type returnType, Identifier identifier, ArgumentList argumentList,
+	public Function(Type returnType, Identifier identifier, ParameterList parameterList,
 			BlockStatement body, int line, int column)
 	{
 		super(line, column);
 		this.returnType = returnType;
 		this.identifier = identifier;
-		this.argumentList = argumentList;
+		this.parameterList = parameterList;
 		this.body = body;
 	}
 
@@ -31,9 +31,9 @@ public class Function extends Declaration
 		return identifier;
 	}
 
-	public ArgumentList argumentList()
+	public ParameterList parameterList()
 	{
-		return argumentList;
+		return parameterList;
 	}
 
 	public BlockStatement body()
@@ -50,7 +50,7 @@ public class Function extends Declaration
 	@Override
 	public String toString()
 	{
-		return "(FUNC " + returnType + " " + identifier + " " + argumentList
+		return "(FUNC " + returnType + " " + identifier + " " + parameterList
 				+ " " + body + ")";
 	}
 
@@ -66,12 +66,12 @@ public class Function extends Declaration
 			Identifier identifier = Identifier.parse(tokens);
 			if (identifier != null) {
 				if (tokens.read().toString().equals("(")) {
-					ArgumentList argumentList = ArgumentList.parse(tokens);
-					if (argumentList != null) {
+					ParameterList paramList = ParameterList.parse(tokens);
+					if (paramList != null) {
 						if (tokens.read().toString().equals(")")) {
 							BlockStatement body = BlockStatement.parse(tokens);
 							if (body != null) {
-								function = new Function(returnType, identifier, argumentList,
+								function = new Function(returnType, identifier, paramList,
 										body, line, column);
 							}
 						}
