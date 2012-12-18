@@ -7,7 +7,7 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.EofToken;
 import titocc.tokenizer.TokenStream;
 
-public class BlockStatement extends CodeElement
+public class BlockStatement extends Statement
 {
 	private List<Statement> statements;
 

@@ -4,9 +4,9 @@ import java.io.Writer;
 import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
-public class WhileStatement extends Statement
+public class DeclarationStatement extends Statement
 {
-	public WhileStatement(int line, int column)
+	public DeclarationStatement(int line, int column)
 	{
 		super(line, column);
 	}
@@ -17,7 +17,7 @@ public class WhileStatement extends Statement
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	public static WhileStatement parse(TokenStream tokens)
+	public static DeclarationStatement parse(TokenStream tokens)
 	{
 		return null;
 	}
