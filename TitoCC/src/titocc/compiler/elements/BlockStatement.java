@@ -4,7 +4,6 @@ import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Scope;
-import titocc.tokenizer.EofToken;
 import titocc.tokenizer.TokenStream;
 
 public class BlockStatement extends Statement
@@ -28,13 +27,22 @@ public class BlockStatement extends Statement
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public String toString()
+	{
+		String s = "(BLK_ST ";
+		for (Statement d : statements)
+			s += " " + d;
+		return s + ")";
+	}
+
 	public static BlockStatement parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();
 		tokens.pushMark();
 		BlockStatement blockStatement = null;
 
-		if(tokens.read().toString().equals("}")) {
+		if (tokens.read().toString().equals("{")) {
 			List<Statement> statements = new LinkedList<Statement>();
 
 			Statement statement = Statement.parse(tokens);

@@ -25,6 +25,9 @@ public abstract class Statement extends CodeElement
 		if (statement == null)
 			statement = WhileStatement.parse(tokens);
 
+		if (statement == null)
+			statement = ReturnStatement.parse(tokens);
+
 		tokens.popMark(statement == null);
 		return statement;
 	}
