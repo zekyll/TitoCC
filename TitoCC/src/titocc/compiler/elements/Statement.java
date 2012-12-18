@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.util.LinkedList;
 import titocc.tokenizer.TokenStream;
 
 public abstract class Statement extends CodeElement
@@ -26,7 +27,14 @@ public abstract class Statement extends CodeElement
 			statement = WhileStatement.parse(tokens);
 
 		if (statement == null)
+			statement = BlockStatement.parse(tokens);
+
+		if (statement == null)
 			statement = ReturnStatement.parse(tokens);
+
+		// Empty statement.
+		if (statement == null && tokens.read().toString().equals(";"))
+			statement = new BlockStatement(new LinkedList<Statement>(), line, column);
 
 		tokens.popMark(statement == null);
 		return statement;

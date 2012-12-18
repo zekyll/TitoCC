@@ -30,7 +30,7 @@ public abstract class PrimaryExpression extends Expression
 		if (expr == null) {
 			if(tokens.read().toString().equals("(")) {
 				expr = Expression.parse(tokens);
-				if(expr != null && !tokens.read().toString().equals("("))
+				if(expr != null && !tokens.read().toString().equals(")"))
 					expr = null;
 			}
 		}

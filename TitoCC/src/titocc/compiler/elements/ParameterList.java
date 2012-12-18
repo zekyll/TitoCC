@@ -9,15 +9,15 @@ import titocc.tokenizer.TokenStream;
 
 public class ParameterList extends CodeElement
 {
-	private List<VariableDeclaration> parameters;
+	private List<Parameter> parameters;
 
-	public ParameterList(List<VariableDeclaration> parameters, int line, int column)
+	public ParameterList(List<Parameter> parameters, int line, int column)
 	{
 		super(line, column);
 		this.parameters = parameters;
 	}
 
-	public List<VariableDeclaration> getParameters()
+	public List<Parameter> getParameters()
 	{
 		return parameters;
 	}
@@ -31,8 +31,8 @@ public class ParameterList extends CodeElement
 	@Override
 	public String toString()
 	{
-		String str = "(PRMLIST";
-		for (VariableDeclaration p : parameters)
+		String str = "(PRM_LIST";
+		for (Parameter p : parameters)
 			str += " " + p;
 		return str + ")";
 	}
@@ -40,17 +40,26 @@ public class ParameterList extends CodeElement
 	public static ParameterList parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();
+		tokens.pushMark();
+		ParameterList paramList = null;
 
-		List<VariableDeclaration> params = new LinkedList<VariableDeclaration>();
+		if (tokens.read().toString().equals("(")) {
+			List<Parameter> params = new LinkedList<Parameter>();
+			Parameter param = Parameter.parse(tokens);
+			while (param != null) {
+				tokens.pushMark();
+				params.add(param);
+				param = null;
+				if (tokens.read().toString().equals(","))
+					param = Parameter.parse(tokens);
+				tokens.popMark(param == null);
+			}
 
-		VariableDeclaration varDecl = VariableDeclaration.parse(tokens);
-		while (varDecl != null) {
-			params.add(varDecl);
-			varDecl = null;
-			if (tokens.read().toString().equals(","))
-				varDecl = VariableDeclaration.parse(tokens);
+			if (tokens.read().toString().equals(")"))
+				paramList = new ParameterList(params, line, column);
 		}
 
-		return new ParameterList(params, line, column);
+		tokens.popMark(paramList == null);
+		return paramList;
 	}
 }

@@ -5,4 +5,6 @@ MA 17.12.2012:
 	(6h) Tokenisoijan parentelu ja testien luonti.
 TI 18.12.2012:
 	(3h) Luokkakaavio ja dokumentointi.
+	(2h) Käyttöliittymän perusominaisuudet.
+	(7h) Parserin toteutusta.
 

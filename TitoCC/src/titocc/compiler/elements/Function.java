@@ -67,16 +67,12 @@ public class Function extends Declaration
 		if (retType != null) {
 			Token id = tokens.read();
 			if (id instanceof IdentifierToken) {
-				if (tokens.read().toString().equals("(")) {
-					ParameterList paramList = ParameterList.parse(tokens);
-					if (paramList != null) {
-						if (tokens.read().toString().equals(")")) {
-							BlockStatement body = BlockStatement.parse(tokens);
-							if (body != null) {
-								function = new Function(retType, id.toString(), paramList,
-										body, line, column);
-							}
-						}
+				ParameterList paramList = ParameterList.parse(tokens);
+				if (paramList != null) {
+					BlockStatement body = BlockStatement.parse(tokens);
+					if (body != null) {
+						function = new Function(retType, id.toString(), paramList,
+								body, line, column);
 					}
 				}
 			}

@@ -13,6 +13,7 @@ public class ArgumentList extends CodeElement
 	public ArgumentList(List<Expression> arguments, int line, int column)
 	{
 		super(line, column);
+		this.arguments = arguments;
 	}
 
 	public List<Expression> getArguments()
@@ -29,7 +30,7 @@ public class ArgumentList extends CodeElement
 	@Override
 	public String toString()
 	{
-		String str = "(ARGLIST ";
+		String str = "(ARG_LIST ";
 		for (Expression e : arguments)
 			str += " " + e;
 		return str + ")";
@@ -45,10 +46,12 @@ public class ArgumentList extends CodeElement
 			List<Expression> args = new LinkedList<Expression>();
 			Expression expr = Expression.parse(tokens);
 			while (expr != null) {
+				tokens.pushMark();
 				args.add(expr);
 				expr = null;
 				if (tokens.read().toString().equals(","))
 					expr = Expression.parse(tokens);
+				tokens.popMark(expr == null);
 			}
 
 			if (tokens.read().toString().equals(")"))
