@@ -2,8 +2,6 @@ package titocc.compiler.elements;
 
 import java.io.Writer;
 import titocc.compiler.Scope;
-import titocc.tokenizer.IdentifierToken;
-import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class IfStatement extends Statement
