@@ -6,9 +6,17 @@ import titocc.tokenizer.TokenStream;
 
 public class DeclarationStatement extends Statement
 {
-	public DeclarationStatement(int line, int column)
+	private VariableDeclaration declaration;
+
+	public DeclarationStatement(VariableDeclaration declaration, int line, int column)
 	{
 		super(line, column);
+		this.declaration = declaration;
+	}
+
+	public Declaration getDeclaration()
+	{
+		return declaration;
 	}
 
 	@Override
@@ -17,8 +25,21 @@ public class DeclarationStatement extends Statement
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public String toString()
+	{
+		return "(DECL_ST " + declaration + ")";
+	}
+
 	public static DeclarationStatement parse(TokenStream tokens)
 	{
-		return null;
+		int line = tokens.getLine(), column = tokens.getColumn();
+		DeclarationStatement declStatement = null;
+
+		VariableDeclaration varDecl = VariableDeclaration.parse(tokens);
+		if (varDecl != null)
+			declStatement = new DeclarationStatement(varDecl, line, column);
+
+		return declStatement;
 	}
 }

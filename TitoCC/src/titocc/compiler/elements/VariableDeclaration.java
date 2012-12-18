@@ -45,7 +45,7 @@ public class VariableDeclaration extends Declaration
 	@Override
 	public String toString()
 	{
-		return "(VARDECL " + type + " " + identifier + " " + initializer + ")";
+		return "(VAR_DECL " + type + " " + identifier + " " + initializer + ")";
 	}
 
 	public static VariableDeclaration parse(TokenStream tokens)

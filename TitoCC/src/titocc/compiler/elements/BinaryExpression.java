@@ -56,7 +56,7 @@ public class BinaryExpression extends Expression
 	@Override
 	public String toString()
 	{
-		return "(BEXPR " + left + " " + right + ")";
+		return "(BIN_EXPR " + left + " " + right + ")";
 	}
 
 	public static Expression parse(TokenStream tokens)
