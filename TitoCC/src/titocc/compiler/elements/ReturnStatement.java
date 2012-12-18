@@ -40,9 +40,8 @@ public class ReturnStatement extends Statement
 
 		if (tokens.read().toString().equals("return")) {
 			Expression expr = Expression.parse(tokens);
-			if (expr != null)
-				if(tokens.read().toString().equals(";"))
-					returnStatement = new ReturnStatement(expr, line, column);
+			if(tokens.read().toString().equals(";"))
+				returnStatement = new ReturnStatement(expr, line, column);
 		}
 
 		tokens.popMark(returnStatement == null);
