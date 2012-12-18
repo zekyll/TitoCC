@@ -1,14 +1,25 @@
 package titocc.compiler.elements;
 
 import java.io.Writer;
+import java.util.LinkedList;
+import java.util.List;
 import titocc.compiler.Scope;
+import titocc.tokenizer.EofToken;
 import titocc.tokenizer.TokenStream;
 
 public class BlockStatement extends CodeElement
 {
-	public BlockStatement(int line, int column)
+	private List<Statement> statements;
+
+	public BlockStatement(List<Statement> statements, int line, int column)
 	{
 		super(line, column);
+		this.statements = statements;
+	}
+
+	public List<Statement> statements()
+	{
+		return statements;
 	}
 
 	@Override
@@ -19,6 +30,24 @@ public class BlockStatement extends CodeElement
 
 	public static BlockStatement parse(TokenStream tokens)
 	{
-		return null;
+		int line = tokens.getLine(), column = tokens.getColumn();
+		tokens.pushMark();
+		BlockStatement blockStatement = null;
+
+		if(tokens.read().toString().equals("}")) {
+			List<Statement> statements = new LinkedList<Statement>();
+
+			Statement statement = Statement.parse(tokens);
+			while (statement != null) {
+				statements.add(statement);
+				statement = Statement.parse(tokens);
+			}
+
+			if (tokens.read().toString().equals("}"))
+				blockStatement = new BlockStatement(statements, line, column);
+		}
+
+		tokens.popMark(blockStatement == null);
+		return blockStatement;
 	}
 }
