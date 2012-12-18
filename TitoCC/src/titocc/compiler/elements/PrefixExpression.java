@@ -54,6 +54,10 @@ public class PrefixExpression extends Expression
 		}
 
 		tokens.popMark(expr == null);
+
+		if (expr == null)
+			expr = FunctionCallExpression.parse(tokens);
+
 		return expr;
 	}
 }

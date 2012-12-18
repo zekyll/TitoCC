@@ -59,6 +59,7 @@ public class UserInterface implements Runnable, ActionListener
 		outputTextArea = new JTextArea();
 		outputTextArea.setEditable(false);
 		outputTextArea.setPreferredSize(new Dimension(300, 999));
+		outputTextArea.setLineWrap(true);
 		rightPanel.add(outputTextArea, BorderLayout.CENTER);
 
 		JPanel bottomPanel = new JPanel();

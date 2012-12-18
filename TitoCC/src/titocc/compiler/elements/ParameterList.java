@@ -28,6 +28,15 @@ public class ParameterList extends CodeElement
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public String toString()
+	{
+		String str = "(PRMLIST";
+		for (VariableDeclaration p : parameters)
+			str += " " + p;
+		return str + ")";
+	}
+
 	public static ParameterList parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

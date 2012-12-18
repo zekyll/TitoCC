@@ -2,6 +2,7 @@ package titocc.compiler.elements;
 
 import java.io.Writer;
 import titocc.compiler.Scope;
+import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class ReturnStatement extends Statement
@@ -11,6 +12,7 @@ public class ReturnStatement extends Statement
 	public ReturnStatement(Expression expression, int line, int column)
 	{
 		super(line, column);
+		this.expression = expression;
 	}
 
 	public Expression getExpression()

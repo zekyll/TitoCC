@@ -48,9 +48,13 @@ public class PostfixExpression extends Expression
 		Expression expr = PrimaryExpression.parse(tokens);
 
 		if(expr != null) {
+			tokens.pushMark();
 			String op = tokens.read().toString();
-			if (Arrays.asList(postfixOperators).contains(op))
+			if (Arrays.asList(postfixOperators).contains(op)) {
 				expr = new PostfixExpression(op, expr, line, column);
+				tokens.popMark(false);
+			} else
+				tokens.popMark(true);
 		}
 
 		tokens.popMark(expr == null);

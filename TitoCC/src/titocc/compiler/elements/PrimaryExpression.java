@@ -17,8 +17,25 @@ public abstract class PrimaryExpression extends Expression
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	public static PrimaryExpression parse(TokenStream tokens)
+	public static Expression parse(TokenStream tokens)
 	{
-		return null;
+		int line = tokens.getLine(), column = tokens.getColumn();
+		tokens.pushMark();
+
+		Expression expr = IdentifierExpression.parse(tokens);
+
+		if (expr == null)
+			expr = IntegerLiteralExpression.parse(tokens);
+
+		if (expr == null) {
+			if(tokens.read().toString().equals("(")) {
+				expr = Expression.parse(tokens);
+				if(expr != null && !tokens.read().toString().equals("("))
+					expr = null;
+			}
+		}
+
+		tokens.popMark(expr == null);
+		return expr;
 	}
 }
