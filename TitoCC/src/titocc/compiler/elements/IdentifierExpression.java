@@ -2,6 +2,8 @@ package titocc.compiler.elements;
 
 import java.io.Writer;
 import titocc.compiler.Scope;
+import titocc.tokenizer.IdentifierToken;
+import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class IdentifierExpression extends Expression
@@ -25,8 +27,23 @@ public class IdentifierExpression extends Expression
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
+	@Override
+	public String toString()
+	{
+		return "(ID_EXPR " + identifier + ")";
+	}
+
 	public static IdentifierExpression parse(TokenStream tokens)
 	{
-		return null;
+		int line = tokens.getLine(), column = tokens.getColumn();
+		tokens.pushMark();
+		IdentifierExpression idExpr = null;
+
+		Token token = tokens.read();
+		if (token instanceof IdentifierToken)
+			idExpr = new IdentifierExpression(token.toString(), line, column);
+
+		tokens.popMark(idExpr == null);
+		return idExpr;
 	}
 }

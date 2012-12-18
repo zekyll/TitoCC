@@ -2,16 +2,18 @@ package titocc.compiler.elements;
 
 import java.io.Writer;
 import titocc.compiler.Scope;
+import titocc.tokenizer.IdentifierToken;
+import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class Function extends Declaration
 {
 	private Type returnType;
-	private Identifier identifier;
+	private String identifier;
 	private ParameterList parameterList;
 	private BlockStatement body;
 
-	public Function(Type returnType, Identifier identifier, ParameterList parameterList,
+	public Function(Type returnType, String identifier, ParameterList parameterList,
 			BlockStatement body, int line, int column)
 	{
 		super(line, column);
@@ -26,7 +28,7 @@ public class Function extends Declaration
 		return returnType;
 	}
 
-	public Identifier getIdentifier()
+	public String getIdentifier()
 	{
 		return identifier;
 	}
@@ -60,18 +62,18 @@ public class Function extends Declaration
 		tokens.pushMark();
 		Function function = null;
 
-		Type returnType = Type.parse(tokens);
+		Type retType = Type.parse(tokens);
 
-		if (returnType != null) {
-			Identifier identifier = Identifier.parse(tokens);
-			if (identifier != null) {
+		if (retType != null) {
+			Token id = tokens.read();
+			if (id instanceof IdentifierToken) {
 				if (tokens.read().toString().equals("(")) {
 					ParameterList paramList = ParameterList.parse(tokens);
 					if (paramList != null) {
 						if (tokens.read().toString().equals(")")) {
 							BlockStatement body = BlockStatement.parse(tokens);
 							if (body != null) {
-								function = new Function(returnType, identifier, paramList,
+								function = new Function(retType, id.toString(), paramList,
 										body, line, column);
 							}
 						}

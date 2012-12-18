@@ -2,15 +2,17 @@ package titocc.compiler.elements;
 
 import java.io.Writer;
 import titocc.compiler.Scope;
+import titocc.tokenizer.IdentifierToken;
+import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class VariableDeclaration extends Declaration
 {
 	private Type type;
-	private Identifier identifier;
+	private String identifier;
 	private Expression initializer;
 
-	public VariableDeclaration(Type type, Identifier identifier,
+	public VariableDeclaration(Type type, String identifier,
 			Expression initializer, int line, int column)
 	{
 		super(line, column);
@@ -24,7 +26,7 @@ public class VariableDeclaration extends Declaration
 		return type;
 	}
 
-	private Identifier getIdentifier()
+	private String getIdentifier()
 	{
 		return identifier;
 	}
@@ -55,11 +57,11 @@ public class VariableDeclaration extends Declaration
 		Type type = Type.parse(tokens);
 
 		if (type != null) {
-			Identifier id = Identifier.parse(tokens);
-			if (id != null) {
+			Token id = tokens.read();
+			if (id instanceof IdentifierToken) {
 				Expression init = parseInitializer(tokens);
 				if (tokens.read().toString().equals(";"))
-					varDeclaration = new VariableDeclaration(type, id, init, line, column);
+					varDeclaration = new VariableDeclaration(type, id.toString(), init, line, column);
 			}
 		}
 
