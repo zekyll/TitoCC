@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
+import titocc.compiler.Parser;
+import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.Tokenizer;
@@ -56,7 +58,7 @@ public class UserInterface implements Runnable, ActionListener
 
 		outputTextArea = new JTextArea();
 		outputTextArea.setEditable(false);
-		outputTextArea.setPreferredSize(new Dimension(250, 999));
+		outputTextArea.setPreferredSize(new Dimension(300, 999));
 		rightPanel.add(outputTextArea, BorderLayout.CENTER);
 
 		JPanel bottomPanel = new JPanel();
@@ -101,11 +103,18 @@ public class UserInterface implements Runnable, ActionListener
 		Tokenizer tokenizer = new Tokenizer(new StringReader(sourceCode));
 		try {
 			List<Token> tokens = tokenizer.tokenize();
-			addLogItem("Compilation successful.");
+			addLogItem("Tokenizing completed successfully.");
 
-			outputTextArea.setText("");
+			outputTextArea.setText("TOKENS:\n");
 			for (Token t : tokens)
 				outputTextArea.append(t.toString() + "\n");
+
+			Parser parser = new Parser(tokens);
+			TranslationUnit trUnit = parser.parse();
+			addLogItem("Parsing completed successfully.");
+			outputTextArea.append("\nCODE ELEMENTS:\n");
+			outputTextArea.append(trUnit.toString());
+
 
 		} catch (SyntaxException e) {
 			int line = e.getLine() + 1;
