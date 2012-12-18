@@ -30,10 +30,10 @@ public class BlockStatement extends Statement
 	@Override
 	public String toString()
 	{
-		String s = "(BLK_ST ";
-		for (Statement d : statements)
-			s += " " + d;
-		return s + ")";
+		String str = "(BLK_ST ";
+		for (Statement st : statements)
+			str += " " + st;
+		return str + ")";
 	}
 
 	public static BlockStatement parse(TokenStream tokens)
