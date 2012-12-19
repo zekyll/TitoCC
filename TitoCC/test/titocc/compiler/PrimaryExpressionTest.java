@@ -61,7 +61,7 @@ public class PrimaryExpressionTest
 	@Test
 	public void matchesIntegerLiteral() throws IOException, SyntaxException
 	{
-		assertEquals("(INT_EXPR 13 )", parse("13").toString());
+		assertEquals("(INT_EXPR 13)", parse("13").toString());
 		assertTrue(stream.read() instanceof EofToken);
 	}
 
@@ -75,7 +75,7 @@ public class PrimaryExpressionTest
 	@Test
 	public void matchesBraceExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(INT_EXPR 666 )", parse("(666)").toString());
+		assertEquals("(INT_EXPR 666)", parse("(666)").toString());
 		assertTrue(stream.read() instanceof EofToken);
 	}
 

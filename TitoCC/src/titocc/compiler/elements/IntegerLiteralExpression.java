@@ -38,7 +38,7 @@ public class IntegerLiteralExpression extends Expression
 	@Override
 	public String toString()
 	{
-		return "(INT_EXPR " + value + " " + suffix + ")";
+		return "(INT_EXPR " + value + (suffix.isEmpty() ? "" : " " + suffix) + ")";
 	}
 
 	public static IntegerLiteralExpression parse(TokenStream tokens)

@@ -11,29 +11,29 @@ public class AssignmentExpression extends Expression
 	static final String[] assignmentOperators = {
 		"=", "+=", "-=", "*=", "/=", "%=", "<<", ">>", "&=", "^=", "|="
 	};
-	private String operation;
+	private String operator;
 	private Expression left, right;
 
-	public AssignmentExpression(String operation, Expression left,
+	public AssignmentExpression(String operator, Expression left,
 			Expression right, int line, int column)
 	{
 		super(line, column);
-		this.operation = operation;
+		this.operator = operator;
 		this.left = left;
 		this.right = right;
 	}
 
-	public String operation()
+	public String getOperator()
 	{
-		return operation;
+		return operator;
 	}
 
-	public Expression left()
+	public Expression getLeft()
 	{
 		return left;
 	}
 
-	public Expression right()
+	public Expression getRight()
 	{
 		return right;
 	}
@@ -47,7 +47,7 @@ public class AssignmentExpression extends Expression
 	@Override
 	public String toString()
 	{
-		return "(ASGN " + left + " " + right + ")";
+		return "(ASGN_EXPR " + operator + " " + left + " " + right + ")";
 	}
 
 	public static Expression parse(TokenStream tokens)

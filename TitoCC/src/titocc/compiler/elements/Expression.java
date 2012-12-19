@@ -1,7 +1,5 @@
 package titocc.compiler.elements;
 
-import java.io.Writer;
-import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
 public abstract class Expression extends CodeElement

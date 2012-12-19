@@ -7,4 +7,6 @@ TI 18.12.2012:
 	(3h) Luokkakaavio ja dokumentointi.
 	(2h) Käyttöliittymän perusominaisuudet.
 	(7h) Parserin toteutusta.
-
+KE 19.12.2012:
+	(2h) Parserin testien koodausta.
+	(2h) Lisää testejä parserille.
