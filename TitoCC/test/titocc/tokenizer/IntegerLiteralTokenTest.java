@@ -46,13 +46,22 @@ public class IntegerLiteralTokenTest
 	}
 
 	@Test
-	public void matchMinInt() throws IOException
+	public void matchZero() throws IOException
 	{
-		CodeReader cr = new CodeReader(new StringReader("-2147483648 "));
+		CodeReader cr = new CodeReader(new StringReader("0 "));
 		IntegerLiteralToken token = IntegerLiteralToken.parse(cr);
 		assertNotNull(token);
-		assertEquals(-2147483648, token.getValue());
+		assertEquals(0, token.getValue());
 		assertEquals(' ', cr.read());
+	}
+
+	@Test
+	public void dontMatchNegative() throws IOException
+	{
+		CodeReader cr = new CodeReader(new StringReader("-1"));
+		IntegerLiteralToken token = IntegerLiteralToken.parse(cr);
+		assertNull(token);
+		assertEquals('-', cr.read());
 	}
 
 	@Test

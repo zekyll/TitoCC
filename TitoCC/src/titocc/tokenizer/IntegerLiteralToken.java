@@ -33,20 +33,14 @@ public class IntegerLiteralToken extends Token
 
 		StringBuilder digits = new StringBuilder();
 
-
 		char c = reader.read();
-		if (c == '-') {
-			digits.append(c);
-			c = reader.read();
-		}
-
 		while (Character.isDigit(c)) {
 			digits.append(c);
 			c = reader.read();
 		}
 
 		String digitStr = digits.toString();
-		if (digitStr.length() > 0 && (digitStr.charAt(0) != '-' || digitStr.length() > 2)) {
+		if (digitStr.length() > 0) {
 			StringBuilder suffix = new StringBuilder();
 			while (AsciiUtil.isIdentifierCharacter(c)) {
 				suffix.append(c);
