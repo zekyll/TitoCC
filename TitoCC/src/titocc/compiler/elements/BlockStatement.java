@@ -30,7 +30,7 @@ public class BlockStatement extends Statement
 	@Override
 	public String toString()
 	{
-		String str = "(BLK_ST ";
+		String str = "(BLK_ST";
 		for (Statement st : statements)
 			str += " " + st;
 		return str + ")";

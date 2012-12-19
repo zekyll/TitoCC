@@ -30,7 +30,7 @@ public class ArgumentList extends CodeElement
 	@Override
 	public String toString()
 	{
-		String str = "(ARG_LIST ";
+		String str = "(ARG_LIST";
 		for (Expression e : arguments)
 			str += " " + e;
 		return str + ")";
