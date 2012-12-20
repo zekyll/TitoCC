@@ -1,7 +1,8 @@
 package titocc.compiler.elements;
 
-import java.io.Writer;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.Token;
@@ -23,7 +24,7 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope)
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

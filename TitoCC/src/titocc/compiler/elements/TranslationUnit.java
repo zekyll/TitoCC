@@ -1,10 +1,11 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
@@ -26,13 +27,13 @@ public class TranslationUnit extends CodeElement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope) throws IOException, SyntaxException
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException
 	{
 		asm.emit("", "call", "sp", "main");
 		asm.emit("", "svc", "sp", "=halt");
 
 		for (Declaration decl : declarations)
-			decl.compile(asm, scope);
+			decl.compile(asm, scope, registers);
 
 		//TODO check that main function exists
 	}

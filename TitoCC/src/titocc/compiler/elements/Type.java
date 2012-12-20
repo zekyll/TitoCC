@@ -1,10 +1,11 @@
 package titocc.compiler.elements;
 
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
@@ -27,7 +28,7 @@ public class Type extends CodeElement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope)
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

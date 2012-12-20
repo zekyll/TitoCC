@@ -1,11 +1,12 @@
 package titocc.compiler.elements;
 
-import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
-import titocc.tokenizer.EofToken;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class ParameterList extends CodeElement
@@ -24,7 +25,7 @@ public class ParameterList extends CodeElement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope)
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

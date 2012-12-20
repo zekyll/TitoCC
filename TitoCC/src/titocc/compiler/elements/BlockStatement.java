@@ -1,9 +1,10 @@
 package titocc.compiler.elements;
 
-import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
@@ -23,7 +24,7 @@ public class BlockStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope)
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

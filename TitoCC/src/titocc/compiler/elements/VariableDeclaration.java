@@ -1,7 +1,9 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
@@ -42,10 +44,10 @@ public class VariableDeclaration extends Declaration implements Symbol
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope) throws SyntaxException, IOException
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException, IOException
 	{
 		if (scope.find(name) != null)
-			throw new SyntaxException("Redefinition of " + name, getLine(), getColumn());
+			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
 
 		isGlobal = scope.isGlobal();
 		if (isGlobal)

@@ -1,7 +1,9 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
@@ -53,32 +55,36 @@ public class Function extends Declaration implements Symbol
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope) throws IOException, SyntaxException
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
 		scope.add(this);
 		Scope functionScope = new Scope(scope);
 
-		compilePrologue(asm, functionScope);
-		compileBody(asm, functionScope);
-		compileEpilogue(asm, functionScope);
+		compilePrologue(asm, functionScope, registers);
+		compileBody(asm, functionScope, registers);
+		compileEpilogue(asm, functionScope, registers);
 	}
 
-	private void compilePrologue(Assembler asm, Scope scope) throws IOException, SyntaxException
+	private void compilePrologue(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
 		asm.emit("__" + name + "_ret", "equ", "-" + (parameterCount() + 2));
-		parameterList.compile(asm, scope);
+		parameterList.compile(asm, scope, registers);
 		asm.emit(name, "pushr", "sp");
 	}
 
-	private void compileBody(Assembler asm, Scope scope) throws IOException, SyntaxException
+	private void compileBody(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
 		// Compile statements directly, so that BlockStatement doesn't create
 		// new scope, and the statements are in the same scope as parameters.
 		for (Statement st : body.getStatements())
-			st.compile(asm, scope);
+			st.compile(asm, scope, registers);
 	}
 
-	private void compileEpilogue(Assembler asm, Scope scope) throws IOException, SyntaxException
+	private void compileEpilogue(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
 		String endLabel = "__" + name + "_end";
 		asm.emit(endLabel, "popr", "sp");

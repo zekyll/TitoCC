@@ -1,36 +1,39 @@
 package titocc.compiler.elements;
 
-import java.io.Writer;
+import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class Parameter extends CodeElement
 {
 	private Type type;
-	private String identifier;
+	private String name;
 
-	public Parameter(Type type, String identifier, int line, int column)
+	public Parameter(Type type, String name, int line, int column)
 	{
 		super(line, column);
 		this.type = type;
-		this.identifier = identifier;
+		this.name = name;
 	}
 
-	private Type getType()
+	public Type getType()
 	{
 		return type;
 	}
 
-	private String getIdentifier()
+	public String getName()
 	{
-		return identifier;
+		return name;
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope)
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -38,7 +41,7 @@ public class Parameter extends CodeElement
 	@Override
 	public String toString()
 	{
-		return "(PRM " + type + " " + identifier + ")";
+		return "(PRM " + type + " " + name + ")";
 	}
 
 	public static Parameter parse(TokenStream tokens)
