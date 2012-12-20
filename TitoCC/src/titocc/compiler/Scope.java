@@ -1,7 +1,9 @@
 package titocc.compiler;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a scope (aka namespace) that contains symbols declared within that
@@ -11,15 +13,22 @@ public class Scope
 {
 	private Scope parent;
 	private Map<String, Symbol> symbols = new HashMap<String, Symbol>();
+	private Set<String> globallyUniqueNames;
+	private String globalNamePrefix;
 
 	/**
 	 * Constructs a new Scope.
 	 *
 	 * @param parent Parent scope. Null if this is the global scope.
 	 */
-	public Scope(Scope parent)
+	public Scope(Scope parent, String globalNamePrefix)
 	{
 		this.parent = parent;
+		this.globalNamePrefix = globalNamePrefix;
+		if (parent == null)
+			globallyUniqueNames = new HashSet<String>();
+		else
+			globallyUniqueNames = parent.globallyUniqueNames;
 	}
 
 	/**
@@ -71,5 +80,31 @@ public class Scope
 			return false;
 		symbols.put(symbol.getName(), symbol);
 		return true;
+	}
+
+	/**
+	 * Generates a globally unique name by first adding the prefixes of the
+	 * scope and all its surrounding scopes. Then tries number suffixes starting
+	 * from 2 until the name is unique.
+	 *
+	 * @param Local name.
+	 * @return a globally unique name.
+	 */
+	public String makeGloballyUniqueName(String name)
+	{
+		String uniqueNameBase = generateGlobalNamePrefix() + name;
+		String uniqueName = uniqueNameBase;
+		for (int i = 2; globallyUniqueNames.contains(uniqueName); ++i)
+			uniqueName = uniqueNameBase + i;
+		globallyUniqueNames.add(name);
+		return uniqueName;
+	}
+
+	private String generateGlobalNamePrefix()
+	{
+		if (parent != null)
+			return parent.generateGlobalNamePrefix() + globalNamePrefix;
+		else
+			return globalNamePrefix;
 	}
 }

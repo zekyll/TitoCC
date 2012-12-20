@@ -59,7 +59,7 @@ public class Function extends Declaration implements Symbol
 			throws IOException, SyntaxException
 	{
 		scope.add(this);
-		Scope functionScope = new Scope(scope);
+		Scope functionScope = new Scope(scope, name);
 
 		compilePrologue(asm, functionScope, registers);
 		compileBody(asm, functionScope, registers);

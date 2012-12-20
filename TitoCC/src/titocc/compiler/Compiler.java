@@ -30,7 +30,7 @@ public class Compiler
 	{
 		if (trUnit == null)
 			tokenizeAndParse();
-		trUnit.compile(new Assembler(writer), new Scope(null), getUsableRegisters());
+		trUnit.compile(new Assembler(writer), new Scope(null, ""), getUsableRegisters());
 	}
 
 	private void tokenizeAndParse() throws IOException, SyntaxException
