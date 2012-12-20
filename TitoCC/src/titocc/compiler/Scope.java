@@ -42,6 +42,16 @@ public class Scope
 	}
 
 	/**
+	 * Returns the parent scope.
+	 *
+	 * @return parent scope.
+	 */
+	public Scope getParent()
+	{
+		return parent;
+	}
+
+	/**
 	 * Finds a symbol (e.g. a variable or a function) defined in this scope.
 	 *
 	 * @param name Identifier of the object.

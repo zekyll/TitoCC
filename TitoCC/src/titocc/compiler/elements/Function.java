@@ -3,6 +3,7 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.Stack;
 import titocc.compiler.Assembler;
+import titocc.compiler.InternalSymbol;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
@@ -17,6 +18,8 @@ public class Function extends Declaration implements Symbol
 	private String name;
 	private ParameterList parameterList;
 	private BlockStatement body;
+	String startLabel;
+	InternalSymbol endSymbol, retValSymbol;
 
 	public Function(Type returnType, String name, ParameterList parameterList,
 			BlockStatement body, int line, int column)
@@ -69,9 +72,12 @@ public class Function extends Declaration implements Symbol
 	private void compilePrologue(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		asm.emit("__" + name + "_ret", "equ", "-" + (parameterCount() + 2));
+		startLabel = scope.getParent().makeGloballyUniqueName(name);
+		retValSymbol = new InternalSymbol("Ret", scope);
+		scope.add(retValSymbol);
+		asm.emit(retValSymbol.getReference(), "equ", "-" + (parameterCount() + 2));
 		parameterList.compile(asm, scope, registers);
-		asm.emit(name, "pushr", "sp");
+		asm.emit(startLabel, "pushr", "sp");
 	}
 
 	private void compileBody(Assembler asm, Scope scope, Stack<Register> registers)
@@ -86,15 +92,16 @@ public class Function extends Declaration implements Symbol
 	private void compileEpilogue(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		String endLabel = "__" + name + "_end";
-		asm.emit(endLabel, "popr", "sp");
+		endSymbol = new InternalSymbol("End", scope);
+		scope.add(endSymbol);
+		asm.emit(endSymbol.getReference(), "popr", "sp");
 		asm.emit("", "exit", "sp", "=" + parameterCount());
 	}
 
 	@Override
 	public String getReference()
 	{
-		return name;
+		return startLabel;
 	}
 
 	@Override
