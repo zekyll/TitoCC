@@ -1,7 +1,6 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.io.Writer;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
@@ -31,6 +30,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		return type;
 	}
 
+	@Override
 	public String getName()
 	{
 		return name;
