@@ -2,6 +2,7 @@ package titocc.compiler.elements;
 
 import java.io.Writer;
 import java.util.Arrays;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
@@ -48,7 +49,13 @@ public class BinaryExpression extends Expression
 	}
 
 	@Override
-	public void compile(Writer writer, Scope scope)
+	public void compile(Assembler asm, Scope scope)
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public Integer getCompileTimeValue()
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

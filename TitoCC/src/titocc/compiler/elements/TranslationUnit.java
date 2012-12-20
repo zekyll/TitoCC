@@ -1,11 +1,13 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.tokenizer.EofToken;
-import titocc.tokenizer.Token;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class TranslationUnit extends CodeElement
@@ -24,8 +26,15 @@ public class TranslationUnit extends CodeElement
 	}
 
 	@Override
-	public void compile(Writer writer, Scope scope)
+	public void compile(Assembler asm, Scope scope) throws IOException, SyntaxException
 	{
+		asm.emit("", "call", "sp", "main");
+		asm.emit("", "svc", "sp", "=halt");
+
+		for (Declaration decl : declarations)
+			decl.compile(asm, scope);
+
+		//TODO check that main function exists
 	}
 
 	public static TranslationUnit parse(TokenStream tokens)

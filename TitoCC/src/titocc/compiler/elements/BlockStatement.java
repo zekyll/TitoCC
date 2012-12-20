@@ -3,6 +3,7 @@ package titocc.compiler.elements;
 import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
@@ -22,7 +23,7 @@ public class BlockStatement extends Statement
 	}
 
 	@Override
-	public void compile(Writer writer, Scope scope)
+	public void compile(Assembler asm, Scope scope)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

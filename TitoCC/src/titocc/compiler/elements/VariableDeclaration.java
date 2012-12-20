@@ -1,51 +1,91 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.io.Writer;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
-public class VariableDeclaration extends Declaration
+public class VariableDeclaration extends Declaration implements Symbol
 {
+	private boolean isGlobal; // Used in the compilation phase
 	private Type type;
-	private String identifier;
+	private String name;
 	private Expression initializer;
 
-	public VariableDeclaration(Type type, String identifier,
+	public VariableDeclaration(Type type, String name,
 			Expression initializer, int line, int column)
 	{
 		super(line, column);
 		this.type = type;
-		this.identifier = identifier;
+		this.name = name;
 		this.initializer = initializer;
 	}
 
-	private Type getType()
+	public Type getType()
 	{
 		return type;
 	}
 
-	private String getIdentifier()
+	public String getName()
 	{
-		return identifier;
+		return name;
 	}
 
-	private Expression getInitializer()
+	public Expression getInitializer()
 	{
 		return initializer;
 	}
 
 	@Override
-	public void compile(Writer writer, Scope scope)
+	public void compile(Assembler asm, Scope scope) throws SyntaxException, IOException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		if (scope.find(name) != null)
+			throw new SyntaxException("Redefinition of " + name, getLine(), getColumn());
+
+		isGlobal = scope.isGlobal();
+		if (isGlobal)
+			compileGlobalVariable(asm, scope);
+		else
+			compileLocalVariable(asm, scope);
+	}
+
+	@Override
+	public String getReference()
+	{
+		if (isGlobal)
+			return name;
+		else
+			return name + "(fp)";
 	}
 
 	@Override
 	public String toString()
 	{
-		return "(VAR_DECL " + type + " " + identifier + " " + initializer + ")";
+		return "(VAR_DECL " + type + " " + name + " " + initializer + ")";
+	}
+
+	private void compileGlobalVariable(Assembler asm, Scope scope) throws SyntaxException, IOException
+	{
+		Integer initValue = 0;
+		if (initializer != null) {
+			initValue = initializer.getCompileTimeValue();
+			if (initValue == null)
+				throw new SyntaxException("Global variable must be initialized with a compile time constant.", getLine(), getColumn());
+		}
+
+		asm.emit(name, "dc", "" + initValue);
+
+		scope.add(this);
+	}
+
+	private void compileLocalVariable(Assembler asm, Scope scope)
+	{
+		throw new UnsupportedOperationException("");
 	}
 
 	public static VariableDeclaration parse(TokenStream tokens)

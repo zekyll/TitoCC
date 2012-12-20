@@ -1,9 +1,11 @@
 package titocc.compiler.elements;
 
 import java.io.Writer;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.IntegerLiteralToken;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
@@ -30,9 +32,17 @@ public class IntegerLiteralExpression extends Expression
 	}
 
 	@Override
-	public void compile(Writer writer, Scope scope)
+	public void compile(Assembler asm, Scope scope)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public Integer getCompileTimeValue() throws SyntaxException
+	{
+		if (!suffix.isEmpty())
+			throw new SyntaxException("Suffixes on literals are not supported.", getLine(), getColumn());
+		return value;
 	}
 
 	@Override

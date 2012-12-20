@@ -4,6 +4,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
@@ -26,7 +27,7 @@ public class Type extends CodeElement
 	}
 
 	@Override
-	public void compile(Writer writer, Scope scope)
+	public void compile(Assembler asm, Scope scope)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
 	}

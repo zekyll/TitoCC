@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -16,6 +17,7 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 import titocc.compiler.Parser;
+import titocc.compiler.Compiler;
 import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -31,7 +33,7 @@ public class UserInterface implements Runnable, ActionListener
 	public void run()
 	{
 		frame = new JFrame("TitoCC");
-		frame.setPreferredSize(new Dimension(600, 400));
+		frame.setPreferredSize(new Dimension(600, 500));
 
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -116,6 +118,12 @@ public class UserInterface implements Runnable, ActionListener
 			outputTextArea.append("\nCODE ELEMENTS:\n");
 			outputTextArea.append(trUnit.toString());
 
+			Compiler compiler = new Compiler(trUnit);
+			StringWriter writer = new StringWriter();
+			compiler.compile(writer);
+			addLogItem("Compilation completed successfully.");
+			outputTextArea.append("\n\nTTK-91 ASSEMBLY:\n");
+			outputTextArea.append(writer.toString());
 
 		} catch (SyntaxException e) {
 			int line = e.getLine() + 1;

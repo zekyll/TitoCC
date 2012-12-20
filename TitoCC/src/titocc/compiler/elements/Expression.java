@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public abstract class Expression extends CodeElement
@@ -8,6 +9,8 @@ public abstract class Expression extends CodeElement
 	{
 		super(line, column);
 	}
+
+	public abstract Integer getCompileTimeValue() throws SyntaxException;
 
 	public static Expression parse(TokenStream tokens)
 	{

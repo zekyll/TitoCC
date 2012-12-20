@@ -1,7 +1,10 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.io.Writer;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 
 public abstract class CodeElement
 {
@@ -23,5 +26,5 @@ public abstract class CodeElement
 		return column;
 	}
 
-	public abstract void compile(Writer writer, Scope scope);
+	public abstract void compile(Assembler asm, Scope scope) throws IOException, SyntaxException;
 }

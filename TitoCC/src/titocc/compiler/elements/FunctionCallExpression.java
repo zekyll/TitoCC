@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import java.io.Writer;
+import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
@@ -28,9 +29,15 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Writer writer, Scope scope)
+	public void compile(Assembler asm, Scope scope)
 	{
 		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public Integer getCompileTimeValue()
+	{
+		return null;
 	}
 
 	@Override
