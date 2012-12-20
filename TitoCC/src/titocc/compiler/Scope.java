@@ -94,9 +94,9 @@ public class Scope
 	{
 		String uniqueNameBase = generateGlobalNamePrefix() + name;
 		String uniqueName = uniqueNameBase;
-		for (int i = 2; globallyUniqueNames.contains(uniqueName); ++i)
+		for (int i = 2; globallyUniqueNames.contains(uniqueName.toLowerCase()); ++i)
 			uniqueName = uniqueNameBase + i;
-		globallyUniqueNames.add(name);
+		globallyUniqueNames.add(name.toLowerCase());
 		return uniqueName;
 	}
 
