@@ -19,7 +19,7 @@ public class Function extends Declaration implements Symbol
 	private ParameterList parameterList;
 	private BlockStatement body;
 	private String globallyUniqueName;
-	private InternalSymbol endSymbol, retValSymbol;
+	InternalSymbol retValSymbol, endSymbol;
 
 	public Function(Type returnType, String name, ParameterList parameterList,
 			BlockStatement body, int line, int column)
@@ -66,6 +66,11 @@ public class Function extends Declaration implements Symbol
 		globallyUniqueName = scope.makeGloballyUniqueName(name);
 		Scope functionScope = new Scope(scope, name + "_");
 
+		// Add symbol for the function end so that return statements can jump
+		// to it. Note that this must be done before compiling the body!
+		endSymbol = new InternalSymbol("End", functionScope, ""); //__End
+		functionScope.add(endSymbol);
+
 		compilePrologue(asm, functionScope, registers);
 		compileBody(asm, functionScope, registers);
 		compileEpilogue(asm, functionScope, registers);
@@ -74,10 +79,15 @@ public class Function extends Declaration implements Symbol
 	private void compilePrologue(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		retValSymbol = new InternalSymbol("Ret", scope, "(fp)");
+		// Add symbol for location of the return value
+		retValSymbol = new InternalSymbol("Ret", scope, "(fp)"); //__Ret
 		scope.add(retValSymbol);
+
+		// Define constants for parameters and add their symbols
 		asm.emit(retValSymbol.getGlobalName(), "equ", "-" + (parameterCount() + 2));
 		parameterList.compile(asm, scope, registers);
+
+		// Push registers
 		asm.emit(getReference(), "pushr", "sp");
 	}
 
@@ -93,9 +103,10 @@ public class Function extends Declaration implements Symbol
 	private void compileEpilogue(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		endSymbol = new InternalSymbol("End", scope, "");
-		scope.add(endSymbol);
+		// Pop registers from stack
 		asm.emit(endSymbol.getReference(), "popr", "sp");
+
+		// Exit function
 		asm.emit("", "exit", "sp", "=" + parameterCount());
 	}
 
