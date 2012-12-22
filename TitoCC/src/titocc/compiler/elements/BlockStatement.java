@@ -1,11 +1,13 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class BlockStatement extends Statement
@@ -25,8 +27,14 @@ public class BlockStatement extends Statement
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		//Create new scope for the block.
+		Scope blockScope = new Scope(scope, "");
+
+		// Compile statements
+		for (Statement st : statements)
+			st.compile(asm, blockScope, registers);
 	}
 
 	@Override
