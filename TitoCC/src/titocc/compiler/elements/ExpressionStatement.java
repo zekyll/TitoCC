@@ -1,9 +1,11 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class ExpressionStatement extends Statement
@@ -23,8 +25,9 @@ public class ExpressionStatement extends Statement
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		expression.compile(asm, scope, registers);
 	}
 
 	@Override
