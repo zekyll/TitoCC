@@ -44,11 +44,11 @@ public class Compiler
 	{
 		// Use all general purpose registers except R0 because it behaves differently.
 		Stack<Register> registers = new Stack<Register>();
-		registers.push(Register.R1);
-		registers.push(Register.R2);
-		registers.push(Register.R3);
-		registers.push(Register.R4);
 		registers.push(Register.R5);
+		registers.push(Register.R4);
+		registers.push(Register.R3);
+		registers.push(Register.R2);
+		registers.push(Register.R1);
 		return registers;
 	}
 }
