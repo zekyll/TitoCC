@@ -10,10 +10,11 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
-public class Parameter extends CodeElement
+public class Parameter extends CodeElement implements Symbol
 {
 	private Type type;
 	private String name;
+	private String globallyUniqueName;
 
 	public Parameter(Type type, String name, int line, int column)
 	{
@@ -27,6 +28,7 @@ public class Parameter extends CodeElement
 		return type;
 	}
 
+	@Override
 	public String getName()
 	{
 		return name;
@@ -35,7 +37,24 @@ public class Parameter extends CodeElement
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		if (type.getName().equals("void"))
+			throw new SyntaxException("Parameter type cannot be void.", getLine(), getColumn());
+		if (!scope.add(this))
+			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
+		globallyUniqueName = scope.makeGloballyUniqueName(name);
+		scope.add(this);
+	}
+
+	@Override
+	public String getGlobalName()
+	{
+		return globallyUniqueName;
+	}
+
+	@Override
+	public String getReference()
+	{
+		return globallyUniqueName + "(fp)";
 	}
 
 	@Override

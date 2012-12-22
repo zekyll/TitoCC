@@ -18,8 +18,8 @@ public class Function extends Declaration implements Symbol
 	private String name;
 	private ParameterList parameterList;
 	private BlockStatement body;
-	String startLabel;
-	InternalSymbol endSymbol, retValSymbol;
+	private String globallyUniqueName;
+	private InternalSymbol endSymbol, retValSymbol;
 
 	public Function(Type returnType, String name, ParameterList parameterList,
 			BlockStatement body, int line, int column)
@@ -61,8 +61,10 @@ public class Function extends Declaration implements Symbol
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		scope.add(this);
-		Scope functionScope = new Scope(scope, name);
+		if (!scope.add(this))
+			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
+		globallyUniqueName = scope.makeGloballyUniqueName(name);
+		Scope functionScope = new Scope(scope, name + "_");
 
 		compilePrologue(asm, functionScope, registers);
 		compileBody(asm, functionScope, registers);
@@ -72,12 +74,11 @@ public class Function extends Declaration implements Symbol
 	private void compilePrologue(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		startLabel = scope.getParent().makeGloballyUniqueName(name);
-		retValSymbol = new InternalSymbol("Ret", scope);
+		retValSymbol = new InternalSymbol("Ret", scope, "(fp)");
 		scope.add(retValSymbol);
-		asm.emit(retValSymbol.getReference(), "equ", "-" + (parameterCount() + 2));
+		asm.emit(retValSymbol.getGlobalName(), "equ", "-" + (parameterCount() + 2));
 		parameterList.compile(asm, scope, registers);
-		asm.emit(startLabel, "pushr", "sp");
+		asm.emit(getReference(), "pushr", "sp");
 	}
 
 	private void compileBody(Assembler asm, Scope scope, Stack<Register> registers)
@@ -92,16 +93,22 @@ public class Function extends Declaration implements Symbol
 	private void compileEpilogue(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		endSymbol = new InternalSymbol("End", scope);
+		endSymbol = new InternalSymbol("End", scope, "");
 		scope.add(endSymbol);
 		asm.emit(endSymbol.getReference(), "popr", "sp");
 		asm.emit("", "exit", "sp", "=" + parameterCount());
 	}
 
 	@Override
+	public String getGlobalName()
+	{
+		return globallyUniqueName;
+	}
+
+	@Override
 	public String getReference()
 	{
-		return startLabel;
+		return globallyUniqueName;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -25,9 +26,15 @@ public class ParameterList extends CodeElement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException
+	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		int paramOffset = -1 - parameters.size();
+		for (Parameter p : parameters) {
+			p.compile(asm, scope, registers);
+			asm.emit(p.getGlobalName(), "equ", "" + paramOffset);
+			++paramOffset;
+		}
 	}
 
 	@Override

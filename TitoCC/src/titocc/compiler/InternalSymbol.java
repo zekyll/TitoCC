@@ -6,8 +6,7 @@ package titocc.compiler;
  */
 public class InternalSymbol implements Symbol
 {
-	private String label;
-	private String name;
+	private String name, globallyUniqueName, suffix;
 
 	/**
 	 * Constructs a new internal symbol.
@@ -15,11 +14,12 @@ public class InternalSymbol implements Symbol
 	 * @param name Name of the symbol.
 	 * @param scope Scope this symbol belongs to.
 	 */
-	public InternalSymbol(String name, Scope scope)
+	public InternalSymbol(String name, Scope scope, String suffix)
 	{
 		// In C names starting with two underscores are reserved for implementation.
-		this.name = "__" + name; 
-		this.label = scope.makeGloballyUniqueName(name);
+		this.name = "__" + name;
+		this.globallyUniqueName = scope.makeGloballyUniqueName(name);
+		this.suffix = suffix;
 	}
 
 	@Override
@@ -29,8 +29,14 @@ public class InternalSymbol implements Symbol
 	}
 
 	@Override
+	public String getGlobalName()
+	{
+		return globallyUniqueName;
+	}
+
+	@Override
 	public String getReference()
 	{
-		return label;
+		return globallyUniqueName + suffix;
 	}
 }

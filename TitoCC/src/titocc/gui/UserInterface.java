@@ -108,9 +108,10 @@ public class UserInterface implements Runnable, ActionListener
 			List<Token> tokens = tokenizer.tokenize();
 			addLogItem("Tokenizing completed successfully.");
 
-			outputTextArea.setText("TOKENS:\n");
-			for (Token t : tokens)
-				outputTextArea.append(t.toString() + "\n");
+			outputTextArea.setText("");
+			//outputTextArea.setText("TOKENS:\n");
+			//for (Token t : tokens)
+			//	outputTextArea.append(t.toString() + "\n");
 
 			Parser parser = new Parser(tokens);
 			TranslationUnit trUnit = parser.parse();

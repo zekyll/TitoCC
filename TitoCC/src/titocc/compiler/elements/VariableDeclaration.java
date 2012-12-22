@@ -17,6 +17,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	private Type type;
 	private String name;
 	private Expression initializer;
+	private String globallyUniqueName;
 
 	public VariableDeclaration(Type type, String name,
 			Expression initializer, int line, int column)
@@ -46,8 +47,9 @@ public class VariableDeclaration extends Declaration implements Symbol
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException, IOException
 	{
-		if (scope.find(name) != null)
+		if (!scope.add(this))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
+		globallyUniqueName = scope.makeGloballyUniqueName(name);
 
 		isGlobal = scope.isGlobal();
 		if (isGlobal)
@@ -57,12 +59,15 @@ public class VariableDeclaration extends Declaration implements Symbol
 	}
 
 	@Override
+	public String getGlobalName()
+	{
+		return globallyUniqueName;
+	}
+
+	@Override
 	public String getReference()
 	{
-		if (isGlobal)
-			return name;
-		else
-			return name + "(fp)";
+		return globallyUniqueName + (isGlobal ? "" : "(fp)");
 	}
 
 	@Override
