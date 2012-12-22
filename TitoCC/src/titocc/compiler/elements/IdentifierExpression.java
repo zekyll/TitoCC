@@ -1,10 +1,13 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
@@ -25,8 +28,16 @@ public class IdentifierExpression extends Expression
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		Symbol symbol = scope.findFromAllScopes(identifier);
+		if (symbol == null)
+			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
+		if (symbol instanceof Function)
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not a variable.", getLine(), getColumn());
+
+		// Load value to first available register
+		asm.emit("", "load", registers.peek().toString(), symbol.getReference());
 	}
 
 	@Override
