@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
@@ -33,8 +34,19 @@ public class IntegerLiteralExpression extends Expression
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		//TODO ICE if registers.empty()
+
+		// Use immediate operand if value fits in 16 bits; otherwise allocate
+		// a data constant. Load value in first available register.
+		if (value < 65536 && value >= -65536)
+			asm.emit("", "load", registers.peek().toString(), "=" + value);
+		else {
+			String name = scope.makeGloballyUniqueName("int_lit_" + value);
+			asm.emit(name, "dc", "" + value);
+			asm.emit("", "load", registers.peek().toString(), name);
+		}
 	}
 
 	@Override
