@@ -1,9 +1,11 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class IfStatement extends Statement
@@ -37,8 +39,27 @@ public class IfStatement extends Statement
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		// Evaluates and loads the test expression in the first register.
+		test.compile(asm, scope, registers);
+
+		// Skip true statement if test was false.
+		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
+		asm.emit("", "jzer", registers.peek().toString(), skipTrueLabel);
+
+		// True statement.
+		trueStatement.compile(asm, scope, registers);
+
+		// Else statement.
+		if (elseStatement != null) {
+			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
+			asm.emit("", "jump", skipElseLabel);
+			asm.emit(skipTrueLabel, "nop", "");
+			elseStatement.compile(asm, scope, registers);
+			asm.emit(skipElseLabel, "nop", "");
+		} else
+			asm.emit(skipTrueLabel, "nop", "");
 	}
 
 	@Override
