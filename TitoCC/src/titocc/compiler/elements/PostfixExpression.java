@@ -37,12 +37,6 @@ public class PostfixExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue()
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
-	}
-
-	@Override
 	public String toString()
 	{
 		return "(POST_EXPR " + operator + " " + operand + ")";

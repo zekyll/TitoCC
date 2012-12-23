@@ -35,12 +35,6 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue()
-	{
-		return null;
-	}
-
-	@Override
 	public String getLvalueReference(Scope scope) throws SyntaxException
 	{
 		Symbol symbol = scope.findFromAllScopes(identifier);

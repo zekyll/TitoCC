@@ -36,12 +36,6 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue()
-	{
-		return null;
-	}
-
-	@Override
 	public String toString()
 	{
 		return "(FCALL_EXPR " + function + " " + argumentList + ")";

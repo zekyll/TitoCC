@@ -142,12 +142,6 @@ public class AssignmentExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue()
-	{
-		return null;
-	}
-
-	@Override
 	public String toString()
 	{
 		return "(ASGN_EXPR " + operator + " " + left + " " + right + ")";

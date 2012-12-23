@@ -11,7 +11,10 @@ public abstract class Expression extends CodeElement
 		super(line, column);
 	}
 
-	public abstract Integer getCompileTimeValue() throws SyntaxException;
+	public Integer getCompileTimeValue() throws SyntaxException
+	{
+		return null;
+	}
 
 	public String getLvalueReference(Scope scope) throws SyntaxException
 	{
