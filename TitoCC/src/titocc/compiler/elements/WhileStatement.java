@@ -1,9 +1,11 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class WhileStatement extends Statement
@@ -30,8 +32,19 @@ public class WhileStatement extends Statement
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		// Loop start.
+		String loopStartLabel = scope.makeGloballyUniqueName("lbl");
+		asm.emit(loopStartLabel, "nop", "");
+
+		// Body.
+		statement.compile(asm, scope, registers);
+
+		// Loop test code is after the body so that we only need one
+		// jump instruction per iteration.
+		test.compile(asm, scope, registers);
+		asm.emit("", "jnzer", registers.peek().toString(), loopStartLabel);
 	}
 
 	@Override
