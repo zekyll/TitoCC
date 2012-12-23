@@ -62,7 +62,7 @@ public class Scope
 	{
 		Symbol sym = symbols.get(name);
 		if (sym == null && parent != null)
-			sym = parent.symbols.get(name);
+			sym = parent.find(name);
 		return sym;
 	}
 
