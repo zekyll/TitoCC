@@ -3,6 +3,7 @@ package titocc.gui;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.StringReader;
@@ -52,6 +53,7 @@ public class UserInterface implements Runnable, ActionListener
 
 		sourceTextArea = new JTextArea();
 		sourceTextArea.setText("int main()\n{\n\treturn 0;\n}");
+		sourceTextArea.setFont(new Font("Monospaced", 0, 12));
 		container.add(sourceTextArea, BorderLayout.CENTER);
 
 		JPanel rightPanel = new JPanel();
@@ -62,6 +64,7 @@ public class UserInterface implements Runnable, ActionListener
 		outputTextArea.setEditable(false);
 		outputTextArea.setPreferredSize(new Dimension(300, 999));
 		outputTextArea.setLineWrap(true);
+		outputTextArea.setFont(new Font("Monospaced", 0, 12));
 		rightPanel.add(outputTextArea, BorderLayout.CENTER);
 
 		JPanel bottomPanel = new JPanel();
@@ -116,14 +119,14 @@ public class UserInterface implements Runnable, ActionListener
 			Parser parser = new Parser(tokens);
 			TranslationUnit trUnit = parser.parse();
 			addLogItem("Parsing completed successfully.");
-			outputTextArea.append("\nCODE ELEMENTS:\n");
-			outputTextArea.append(trUnit.toString());
+			//outputTextArea.append("\nCODE ELEMENTS:\n");
+			//outputTextArea.append(trUnit.toString());
 
 			Compiler compiler = new Compiler(trUnit);
 			StringWriter writer = new StringWriter();
 			compiler.compile(writer);
 			addLogItem("Compilation completed successfully.");
-			outputTextArea.append("\n\nTTK-91 ASSEMBLY:\n");
+			//outputTextArea.append("\n\nTTK-91 ASSEMBLY:\n");
 			outputTextArea.append(writer.toString());
 
 		} catch (SyntaxException e) {

@@ -32,7 +32,7 @@ public class Assembler
 	 */
 	public void emit(String label, String instruction, String operand) throws IOException
 	{
-		writer.append(String.format("%-7s %-7s %s\n", label, instruction, operand));
+		writer.append(String.format("%-11s %-7s %s\n", label, instruction, operand));
 	}
 
 	/**
@@ -47,6 +47,6 @@ public class Assembler
 	public void emit(String label, String instruction, String operand1, String operand2)
 			throws IOException
 	{
-		writer.append(String.format("%-7s %-7s %s, %s\n", label, instruction, operand1, operand2));
+		writer.append(String.format("%-11s %-7s %s, %s\n", label, instruction, operand1, operand2));
 	}
 }
