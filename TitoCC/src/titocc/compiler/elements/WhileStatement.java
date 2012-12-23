@@ -36,6 +36,8 @@ public class WhileStatement extends Statement
 	{
 		// Loop start.
 		String loopStartLabel = scope.makeGloballyUniqueName("lbl");
+		String loopTestLabel = scope.makeGloballyUniqueName("lbl");
+		asm.emit("", "jump", loopTestLabel);
 		asm.emit(loopStartLabel, "nop", "");
 
 		// Body.
@@ -43,6 +45,7 @@ public class WhileStatement extends Statement
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
+		asm.emit(loopTestLabel, "nop", "");
 		test.compile(asm, scope, registers);
 		asm.emit("", "jnzer", registers.peek().toString(), loopStartLabel);
 	}
