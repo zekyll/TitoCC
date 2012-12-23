@@ -113,7 +113,7 @@ public class BinaryExpression extends Expression
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
 				asm.emit("", "comp", left.toString(), right.toString());
 				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jeq", left.toString(), jumpLabel);
+				asm.emit("", "jequ", left.toString(), jumpLabel);
 				asm.emit("", "load", left.toString(), "=0");
 				asm.emit(jumpLabel, "nop", "");
 				break;
@@ -121,7 +121,7 @@ public class BinaryExpression extends Expression
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
 				asm.emit("", "comp", left.toString(), right.toString());
 				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jneq", left.toString(), jumpLabel);
+				asm.emit("", "jnequ", left.toString(), jumpLabel);
 				asm.emit("", "load", left.toString(), "=0");
 				asm.emit(jumpLabel, "nop", "");
 				break;
