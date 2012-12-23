@@ -10,3 +10,11 @@ TI 18.12.2012:
 KE 19.12.2012:
 	(2h) Parserin testien koodausta.
 	(2h) Lisää testejä parserille.
+To 20.12.2012:
+	(2h) Suunnittelua.
+	(3h) Kääntäjän ydintoiminnallisuuden toteutus.
+	(4h) Kääntäjän toteutusta. (funktiot ja parametrit)
+LA 22.12.2012:
+	(5h) Kääntäjän toteutusta. (lausekkeet)
+SU 22.12.2012:
+	(3h) Kääntäjän toteutusta. (sijoituslausekkeet)

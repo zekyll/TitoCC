@@ -21,7 +21,7 @@ public class IdentifierExpression extends Expression
 		this.identifier = identifier;
 	}
 
-	public String identifier()
+	public String getIdentifier()
 	{
 		return identifier;
 	}
@@ -30,20 +30,26 @@ public class IdentifierExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 			throws SyntaxException, IOException
 	{
-		Symbol symbol = scope.findFromAllScopes(identifier);
-		if (symbol == null)
-			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
-		if (symbol instanceof Function)
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not a variable.", getLine(), getColumn());
-
 		// Load value to first available register
-		asm.emit("", "load", registers.peek().toString(), symbol.getReference());
+		asm.emit("", "load", registers.peek().toString(), getLvalueReference(scope));
 	}
 
 	@Override
 	public Integer getCompileTimeValue()
 	{
 		return null;
+	}
+
+	@Override
+	public String getLvalueReference(Scope scope) throws SyntaxException
+	{
+		Symbol symbol = scope.findFromAllScopes(identifier);
+		if (symbol == null)
+			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
+		if (symbol instanceof Function)
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not a variable.", getLine(), getColumn());
+
+		return symbol.getReference();
 	}
 
 	@Override
