@@ -52,28 +52,17 @@ public class Scope
 	}
 
 	/**
-	 * Finds a symbol (e.g. a variable or a function) defined in this scope.
-	 *
-	 * @param name Identifier of the object.
-	 * @return Searched symbol or null if none was found.
-	 */
-	public Symbol find(String name)
-	{
-		return symbols.get(name);
-	}
-
-	/**
 	 * Finds a symbol (e.g. a variable or a function) defined in this scope or
 	 * any of its parent scopes.
 	 *
 	 * @param name Identifier of the object.
 	 * @return Searched symbol or null if none was found.
 	 */
-	public Symbol findFromAllScopes(String name)
+	public Symbol find(String name)
 	{
-		Symbol sym = find(name);
+		Symbol sym = symbols.get(name);
 		if (sym == null && parent != null)
-			sym = parent.find(name);
+			sym = parent.symbols.get(name);
 		return sym;
 	}
 

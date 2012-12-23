@@ -35,12 +35,12 @@ public class ReturnStatement extends Statement
 			expression.compile(asm, scope, registers);
 
 			// Store the register to return value
-			Symbol retVal = scope.findFromAllScopes("__Ret");
+			Symbol retVal = scope.find("__Ret");
 			asm.emit("", "store", registers.peek().toString(), retVal.getReference());
 		}
 
 		// Jump to function end
-		Symbol functionEnd = scope.findFromAllScopes("__End");
+		Symbol functionEnd = scope.find("__End");
 		asm.emit("", "jump", "sp", functionEnd.getReference());
 	}
 

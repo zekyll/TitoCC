@@ -37,7 +37,7 @@ public class IdentifierExpression extends Expression
 	@Override
 	public String getLvalueReference(Scope scope) throws SyntaxException
 	{
-		Symbol symbol = scope.findFromAllScopes(identifier);
+		Symbol symbol = scope.find(identifier);
 		if (symbol == null)
 			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
 		if (symbol instanceof Function)
