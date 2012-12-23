@@ -41,11 +41,12 @@ public class IntegerLiteralExpression extends Expression
 		// Use immediate operand if value fits in 16 bits; otherwise allocate
 		// a data constant. Load value in first available register.
 		if (value < 65536 && value >= -65536)
-			asm.emit("", "load", registers.peek().toString(), "=" + value);
+			asm.emit("load", registers.peek().toString(), "=" + value);
 		else {
 			String name = scope.makeGloballyUniqueName("int_lit_" + value);
-			asm.emit(name, "dc", "" + value);
-			asm.emit("", "load", registers.peek().toString(), name);
+			asm.addLabel(name);
+			asm.emit("dc", "" + value);
+			asm.emit("load", registers.peek().toString(), name);
 		}
 	}
 

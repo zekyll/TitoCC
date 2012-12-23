@@ -17,4 +17,4 @@ To 20.12.2012:
 LA 22.12.2012:
 	(5h) Kääntäjän toteutusta. (lausekkeet)
 SU 22.12.2012:
-	(3h) Kääntäjän toteutusta. (sijoituslausekkeet)
+	(5h) Kääntäjän toteutusta. (sijoituslausekkeet ja kontrollilauseet)

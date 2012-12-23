@@ -31,7 +31,7 @@ public class IdentifierExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		// Load value to first available register
-		asm.emit("", "load", registers.peek().toString(), getLvalueReference(scope));
+		asm.emit("load", registers.peek().toString(), getLvalueReference(scope));
 	}
 
 	@Override

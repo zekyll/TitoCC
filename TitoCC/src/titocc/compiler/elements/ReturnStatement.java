@@ -36,12 +36,12 @@ public class ReturnStatement extends Statement
 
 			// Store the register to return value
 			Symbol retVal = scope.find("__Ret");
-			asm.emit("", "store", registers.peek().toString(), retVal.getReference());
+			asm.emit("store", registers.peek().toString(), retVal.getReference());
 		}
 
 		// Jump to function end
 		Symbol functionEnd = scope.find("__End");
-		asm.emit("", "jump", "sp", functionEnd.getReference());
+		asm.emit("jump", "sp", functionEnd.getReference());
 	}
 
 	@Override

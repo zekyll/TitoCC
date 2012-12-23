@@ -52,7 +52,7 @@ public abstract class CodeElement
 			registers.push(tmp);
 
 			// Push chosen register to stack.
-			asm.emit("", "push", "sp", pushedRegister.toString());
+			asm.emit("push", "sp", pushedRegister.toString());
 		}
 
 		return pushedRegister;
@@ -63,7 +63,7 @@ public abstract class CodeElement
 	{
 		if (pushedRegister != null) {
 			// Pop register from stack.
-			asm.emit("", "pop", "sp", pushedRegister.toString());
+			asm.emit("pop", "sp", pushedRegister.toString());
 
 			// Undo the changes made by pushRegister().
 			Register tmp = registers.pop();

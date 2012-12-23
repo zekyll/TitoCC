@@ -83,22 +83,24 @@ public class BinaryExpression extends Expression
 			case "||":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
 				jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "jnzer", left.toString(), jumpLabel);
-				asm.emit("", "jnzer", right.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=0");
-				asm.emit("", "jump", left.toString(), jumpLabel2);
-				asm.emit(jumpLabel, "load", left.toString(), "=1");
-				asm.emit(jumpLabel2, "nop", "");
+				asm.emit("jnzer", left.toString(), jumpLabel);
+				asm.emit("jnzer", right.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.emit("jump", left.toString(), jumpLabel2);
+				asm.addLabel(jumpLabel);
+				asm.emit("load", left.toString(), "=1");
+				asm.addLabel(jumpLabel2);
 				break;
 			case "&&":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
 				jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "jzer", left.toString(), jumpLabel);
-				asm.emit("", "jzer", right.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jump", left.toString(), jumpLabel2);
-				asm.emit(jumpLabel, "load", left.toString(), "=0");
-				asm.emit(jumpLabel2, "nop", "");
+				asm.emit("jzer", left.toString(), jumpLabel);
+				asm.emit("jzer", right.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=1");
+				asm.emit("jump", left.toString(), jumpLabel2);
+				asm.addLabel(jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.addLabel(jumpLabel2);
 				break;
 			case "|":
 				asm.emit("or", operator, operator);
@@ -111,72 +113,72 @@ public class BinaryExpression extends Expression
 				break;
 			case "==":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "comp", left.toString(), right.toString());
-				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jequ", left.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=0");
-				asm.emit(jumpLabel, "nop", "");
+				asm.emit("comp", left.toString(), right.toString());
+				asm.emit("load", left.toString(), "=1");
+				asm.emit("jequ", left.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.addLabel(jumpLabel);
 				break;
 			case "!=":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "comp", left.toString(), right.toString());
-				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jnequ", left.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=0");
-				asm.emit(jumpLabel, "nop", "");
+				asm.emit("comp", left.toString(), right.toString());
+				asm.emit("load", left.toString(), "=1");
+				asm.emit("jnequ", left.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.addLabel(jumpLabel);
 				break;
 			case "<":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "comp", left.toString(), right.toString());
-				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jles", left.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=0");
-				asm.emit(jumpLabel, "nop", "");
+				asm.emit("comp", left.toString(), right.toString());
+				asm.emit("load", left.toString(), "=1");
+				asm.emit("jles", left.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.addLabel(jumpLabel);
 				break;
 			case "<=":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "comp", left.toString(), right.toString());
-				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jngre", left.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=0");
-				asm.emit(jumpLabel, "nop", "");
+				asm.emit("comp", left.toString(), right.toString());
+				asm.emit("load", left.toString(), "=1");
+				asm.emit("jngre", left.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.addLabel(jumpLabel);
 				break;
 			case ">":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "comp", left.toString(), right.toString());
-				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jgre", left.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=0");
-				asm.emit(jumpLabel, "nop", "");
+				asm.emit("comp", left.toString(), right.toString());
+				asm.emit("load", left.toString(), "=1");
+				asm.emit("jgre", left.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.addLabel(jumpLabel);
 				break;
 			case ">=":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("", "comp", left.toString(), right.toString());
-				asm.emit("", "load", left.toString(), "=1");
-				asm.emit("", "jnles", left.toString(), jumpLabel);
-				asm.emit("", "load", left.toString(), "=0");
-				asm.emit(jumpLabel, "nop", "");
+				asm.emit("comp", left.toString(), right.toString());
+				asm.emit("load", left.toString(), "=1");
+				asm.emit("jnles", left.toString(), jumpLabel);
+				asm.emit("load", left.toString(), "=0");
+				asm.addLabel(jumpLabel);
 				break;
 			case "<<":
-				asm.emit("", "shl", left.toString(), right.toString());
+				asm.emit("shl", left.toString(), right.toString());
 				break;
 			case ">>":
-				asm.emit("", "shr", left.toString(), right.toString());
+				asm.emit("shr", left.toString(), right.toString());
 				break;
 			case "+":
-				asm.emit("", "add", left.toString(), right.toString());
+				asm.emit("add", left.toString(), right.toString());
 				break;
 			case "-":
-				asm.emit("", "sub", left.toString(), right.toString());
+				asm.emit("sub", left.toString(), right.toString());
 				break;
 			case "*":
-				asm.emit("", "mul", left.toString(), right.toString());
+				asm.emit("mul", left.toString(), right.toString());
 				break;
 			case "/":
-				asm.emit("", "div", left.toString(), right.toString());
+				asm.emit("div", left.toString(), right.toString());
 				break;
 			case "%":
-				asm.emit("", "mod", left.toString(), right.toString());
+				asm.emit("mod", left.toString(), right.toString());
 				break;
 			default:
 				throw new InternalCompilerException("Invalid operator in BinaryExpression.");

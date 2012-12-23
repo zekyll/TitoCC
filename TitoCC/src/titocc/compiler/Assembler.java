@@ -11,6 +11,7 @@ import java.io.Writer;
 public class Assembler
 {
 	private Writer writer;
+	private String label;
 
 	/**
 	 * Constructs a new assembler object.
@@ -25,28 +26,38 @@ public class Assembler
 	/**
 	 * Emits an instruction with a single operand.
 	 *
-	 * @param label Optional label.
 	 * @param instruction Mnemonic for the intruction.
 	 * @param operand First operand (usually register).
 	 * @throws IOException If thrown by writer.
 	 */
-	public void emit(String label, String instruction, String operand) throws IOException
+	public void emit(String instruction, String operand) throws IOException
 	{
 		writer.append(String.format("%-11s %-7s %s\n", label, instruction, operand));
+		label = "";
 	}
 
 	/**
 	 * Emits an instruction with two operands.
 	 *
-	 * @param label Optional label.
 	 * @param instruction Mnemonic for the intruction.
 	 * @param operand1 First operand (usually register).
 	 * @param operand2 Second (register or memory operand).
 	 * @throws IOException If thrown by writer.
 	 */
-	public void emit(String label, String instruction, String operand1, String operand2)
+	public void emit(String instruction, String operand1, String operand2)
 			throws IOException
 	{
 		writer.append(String.format("%-11s %-7s %s, %s\n", label, instruction, operand1, operand2));
+		label = "";
+	}
+
+	/**
+	 * Adds a label for the next instruction.
+	 *
+	 * @param label Label.
+	 */
+	public void addLabel(String label)
+	{
+		this.label = label;
 	}
 }

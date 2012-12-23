@@ -32,7 +32,8 @@ public class ParameterList extends CodeElement
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
 			p.compile(asm, scope, registers);
-			asm.emit(p.getGlobalName(), "equ", "" + paramOffset);
+			asm.addLabel(p.getGlobalName());
+			asm.emit("equ", "" + paramOffset);
 			++paramOffset;
 		}
 	}

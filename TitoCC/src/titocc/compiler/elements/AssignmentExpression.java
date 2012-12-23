@@ -103,7 +103,7 @@ public class AssignmentExpression extends Expression
 	{
 		// Load RHS in the first register and stores it in the LHS variable.
 		right.compile(asm, scope, registers);
-		asm.emit("", "store", registers.peek().toString(), leftRef);
+		asm.emit("store", registers.peek().toString(), leftRef);
 	}
 
 	private void compileSymmetric(Assembler asm, Scope scope, Stack<Register> registers,
@@ -114,8 +114,8 @@ public class AssignmentExpression extends Expression
 
 		// Because the operation is symmetric, we can use the left operand
 		// as the right operand in the assembly instruction, saving one register.
-		asm.emit("", operator.mnemonic, registers.peek().toString(), leftRef);
-		asm.emit("", "store", registers.peek().toString(), leftRef);
+		asm.emit(operator.mnemonic, registers.peek().toString(), leftRef);
+		asm.emit("store", registers.peek().toString(), leftRef);
 	}
 
 	private void compileAsymmetric(Assembler asm, Scope scope, Stack<Register> registers,
@@ -129,11 +129,11 @@ public class AssignmentExpression extends Expression
 		Register rightRegister = registers.pop();
 
 		// Load LHS in second register and operate on it.
-		asm.emit("", "load", registers.peek().toString(), leftRef);
-		asm.emit("", operator.mnemonic, registers.peek().toString(), rightRegister.toString());
+		asm.emit("load", registers.peek().toString(), leftRef);
+		asm.emit(operator.mnemonic, registers.peek().toString(), rightRegister.toString());
 
 		// Store result to LHS variable.
-		asm.emit("", "store", registers.peek().toString(), leftRef);
+		asm.emit("store", registers.peek().toString(), leftRef);
 
 		registers.push(rightRegister);
 

@@ -84,11 +84,13 @@ public class Function extends Declaration implements Symbol
 		scope.add(retValSymbol);
 
 		// Define constants for parameters and add their symbols
-		asm.emit(retValSymbol.getGlobalName(), "equ", "-" + (parameterCount() + 2));
+		asm.addLabel(retValSymbol.getGlobalName());
+		asm.emit("equ", "-" + (parameterCount() + 2));
 		parameterList.compile(asm, scope, registers);
 
 		// Push registers
-		asm.emit(getReference(), "pushr", "sp");
+		asm.addLabel(getReference());
+		asm.emit("pushr", "sp");
 	}
 
 	private void compileBody(Assembler asm, Scope scope, Stack<Register> registers)
@@ -104,10 +106,11 @@ public class Function extends Declaration implements Symbol
 			throws IOException, SyntaxException
 	{
 		// Pop registers from stack
-		asm.emit(endSymbol.getReference(), "popr", "sp");
+		asm.addLabel(endSymbol.getReference());
+		asm.emit("popr", "sp");
 
 		// Exit function
-		asm.emit("", "exit", "sp", "=" + parameterCount());
+		asm.emit("exit", "sp", "=" + parameterCount());
 	}
 
 	@Override

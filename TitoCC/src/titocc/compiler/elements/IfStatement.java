@@ -46,7 +46,7 @@ public class IfStatement extends Statement
 
 		// Skip true statement if test was false.
 		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("", "jzer", registers.peek().toString(), skipTrueLabel);
+		asm.emit("jzer", registers.peek().toString(), skipTrueLabel);
 
 		// True statement.
 		trueStatement.compile(asm, scope, registers);
@@ -54,12 +54,12 @@ public class IfStatement extends Statement
 		// Else statement.
 		if (elseStatement != null) {
 			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
-			asm.emit("", "jump", skipElseLabel);
-			asm.emit(skipTrueLabel, "nop", "");
+			asm.emit("jump", skipElseLabel);
+			asm.addLabel(skipTrueLabel);
 			elseStatement.compile(asm, scope, registers);
-			asm.emit(skipElseLabel, "nop", "");
+			asm.addLabel(skipElseLabel);
 		} else
-			asm.emit(skipTrueLabel, "nop", "");
+			asm.addLabel(skipTrueLabel);
 	}
 
 	@Override

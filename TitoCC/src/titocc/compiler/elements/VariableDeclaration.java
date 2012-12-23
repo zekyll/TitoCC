@@ -85,7 +85,8 @@ public class VariableDeclaration extends Declaration implements Symbol
 				throw new SyntaxException("Global variable must be initialized with a compile time constant.", getLine(), getColumn());
 		}
 
-		asm.emit(name, "dc", "" + initValue);
+		asm.addLabel(name);
+		asm.emit("dc", "" + initValue);
 
 		scope.add(this);
 	}

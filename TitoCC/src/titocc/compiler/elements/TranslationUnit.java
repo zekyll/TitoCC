@@ -29,9 +29,9 @@ public class TranslationUnit extends CodeElement
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException
 	{
-		asm.emit("", "add", "sp", "=1");
-		asm.emit("", "call", "sp", "main");
-		asm.emit("", "svc", "sp", "=halt");
+		asm.emit("add", "sp", "=1");
+		asm.emit("call", "sp", "main");
+		asm.emit("svc", "sp", "=halt");
 
 		for (Declaration decl : declarations)
 			decl.compile(asm, scope, registers);
