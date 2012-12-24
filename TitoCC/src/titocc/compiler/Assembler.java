@@ -11,7 +11,7 @@ import java.io.Writer;
 public class Assembler
 {
 	private Writer writer;
-	private String label;
+	private String label = "";
 
 	/**
 	 * Constructs a new assembler object.
