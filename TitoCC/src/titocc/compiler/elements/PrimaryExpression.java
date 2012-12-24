@@ -1,9 +1,5 @@
 package titocc.compiler.elements;
 
-import java.util.Stack;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
-import titocc.compiler.Scope;
 import titocc.tokenizer.TokenStream;
 
 public abstract class PrimaryExpression extends Expression
@@ -11,12 +7,6 @@ public abstract class PrimaryExpression extends Expression
 	public PrimaryExpression(int line, int column)
 	{
 		super(line, column);
-	}
-
-	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
-	{
-		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	public static Expression parse(TokenStream tokens)
