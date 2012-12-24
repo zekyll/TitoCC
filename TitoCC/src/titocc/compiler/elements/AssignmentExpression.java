@@ -1,14 +1,12 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
-import titocc.compiler.Symbol;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -47,12 +45,14 @@ public class AssignmentExpression extends Expression
 		}
 	};
 	private Operator operator;
+	private String operatorString;
 	private Expression left, right;
 
 	public AssignmentExpression(String operator, Expression left,
 			Expression right, int line, int column)
 	{
 		super(line, column);
+		this.operatorString = operator;
 		this.operator = assignmentOperators.get(operator);
 		this.left = left;
 		this.right = right;
@@ -94,7 +94,7 @@ public class AssignmentExpression extends Expression
 		String leftRef = left.getLvalueReference(scope);
 		if (leftRef == null)
 			throw new SyntaxException("Left side cannot be assigned to.", getLine(), getColumn());
-		left.compile(asm, scope, registers);
+		//left.compile(asm, scope, registers);
 		return leftRef;
 	}
 
@@ -144,7 +144,7 @@ public class AssignmentExpression extends Expression
 	@Override
 	public String toString()
 	{
-		return "(ASGN_EXPR " + operator + " " + left + " " + right + ")";
+		return "(ASGN_EXPR " + operatorString + " " + left + " " + right + ")";
 	}
 
 	public static Expression parse(TokenStream tokens)
