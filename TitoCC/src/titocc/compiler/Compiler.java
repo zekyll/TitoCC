@@ -3,7 +3,6 @@ package titocc.compiler;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.Stack;
 import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;

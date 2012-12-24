@@ -1,10 +1,12 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class PostfixExpression extends Expression
@@ -32,8 +34,23 @@ public class PostfixExpression extends Expression
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		// Currently the only lvalue expression is variable identifier, so
+		// we can just get the variable name.
+		String ref = operand.getLvalueReference(scope);
+		if (ref == null)
+			throw new SyntaxException("Operator requires an lvalue.", getLine(), getColumn());
+
+		// Load value in register.
+		asm.emit("load", registers.peek().toString(), ref);
+
+		// Modify and write back the value.
+		asm.emit(operator.equals("++") ? "add" : "sub", registers.peek().toString(), "=1");
+		asm.emit("store", registers.peek().toString(), ref);
+
+		// Expression must return the old value.
+		asm.emit(operator.equals("++") ? "sub" : "add", registers.peek().toString(), "=1");
 	}
 
 	@Override
