@@ -56,8 +56,10 @@ public class Assembler
 	 *
 	 * @param label Label.
 	 */
-	public void addLabel(String label)
+	public void addLabel(String label) throws IOException
 	{
+		if(!this.label.isEmpty())
+			emit("nop", "");
 		this.label = label;
 	}
 }
