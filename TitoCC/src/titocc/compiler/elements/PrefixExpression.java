@@ -85,7 +85,7 @@ public class PrefixExpression extends Expression
 		asm.emit("comp", registers.peek().toString(), "=0");
 		asm.emit("load", registers.peek().toString(), "=1");
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jnequ", registers.peek().toString(), jumpLabel);
+		asm.emit("jequ", jumpLabel);
 		asm.emit("load", registers.peek().toString(), "=0");
 		asm.addLabel(jumpLabel);
 	}
