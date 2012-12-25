@@ -49,14 +49,14 @@ public class IfStatement extends Statement
 		asm.emit("jzer", registers.peek().toString(), skipTrueLabel);
 
 		// True statement.
-		trueStatement.compile(asm, scope, registers);
+		trueStatement.compile(asm, new Scope(scope, ""), registers);
 
 		// Else statement.
 		if (elseStatement != null) {
 			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
 			asm.emit("jump", skipElseLabel);
 			asm.addLabel(skipTrueLabel);
-			elseStatement.compile(asm, scope, registers);
+			elseStatement.compile(asm, new Scope(scope, ""), registers);
 			asm.addLabel(skipElseLabel);
 		} else
 			asm.addLabel(skipTrueLabel);
