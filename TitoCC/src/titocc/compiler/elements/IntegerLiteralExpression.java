@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
@@ -12,19 +13,18 @@ import titocc.tokenizer.TokenStream;
 
 public class IntegerLiteralExpression extends Expression
 {
-	private int value;
-	private String suffix;
+	private String rawValue, suffix;
 
-	public IntegerLiteralExpression(int value, String suffix, int line, int column)
+	public IntegerLiteralExpression(String rawValue, String suffix, int line, int column)
 	{
 		super(line, column);
-		this.value = value;
+		this.rawValue = rawValue;
 		this.suffix = suffix;
 	}
 
-	public int getValue()
+	public String getRawValue()
 	{
-		return value;
+		return rawValue;
 	}
 
 	public String getSuffix()
@@ -34,20 +34,11 @@ public class IntegerLiteralExpression extends Expression
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
-			throws IOException
+			throws IOException, SyntaxException
 	{
 		//TODO ICE if registers.empty()
 
-		// Use immediate operand if value fits in 16 bits; otherwise allocate
-		// a data constant. Load value in first available register.
-		if (value < 65536 && value >= -65536)
-			asm.emit("load", registers.peek().toString(), "=" + value);
-		else {
-			String name = scope.makeGloballyUniqueName("int_lit_" + value);
-			asm.addLabel(name);
-			asm.emit("dc", "" + value);
-			asm.emit("load", registers.peek().toString(), name);
-		}
+		compileConstantExpression(asm, scope, registers);
 	}
 
 	@Override
@@ -55,13 +46,16 @@ public class IntegerLiteralExpression extends Expression
 	{
 		if (!suffix.isEmpty())
 			throw new SyntaxException("Suffixes on literals are not supported.", getLine(), getColumn());
-		return value;
+
+		// If the literal is too big, only take the least significant 32 bits.
+		// BigInteger.intValue() automatically does this.
+		return new BigInteger(rawValue).intValue();
 	}
 
 	@Override
 	public String toString()
 	{
-		return "(INT_EXPR " + value + (suffix.isEmpty() ? "" : " " + suffix) + ")";
+		return "(INT_EXPR " + rawValue + (suffix.isEmpty() ? "" : " " + suffix) + ")";
 	}
 
 	public static IntegerLiteralExpression parse(TokenStream tokens)

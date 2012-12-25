@@ -188,7 +188,9 @@ public class BinaryExpression extends Expression
 	@Override
 	public Integer getCompileTimeValue()
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		// Compile time evaluation of binary operators could be implemented here.
+
+		return null;
 	}
 
 	@Override

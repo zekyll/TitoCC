@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Stack;
 import titocc.compiler.Assembler;
@@ -36,6 +37,9 @@ public class PrefixExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
+		if (compileConstantExpression(asm, scope, registers))
+			return;
+
 		if (operator.equals("++") || operator.equals("--"))
 			compileIncDec(asm, scope, registers);
 		else if (operator.equals("+"))
@@ -101,9 +105,21 @@ public class PrefixExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue()
+	public Integer getCompileTimeValue() throws SyntaxException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		// Handle unary minus for literals as a special case. Literals need to 
+		// be non-negative so this is a way of simulating negative literals.
+		// Also, because 2147483648 doesn't fit int range, this is necessary for
+		// expressing the smallest int value of -2147483648.
+		if (operator.equals("-") && operand instanceof IntegerLiteralExpression) {
+			((IntegerLiteralExpression) operand).getCompileTimeValue();
+			String rawValue = ((IntegerLiteralExpression) operand).getRawValue();
+			return new BigInteger("-" + rawValue).intValue();
+		}
+
+		// Compile time evaluation of operators + - ~ ! could be implemented here.
+
+		return null;
 	}
 
 	@Override

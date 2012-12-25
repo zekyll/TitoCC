@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class IntegerLiteralTokenTest
 {
@@ -41,8 +41,18 @@ public class IntegerLiteralTokenTest
 		CodeReader cr = new CodeReader(new StringReader("2147483647*"));
 		IntegerLiteralToken token = IntegerLiteralToken.parse(cr);
 		assertNotNull(token);
-		assertEquals(2147483647, token.getValue());
+		assertEquals("2147483647", token.getValue());
 		assertEquals('*', cr.read());
+	}
+
+	@Test
+	public void matchHugeInteger() throws IOException
+	{
+		CodeReader cr = new CodeReader(new StringReader("18446744073709551616+"));
+		IntegerLiteralToken token = IntegerLiteralToken.parse(cr);
+		assertNotNull(token);
+		assertEquals("18446744073709551616", token.getValue());
+		assertEquals('+', cr.read());
 	}
 
 	@Test
@@ -51,7 +61,7 @@ public class IntegerLiteralTokenTest
 		CodeReader cr = new CodeReader(new StringReader("0 "));
 		IntegerLiteralToken token = IntegerLiteralToken.parse(cr);
 		assertNotNull(token);
-		assertEquals(0, token.getValue());
+		assertEquals("0", token.getValue());
 		assertEquals(' ', cr.read());
 	}
 
@@ -88,7 +98,7 @@ public class IntegerLiteralTokenTest
 		CodeReader cr = new CodeReader(new StringReader("123abc0&"));
 		IntegerLiteralToken token = IntegerLiteralToken.parse(cr);
 		assertNotNull(token);
-		assertEquals(123, token.getValue());
+		assertEquals("123", token.getValue());
 		assertEquals("abc0", token.getSuffix());
 		assertEquals('&', cr.read());
 	}

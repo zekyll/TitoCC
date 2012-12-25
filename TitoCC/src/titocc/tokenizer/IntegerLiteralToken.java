@@ -5,18 +5,17 @@ import titocc.util.AsciiUtil;
 
 public class IntegerLiteralToken extends Token
 {
-	private int value;
-	private String suffix;
+	private String value, suffix;
 
 	private IntegerLiteralToken(String string, int line, int column,
-			int value, String suffix)
+			String value, String suffix)
 	{
 		super(string, line, column);
 		this.value = value;
 		this.suffix = suffix;
 	}
 
-	public int getValue()
+	public String getValue()
 	{
 		return value;
 	}
@@ -47,10 +46,9 @@ public class IntegerLiteralToken extends Token
 				c = reader.read();
 			}
 
-			int value = Integer.parseInt(digitStr);
 			String tokenString = digitStr + suffix.toString();
 			token = new IntegerLiteralToken(tokenString,
-					line, column, value, suffix.toString());
+					line, column, digitStr, suffix.toString());
 		}
 
 		if (c != '\0')
