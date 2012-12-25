@@ -10,6 +10,10 @@ import titocc.tokenizer.Tokenizer;
 
 public class Compiler
 {
+	static final String[] reservedGlobalNames = {
+		"r0", "r1", "r2", "r3", "r3", "r5", "crt", "kbd", "stdin", "stdout",
+		"halt", "read", "write", "time", "date"
+	};
 	private Reader reader;
 	private TranslationUnit trUnit;
 
@@ -29,7 +33,9 @@ public class Compiler
 	{
 		if (trUnit == null)
 			tokenizeAndParse();
-		trUnit.compile(new Assembler(writer), new Scope(null, ""), getUsableRegisters());
+		Scope scope = new Scope(null, "");
+		reserveNames(scope);
+		trUnit.compile(new Assembler(writer), scope, getUsableRegisters());
 	}
 
 	private void tokenizeAndParse() throws IOException, SyntaxException
@@ -49,5 +55,11 @@ public class Compiler
 		registers.push(Register.R2);
 		registers.push(Register.R1);
 		return registers;
+	}
+
+	private void reserveNames(Scope scope)
+	{
+		for (String name : reservedGlobalNames)
+			scope.makeGloballyUniqueName(name);
 	}
 }
