@@ -1,6 +1,9 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.InternalSymbol;
@@ -64,32 +67,66 @@ public class Function extends Declaration implements Symbol
 		if (!scope.add(this))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
 		globallyUniqueName = scope.makeGloballyUniqueName(name);
+
+		// Create new scope.
 		Scope functionScope = new Scope(scope, name + "_");
+		scope.addSubScope(functionScope);
 
-		// Add symbol for the function end so that return statements can jump
-		// to it. Note that this must be done before compiling the body!
-		endSymbol = new InternalSymbol("End", functionScope, ""); //__End
-		functionScope.add(endSymbol);
+		addInternalSymbols(functionScope);
+		compileParameters(asm, functionScope, registers);
 
-		compilePrologue(asm, functionScope, registers);
-		compileBody(asm, functionScope, registers);
-		compileEpilogue(asm, functionScope, registers);
+		// Compile body before prologue because we want to know all the local
+		// variables in the prologue.
+		StringWriter bodyWriter = new StringWriter();
+		Assembler bodyAsm = new Assembler(bodyWriter);
+		compileBody(bodyAsm, functionScope, registers);
+		List<Symbol> localVariables = getLocalVariables(functionScope);
+		bodyAsm.finish();
+
+		compilePrologue(asm, localVariables);
+		asm.getWriter().append(bodyWriter.toString());
+		compileEpilogue(asm, localVariables.size());
 	}
 
-	private void compilePrologue(Assembler asm, Scope scope, Stack<Register> registers)
-			throws IOException, SyntaxException
+	private void addInternalSymbols(Scope scope)
 	{
-		// Add symbol for location of the return value
+		// Add symbol for the function end so that return statements can jump to it.
+		endSymbol = new InternalSymbol("End", scope, ""); //__End
+		scope.add(endSymbol);
+
+		// Add symbol for location of the return value.
 		retValSymbol = new InternalSymbol("Ret", scope, "(fp)"); //__Ret
 		scope.add(retValSymbol);
+	}
 
-		// Define constants for parameters and add their symbols
+	private void compileParameters(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException
+	{
+		// Define constants for return value and parameters and add their symbols.
 		asm.addLabel(retValSymbol.getGlobalName());
 		asm.emit("equ", "-" + (parameterCount() + 2));
-		parameterList.compile(asm, scope, registers);
+		parameterList.compile(asm, scope);
+	}
 
-		// Push registers
+	private void compilePrologue(Assembler asm, List<Symbol> localVariables)
+			throws IOException, SyntaxException
+	{
+		// Define constants for local variables.
+		int varIdx = 0;
+		for (Symbol var : localVariables) {
+			asm.addLabel(var.getGlobalName());
+			asm.emit("equ", "" + varIdx);
+			++varIdx;
+		}
+
+		// Label for function entry point.
 		asm.addLabel(getReference());
+
+		// Allocate stack space for local variables.
+		if (localVariables.size() > 0)
+			asm.emit("add", "sp", "=" + localVariables.size());
+
+		// Push registers.
 		asm.emit("pushr", "sp");
 	}
 
@@ -102,15 +139,34 @@ public class Function extends Declaration implements Symbol
 			st.compile(asm, scope, registers);
 	}
 
-	private void compileEpilogue(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileEpilogue(Assembler asm, int localVariableCount)
 			throws IOException, SyntaxException
 	{
-		// Pop registers from stack
+		// Pop registers from stack.
 		asm.addLabel(endSymbol.getReference());
 		asm.emit("popr", "sp");
 
-		// Exit function
+		// Remove local variables from stack.
+		if (localVariableCount > 0)
+			asm.emit("sub", "sp", "=" + localVariableCount);
+
+		// Exit from function.
 		asm.emit("exit", "sp", "=" + parameterCount());
+	}
+
+	private List<Symbol> getLocalVariables(Scope scope)
+	{
+		List<Symbol> localVariables = new ArrayList<Symbol>();
+
+		for (Symbol symbol : scope.getSymbols()) {
+			if (symbol instanceof VariableDeclaration)
+				localVariables.add(symbol);
+		}
+
+		for (Scope subscope : scope.getSubScopes())
+			localVariables.addAll(getLocalVariables(subscope));
+
+		return localVariables;
 	}
 
 	@Override

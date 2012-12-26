@@ -41,7 +41,9 @@ public class WhileStatement extends Statement
 		asm.addLabel(loopStartLabel);
 
 		// Body.
-		statement.compile(asm, new Scope(scope, ""), registers);
+		Scope subScope = new Scope(scope, "");
+		scope.addSubScope(subScope);
+		statement.compile(asm, subScope, registers);
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.

@@ -3,9 +3,7 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -25,13 +23,11 @@ public class ParameterList extends CodeElement
 		return parameters;
 	}
 
-	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
-			throws SyntaxException, IOException
+	public void compile(Assembler asm, Scope scope) throws SyntaxException, IOException
 	{
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
-			p.compile(asm, scope, registers);
+			p.compile(asm, scope);
 			asm.addLabel(p.getGlobalName());
 			asm.emit("equ", "" + paramOffset);
 			++paramOffset;

@@ -31,6 +31,7 @@ public class BlockStatement extends Statement
 	{
 		//Create new scope for the block.
 		Scope blockScope = new Scope(scope, "");
+		scope.addSubScope(blockScope);
 
 		// Compile statements
 		for (Statement st : statements)

@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
@@ -49,14 +50,14 @@ public class IfStatement extends Statement
 		asm.emit("jzer", registers.peek().toString(), skipTrueLabel);
 
 		// True statement.
-		trueStatement.compile(asm, new Scope(scope, ""), registers);
+		compileInNewScope(asm, scope, registers, trueStatement);
 
 		// Else statement.
 		if (elseStatement != null) {
 			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
 			asm.emit("jump", skipElseLabel);
 			asm.addLabel(skipTrueLabel);
-			elseStatement.compile(asm, new Scope(scope, ""), registers);
+			compileInNewScope(asm, scope, registers, elseStatement);
 			asm.addLabel(skipElseLabel);
 		} else
 			asm.addLabel(skipTrueLabel);
@@ -66,6 +67,14 @@ public class IfStatement extends Statement
 	public String toString()
 	{
 		return "(IF " + test + " " + trueStatement + " " + elseStatement + ")";
+	}
+
+	private void compileInNewScope(Assembler asm, Scope scope, Stack<Register> registers,
+			Statement statement) throws IOException, SyntaxException
+	{
+		Scope subScope = new Scope(scope, "");
+		scope.addSubScope(subScope);
+		statement.compile(asm, subScope, registers);
 	}
 
 	public static IfStatement parse(TokenStream tokens)

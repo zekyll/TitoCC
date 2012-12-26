@@ -35,7 +35,9 @@ public class Compiler
 			tokenizeAndParse();
 		Scope scope = new Scope(null, "");
 		reserveNames(scope);
-		trUnit.compile(new Assembler(writer), scope, getUsableRegisters());
+		Assembler asm = new Assembler(writer);
+		trUnit.compile(asm, scope, getUsableRegisters());
+		asm.finish();
 	}
 
 	private void tokenizeAndParse() throws IOException, SyntaxException

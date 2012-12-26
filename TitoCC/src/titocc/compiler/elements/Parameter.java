@@ -1,8 +1,6 @@
 package titocc.compiler.elements;
 
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
@@ -34,8 +32,7 @@ public class Parameter extends CodeElement implements Symbol
 		return name;
 	}
 
-	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException
+	public void compile(Assembler asm, Scope scope) throws SyntaxException
 	{
 		if (type.getName().equals("void"))
 			throw new SyntaxException("Parameter type cannot be void.", getLine(), getColumn());

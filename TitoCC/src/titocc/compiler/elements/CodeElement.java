@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
-import titocc.compiler.Scope;
-import titocc.tokenizer.SyntaxException;
 
 public abstract class CodeElement
 {
@@ -27,8 +25,6 @@ public abstract class CodeElement
 	{
 		return column;
 	}
-
-	public abstract void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException;
 
 	protected Register pushRegister(Assembler asm, Stack<Register> registers)
 			throws IOException

@@ -55,7 +55,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		if (isGlobal)
 			compileGlobalVariable(asm, scope);
 		else
-			compileLocalVariable(asm, scope);
+			compileLocalVariable(asm, scope, registers);
 	}
 
 	@Override
@@ -76,7 +76,8 @@ public class VariableDeclaration extends Declaration implements Symbol
 		return "(VAR_DECL " + type + " " + name + " " + initializer + ")";
 	}
 
-	private void compileGlobalVariable(Assembler asm, Scope scope) throws SyntaxException, IOException
+	private void compileGlobalVariable(Assembler asm, Scope scope)
+			throws SyntaxException, IOException
 	{
 		Integer initValue = 0;
 		if (initializer != null) {
@@ -87,13 +88,15 @@ public class VariableDeclaration extends Declaration implements Symbol
 
 		asm.addLabel(globallyUniqueName);
 		asm.emit("dc", "" + initValue);
-
-		scope.add(this);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope)
+	private void compileLocalVariable(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
 	{
-		throw new UnsupportedOperationException("");
+		if (initializer != null) {
+			initializer.compile(asm, scope, registers);
+			asm.emit("store", registers.peek().toString(), getReference());
+		}
 	}
 
 	public static VariableDeclaration parse(TokenStream tokens)

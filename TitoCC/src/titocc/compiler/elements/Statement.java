@@ -1,6 +1,12 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Stack;
+import titocc.compiler.Assembler;
+import titocc.compiler.Register;
+import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public abstract class Statement extends CodeElement
@@ -9,6 +15,9 @@ public abstract class Statement extends CodeElement
 	{
 		super(line, column);
 	}
+
+	public abstract void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws IOException, SyntaxException;
 
 	public static Statement parse(TokenStream tokens)
 	{

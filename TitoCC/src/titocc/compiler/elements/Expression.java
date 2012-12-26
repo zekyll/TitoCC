@@ -15,6 +15,9 @@ public abstract class Expression extends CodeElement
 		super(line, column);
 	}
 
+	public abstract void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException;
+
 	public Integer getCompileTimeValue() throws SyntaxException
 	{
 		return null;

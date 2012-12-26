@@ -58,8 +58,28 @@ public class Assembler
 	 */
 	public void addLabel(String label) throws IOException
 	{
-		if(!this.label.isEmpty())
+		if (!this.label.isEmpty())
 			emit("nop", "");
 		this.label = label;
+	}
+
+	/**
+	 * Emits a "nop" instruction in the end if there is a label without a
+	 * corresponding instruction.
+	 */
+	public void finish() throws IOException
+	{
+		if (!this.label.isEmpty())
+			emit("nop", "");
+	}
+
+	/**
+	 * Returns the writer object for this Assembler.
+	 *
+	 * @return
+	 */
+	public Writer getWriter()
+	{
+		return writer;
 	}
 }

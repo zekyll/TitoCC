@@ -26,7 +26,6 @@ public class TranslationUnit extends CodeElement
 		return declarations;
 	}
 
-	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException
 	{
 		asm.emit("add", "sp", "=1");

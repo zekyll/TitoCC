@@ -1,7 +1,10 @@
 package titocc.compiler;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +16,7 @@ public class Scope
 {
 	private Scope parent;
 	private Map<String, Symbol> symbols = new HashMap<String, Symbol>();
+	private List<Scope> subScopes = new ArrayList<Scope>();
 	private Set<String> globallyUniqueNames;
 	private String globalNamePrefix;
 
@@ -52,6 +56,16 @@ public class Scope
 	}
 
 	/**
+	 * Returns a collection of all symbols in this scope.
+	 *
+	 * @return
+	 */
+	public Collection<Symbol> getSymbols()
+	{
+		return new ArrayList<Symbol>(symbols.values());
+	}
+
+	/**
 	 * Finds a symbol (e.g. a variable or a function) defined in this scope or
 	 * any of its parent scopes.
 	 *
@@ -82,9 +96,29 @@ public class Scope
 	}
 
 	/**
+	 * Adds a subscope in this scope.
+	 *
+	 * @param scope
+	 */
+	public void addSubScope(Scope scope)
+	{
+		subScopes.add(scope);
+	}
+
+	/**
+	 * Returns a collection of all subscopes.
+	 *
+	 * @return
+	 */
+	public Collection<Scope> getSubScopes()
+	{
+		return new ArrayList<Scope>(subScopes);
+	}
+
+	/**
 	 * Generates a globally unique name by first adding the prefixes of the
-	 * scope and all its surrounding scopes. Then tries number suffixes starting
-	 * from 2 until the name is unique.
+	 * scope and all its parent scopes. Then tries number suffixes starting from
+	 * 2 until the name is unique.
 	 *
 	 * @param Local name.
 	 * @return a globally unique name.
