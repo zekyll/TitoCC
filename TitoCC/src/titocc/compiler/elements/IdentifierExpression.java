@@ -47,6 +47,18 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
+	public Function getFunction(Scope scope) throws SyntaxException
+	{
+		Symbol symbol = scope.find(identifier);
+		if (symbol == null)
+			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
+		if (!(symbol instanceof Function))
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.", getLine(), getColumn());
+
+		return (Function) symbol;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "(ID_EXPR " + identifier + ")";

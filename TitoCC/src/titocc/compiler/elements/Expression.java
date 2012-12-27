@@ -18,12 +18,23 @@ public abstract class Expression extends CodeElement
 	public abstract void compile(Assembler asm, Scope scope, Stack<Register> registers)
 			throws SyntaxException, IOException;
 
+	public void compileAsVoid(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
+	{
+		compile(asm, scope, registers);
+	}
+
 	public Integer getCompileTimeValue() throws SyntaxException
 	{
 		return null;
 	}
 
 	public String getLvalueReference(Scope scope) throws SyntaxException
+	{
+		return null;
+	}
+
+	public Function getFunction(Scope scope) throws SyntaxException
 	{
 		return null;
 	}

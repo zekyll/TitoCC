@@ -1,11 +1,13 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class ArgumentList extends CodeElement
@@ -24,8 +26,12 @@ public class ArgumentList extends CodeElement
 	}
 
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		for (Expression arg : arguments) {
+			arg.compile(asm, scope, registers);
+			asm.emit("push", "sp", registers.peek().toString());
+		}
 	}
 
 	@Override

@@ -1,9 +1,11 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 public class FunctionCallExpression extends Expression
@@ -31,8 +33,50 @@ public class FunctionCallExpression extends Expression
 
 	@Override
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
 	{
-		throw new UnsupportedOperationException("Not supported yet.");
+		compile(asm, scope, registers, true);
+	}
+
+	@Override
+	public void compileAsVoid(Assembler asm, Scope scope, Stack<Register> registers)
+			throws SyntaxException, IOException
+	{
+		compile(asm, scope, registers, false);
+	}
+
+	private void compile(Assembler asm, Scope scope, Stack<Register> registers,
+			boolean returnValueRequired) throws SyntaxException, IOException
+	{
+		Function func = validateFunction(scope);
+
+		if (returnValueRequired) {
+			if (func.getReturnType().equals("void"))
+				throw new SyntaxException("Void return value used in an expression.", getLine(), getColumn());
+
+			// Reserve space for return value.
+			asm.emit("add", "sp", "=1");
+		}
+
+		// Push arguments to stack.
+		argumentList.compile(asm, scope, registers);
+
+		// Make the call.
+		asm.emit("call", "sp", func.getReference());
+
+		// Read the return value.
+		if (returnValueRequired)
+			asm.emit("pop", "sp", registers.peek().toString());
+	}
+
+	private Function validateFunction(Scope scope) throws SyntaxException
+	{
+		Function func = function.getFunction(scope);
+		if (func == null)
+			throw new SyntaxException("Expression is not a function.", getLine(), getColumn());
+		if (func.getParameterCount() != argumentList.getArguments().size())
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
+		return func;
 	}
 
 	@Override

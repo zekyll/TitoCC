@@ -55,7 +55,7 @@ public class Function extends Declaration implements Symbol
 		return body;
 	}
 
-	public int parameterCount()
+	public int getParameterCount()
 	{
 		return parameterList.getParameters().size();
 	}
@@ -104,7 +104,7 @@ public class Function extends Declaration implements Symbol
 	{
 		// Define constants for return value and parameters and add their symbols.
 		asm.addLabel(retValSymbol.getGlobalName());
-		asm.emit("equ", "-" + (parameterCount() + 2));
+		asm.emit("equ", "-" + (getParameterCount() + 2));
 		parameterList.compile(asm, scope);
 	}
 
@@ -151,7 +151,7 @@ public class Function extends Declaration implements Symbol
 			asm.emit("sub", "sp", "=" + localVariableCount);
 
 		// Exit from function.
-		asm.emit("exit", "sp", "=" + parameterCount());
+		asm.emit("exit", "sp", "=" + getParameterCount());
 	}
 
 	private List<Symbol> getLocalVariables(Scope scope)
