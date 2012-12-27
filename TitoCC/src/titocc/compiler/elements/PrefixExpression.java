@@ -144,7 +144,7 @@ public class PrefixExpression extends Expression
 		tokens.popMark(expr == null);
 
 		if (expr == null)
-			expr = FunctionCallExpression.parse(tokens);
+			expr = IntrinsicCallExpression.parse(tokens);
 
 		return expr;
 	}
