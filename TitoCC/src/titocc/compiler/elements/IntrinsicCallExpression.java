@@ -6,9 +6,7 @@ import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
-import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
-import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 public class IntrinsicCallExpression extends Expression
@@ -86,34 +84,21 @@ public class IntrinsicCallExpression extends Expression
 		return "(INTR_EXPR " + name + " " + argumentList + ")";
 	}
 
-	public static Expression parse(TokenStream tokens)
+	public static IntrinsicCallExpression parse(Expression firstOperand, TokenStream tokens)
 	{
-		// Test if matches IntrinsicCallExpression.
-		Expression expr = parseSelf(tokens);
-
-		// If not, try FunctionCallExpression.
-		if (expr == null)
-			expr = FunctionCallExpression.parse(tokens);
-
-		return expr;
-	}
-
-	private static IntrinsicCallExpression parseSelf(TokenStream tokens)
-	{
-		int line = tokens.getLine(), column = tokens.getColumn();
-		tokens.pushMark();
 		IntrinsicCallExpression expr = null;
 
-		Token name = tokens.read();
-		if (name instanceof IdentifierToken) {
-			if (Arrays.asList(intrinsicFunctions).contains(name.toString())) {
+		if (firstOperand instanceof IdentifierExpression) {
+			IdentifierExpression id = (IdentifierExpression) firstOperand;
+			if (Arrays.asList(intrinsicFunctions).contains(id.getIdentifier())) {
 				ArgumentList argList = ArgumentList.parse(tokens);
-				if (argList != null)
-					expr = new IntrinsicCallExpression(name.toString(), argList, line, column);
+				if (argList != null) {
+					expr = new IntrinsicCallExpression(id.getIdentifier(), argList,
+							firstOperand.getLine(), firstOperand.getColumn());
+				}
 			}
 		}
 
-		tokens.popMark(expr == null);
 		return expr;
 	}
 }

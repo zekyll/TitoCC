@@ -25,4 +25,7 @@ TI 25.12.2012:
 	(4h) Kääntäjän toteutusta. (paikalliset muuttujat)
 TO 27.12.2012:
 	(2h) Kääntäjän toteutusta. (funktiokutsut, in/out)
+TI 1.1.2013:
+	(4h) Käyttöliittymän parantelu.
+	(1h) Testejä kääntäjälle.
 

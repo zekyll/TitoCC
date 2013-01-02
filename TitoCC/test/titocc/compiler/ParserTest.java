@@ -1,16 +1,14 @@
 package titocc.compiler;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import titocc.compiler.elements.TranslationUnit;
-import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Tokenizer;
 
@@ -85,6 +83,13 @@ public class ParserTest
 	{
 		assertEquals("(TRUNIT (VAR_DECL (TYPE int) x (FCALL_EXPR (ID_EXPR bar) (ARG_LIST (ID_EXPR a) (INT_EXPR 7)))))",
 				parse("int x = bar(a, 7);"));
+	}
+
+	@Test
+	public void matchIntrinsicCallExpression() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) x (INTR_EXPR out (ARG_LIST (INT_EXPR 2)))))",
+				parse("int x = out(2);"));
 	}
 
 	@Test

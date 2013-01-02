@@ -85,19 +85,16 @@ public class FunctionCallExpression extends Expression
 		return "(FCALL_EXPR " + function + " " + argumentList + ")";
 	}
 
-	public static Expression parse(TokenStream tokens)
+	public static FunctionCallExpression parse(Expression firstOperand, TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
-		tokens.pushMark();
+		FunctionCallExpression expr = null;
 
-		Expression expr = PostfixExpression.parse(tokens);
-		if (expr != null) {
-			ArgumentList argList = ArgumentList.parse(tokens);
-			if (argList != null)
-				expr = new FunctionCallExpression(expr, argList, line, column);
+		ArgumentList argList = ArgumentList.parse(tokens);
+		if (argList != null) {
+			expr = new FunctionCallExpression(firstOperand, argList,
+					firstOperand.getLine(), firstOperand.getColumn());
 		}
 
-		tokens.popMark(expr == null);
 		return expr;
 	}
 }
