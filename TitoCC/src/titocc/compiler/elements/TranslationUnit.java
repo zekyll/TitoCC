@@ -7,6 +7,7 @@ import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -28,6 +29,7 @@ public class TranslationUnit extends CodeElement
 
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException
 	{
+		// Call main function and then halt.
 		asm.emit("add", "sp", "=1");
 		asm.emit("call", "sp", "main");
 		asm.emit("svc", "sp", "=halt");
@@ -35,7 +37,8 @@ public class TranslationUnit extends CodeElement
 		for (Declaration decl : declarations)
 			decl.compile(asm, scope, registers);
 
-		//TODO check that main function exists
+		if (!mainFunctionExists(scope))
+			throw new SyntaxException("Function \"int main()\" was not found.", getLine(), getColumn());
 	}
 
 	public static TranslationUnit parse(TokenStream tokens)
@@ -66,5 +69,15 @@ public class TranslationUnit extends CodeElement
 		for (Declaration d : declarations)
 			s += " " + d;
 		return s + ")";
+	}
+
+	private boolean mainFunctionExists(Scope scope)
+	{
+		Symbol sym = scope.find("main");
+		if (sym == null || !(sym instanceof Function))
+			return false;
+
+		Function main = (Function) sym;
+		return main.getReturnType().getName().equals("int") && main.getParameterCount() == 0;
 	}
 }
