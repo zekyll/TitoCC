@@ -53,10 +53,10 @@ public class FunctionCallExpression extends Expression
 	{
 		Function func = validateFunction(scope);
 
-		if (returnValueRequired) {
-			if (func.getReturnType().equals("void"))
+		if (func.getReturnType().getName().equals("void")) {
+			if (returnValueRequired)
 				throw new SyntaxException("Void return value used in an expression.", getLine(), getColumn());
-
+		} else {
 			// Reserve space for return value.
 			asm.emit("add", "sp", "=1");
 		}
@@ -68,7 +68,7 @@ public class FunctionCallExpression extends Expression
 		asm.emit("call", "sp", func.getReference());
 
 		// Read the return value.
-		if (returnValueRequired)
+		if (!func.getReturnType().getName().equals("void"))
 			asm.emit("pop", "sp", registers.peek().toString());
 	}
 
