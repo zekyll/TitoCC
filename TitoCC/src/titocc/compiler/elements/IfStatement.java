@@ -1,7 +1,6 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
@@ -9,6 +8,10 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * If statement. Consists of test expression, a "true statement" and optional
+ * "else statement".
+ */
 public class IfStatement extends Statement
 {
 	private Expression test;

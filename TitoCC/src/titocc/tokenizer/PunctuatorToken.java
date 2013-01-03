@@ -5,8 +5,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Operator or other punctuator.
+ */
 public class PunctuatorToken extends Token
 {
+	// List of all punctuators. An important fact is that all multi-character
+	// punctuators start with some other punctuator (e.g. "<<=" contains "<<"
+	// which contains "<"). This means that when an unmatching character is
+	// encountered only that character needs to be unread back into the reader.
 	private static final String[] punctuatorList = {
 		"+",
 		"++",

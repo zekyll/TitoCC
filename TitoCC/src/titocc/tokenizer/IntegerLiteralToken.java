@@ -3,6 +3,13 @@ package titocc.tokenizer;
 import java.io.IOException;
 import titocc.util.AsciiUtil;
 
+/**
+ * Integer literals consist of sequence of digits 0-9, followed by an optional
+ * suffix. The suffix follows the same rules as identifiers. Hexadecimal and
+ * and octal literals are not yet supported. All integer literals are non-negative
+ * and "negative literals" are implemented in the parser/compiler with unary 
+ * minus operator.
+ */
 public class IntegerLiteralToken extends Token
 {
 	private String value, suffix;

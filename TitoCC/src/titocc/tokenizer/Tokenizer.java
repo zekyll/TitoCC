@@ -5,15 +5,32 @@ import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Main tokenizer class. Converts input text into a list of tokens. There are
+ * currently 5 token types: punctuators (operators etc), keywords, identifiers,
+ * integer literals and end of file (EOF).
+ */
 public class Tokenizer
 {
 	private CodeReader input;
 
+	/**
+	 * Constructs a Tokenizer.
+	 *
+	 * @param input Reader for the source text
+	 */
 	public Tokenizer(Reader input)
 	{
 		this.input = new CodeReader(input);
 	}
 
+	/**
+	 * Tokenizes the input.
+	 *
+	 * @return list of tokens
+	 * @throws IOException if input reader throws
+	 * @throws SyntaxException if invalid tokens are encountered
+	 */
 	public List<Token> tokenize() throws IOException, SyntaxException
 	{
 		List<Token> tokens = new LinkedList<Token>();
@@ -28,10 +45,13 @@ public class Tokenizer
 		return tokens;
 	}
 
+	/**
+	 *
+	 * @return @throws IOException
+	 * @throws SyntaxException
+	 */
 	private Token getNextToken() throws IOException, SyntaxException
 	{
-		// Int literals must be parsed before punctuators because they might
-		// start with "-".
 		Token token = IntegerLiteralToken.parse(input);
 		if (token != null)
 			return token;

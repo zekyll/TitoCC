@@ -15,6 +15,11 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Function declaration/definition. Forward declarations are not currently
+ * supported so this is always both declaration and definition. Functions consist
+ * of return type, function name, parameter list and a BlockStatement body.
+ */
 public class Function extends Declaration implements Symbol
 {
 	private Type returnType;

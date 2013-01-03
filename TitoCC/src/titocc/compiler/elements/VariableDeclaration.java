@@ -11,6 +11,11 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Declares a global or local variable. Consists of a type, a name and an
+ * optional initializer expression. For global variables the initializer must
+ * be a compile time constant expression (thanks to C standard).
+ */
 public class VariableDeclaration extends Declaration implements Symbol
 {
 	private boolean isGlobal; // Used in the compilation phase

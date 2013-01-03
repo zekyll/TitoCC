@@ -10,6 +10,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Expression formed by any of the assignment operators.
+ */
 public class AssignmentExpression extends Expression
 {
 	private enum Type

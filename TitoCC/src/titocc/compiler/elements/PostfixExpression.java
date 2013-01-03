@@ -9,6 +9,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Expression formed by an operand followed by a postfix operator.
+ */
 public class PostfixExpression extends Expression
 {
 	static final String[] postfixOperators = {"++", "--"};

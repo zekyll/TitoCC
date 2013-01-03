@@ -2,6 +2,9 @@ package titocc.compiler.elements;
 
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Abstract placeholder class for parsing primary expressions.
+ */
 public abstract class PrimaryExpression extends Expression
 {
 	public PrimaryExpression(int line, int column)

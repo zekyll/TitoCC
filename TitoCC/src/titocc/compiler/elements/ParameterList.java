@@ -8,6 +8,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * List of parameters in a function declaration/definition.
+ */
 public class ParameterList extends CodeElement
 {
 	private List<Parameter> parameters;

@@ -10,6 +10,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Expression formed by a binary operator and two operands.
+ */
 public class BinaryExpression extends Expression
 {
 	static final String[][] binaryOperators = {

@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
 
+/**
+ * Stream of tokens that allows marking positions in the stream and returning
+ * back to them.
+ */
 public class TokenStream
 {
 	private List<Token> tokens;
@@ -11,6 +15,11 @@ public class TokenStream
 	private ListIterator<Token> position;
 	private int sinceLastMark;
 
+	/**
+	 * Constructs a TokenStream from a list of tokens.
+	 *
+	 * @param tokens input tokens
+	 */
 	public TokenStream(List<Token> tokens)
 	{
 		this.tokens = tokens;
@@ -18,12 +27,22 @@ public class TokenStream
 		sinceLastMark = 0;
 	}
 
+	/**
+	 * Marks the current position in the stream and pushes the mark into an
+	 * internal stack.
+	 */
 	public void pushMark()
 	{
 		marks.push(sinceLastMark);
 		sinceLastMark = 0;
 	}
 
+	/**
+	 * Removes the previously added mark and optionally resets the stream
+	 * position back to the mark.
+	 *
+	 * @param reset if true then stream position is set to the marked position
+	 */
 	public void popMark(boolean reset)
 	{
 		if (reset) {
@@ -35,17 +54,32 @@ public class TokenStream
 		sinceLastMark += marks.pop();
 	}
 
+	/**
+	 * Reads one token and advances stream position by one.
+	 *
+	 * @return the token
+	 */
 	public Token read()
 	{
 		++sinceLastMark;
 		return position.next();
 	}
 
+	/**
+	 * Checks if stream contains unread tokens.
+	 *
+	 * @return true is stream has unread tokens
+	 */
 	public boolean hasNext()
 	{
 		return position.hasNext();
 	}
 
+	/**
+	 * Returns the line number of the next token.
+	 *
+	 * @return line number
+	 */
 	public int getLine()
 	{
 		Token t = position.next();
@@ -53,6 +87,11 @@ public class TokenStream
 		return t.getLine();
 	}
 
+	/**
+	 * Returns the column number of the next token.
+	 *
+	 * @return column number
+	 */
 	public int getColumn()
 	{
 		Token t = position.next();

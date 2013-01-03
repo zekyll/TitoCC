@@ -9,6 +9,9 @@ import titocc.compiler.Symbol;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Return keyword followed by optional expression.
+ */
 public class ReturnStatement extends Statement
 {
 	private Expression expression;

@@ -6,6 +6,9 @@ import java.util.Set;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Specifies a type. Currently only "void" and "int" are supported.
+ */
 public class Type extends CodeElement
 {
 	static final String[] types = {"void", "int"};

@@ -11,6 +11,9 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Name of a variable, parameter or function.
+ */
 public class IdentifierExpression extends Expression
 {
 	private String identifier;

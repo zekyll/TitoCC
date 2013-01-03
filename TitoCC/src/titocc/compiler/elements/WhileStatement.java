@@ -8,6 +8,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * While statement. Consists of a test expression and a statement.
+ */
 public class WhileStatement extends Statement
 {
 	private Expression test;

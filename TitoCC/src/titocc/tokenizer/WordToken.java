@@ -3,6 +3,12 @@ package titocc.tokenizer;
 import java.io.IOException;
 import titocc.util.AsciiUtil;
 
+/**
+ * Common base class for identifiers and keywords. Allowed characters in word
+ * tokens are letters a-z/A-Z, underscores and digits 0-9. The first character
+ * must not be a digit. If the word token is not a keyword then it is considered
+ * an identifier.
+ */
 public abstract class WordToken extends Token
 {
 	protected WordToken(String string, int line, int column)

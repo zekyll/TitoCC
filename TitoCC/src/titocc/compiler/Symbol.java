@@ -1,7 +1,7 @@
 package titocc.compiler;
 
 /**
- * Represents a declared symbol.
+ * Represents a declared name like variable, function or code position.
  */
 public interface Symbol
 {

@@ -9,6 +9,11 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Similar to function call expression but calls an intrinsic function.
+ * Currently two instrinsic functions are supported: in() and out(x) that
+ * correspond to the in/out instructions in ttk-91.
+ */
 public class IntrinsicCallExpression extends Expression
 {
 	static final String[] intrinsicFunctions = {"in", "out"};

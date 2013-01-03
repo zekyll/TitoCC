@@ -8,6 +8,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * A statement that declares a local variable.
+ */
 public class DeclarationStatement extends Statement
 {
 	private VariableDeclaration declaration;

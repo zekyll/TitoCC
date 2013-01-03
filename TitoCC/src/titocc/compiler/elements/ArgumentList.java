@@ -10,6 +10,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * List of arguments in a function call.
+ */
 public class ArgumentList extends CodeElement
 {
 	private List<Expression> arguments;

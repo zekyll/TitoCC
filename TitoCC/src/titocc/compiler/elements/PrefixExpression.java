@@ -10,6 +10,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Expression formed by a prefix operator followed by an operand.
+ */
 public class PrefixExpression extends Expression
 {
 	static final String[] prefixOperators = {"++", "--", "+", "-", "!", "~"};

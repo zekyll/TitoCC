@@ -11,6 +11,9 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Integer literal expression.
+ */
 public class IntegerLiteralExpression extends Expression
 {
 	private String rawValue, suffix;

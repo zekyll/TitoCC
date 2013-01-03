@@ -8,6 +8,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Expression statement - expression combined with semicolon (;).
+ */
 public class ExpressionStatement extends Statement
 {
 	private Expression expression;

@@ -8,6 +8,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Abstract base for all declarations.
+ */
 public abstract class Declaration extends CodeElement
 {
 	public Declaration(int line, int column)

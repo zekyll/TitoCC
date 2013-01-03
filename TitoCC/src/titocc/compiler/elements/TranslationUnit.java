@@ -12,21 +12,48 @@ import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Top level code element that represents a single translation unit.
+ */
 public class TranslationUnit extends CodeElement
 {
 	private List<Declaration> declarations;
 
+	/**
+	 * Constructs a TranslationUnit.
+	 *
+	 * @param declarations list of declarations in the translation unit
+	 * @param line starting line number of the translation unit
+	 * @param column starting column/character of the translation unit
+	 */
 	public TranslationUnit(List<Declaration> declarations, int line, int column)
 	{
 		super(line, column);
 		this.declarations = declarations;
 	}
 
+	/**
+	 * Returns declarations in the translation unit.
+	 *
+	 * @return list of declarations
+	 */
 	public List<Declaration> getDeclarations()
 	{
 		return declarations;
 	}
 
+	/**
+	 * Generates code for the translation unit. Compiles all declarations,
+	 * searches for the main function and emits code for calling the main
+	 * function.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the translation unit is compiled (should be
+	 * global scope)
+	 * @param registers available registers
+	 * @throws SyntaxException if translation unit contains an error
+	 * @throws IOException if assembler throws
+	 */
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException
 	{
 		// Call main function and then halt.
@@ -41,6 +68,13 @@ public class TranslationUnit extends CodeElement
 			throw new SyntaxException("Function \"int main()\" was not found.", getLine(), getColumn());
 	}
 
+	/**
+	 * Parses a translation unit from token stream.
+	 *
+	 * @param tokens source token stream
+	 * @return Expression object or null if tokens don't form a valid
+	 * translation unit
+	 */
 	public static TranslationUnit parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();
@@ -62,6 +96,11 @@ public class TranslationUnit extends CodeElement
 		return translUnit;
 	}
 
+	/**
+	 * Returns a string representation for testing and debugging.
+	 *
+	 * @return
+	 */
 	@Override
 	public String toString()
 	{
@@ -71,6 +110,12 @@ public class TranslationUnit extends CodeElement
 		return s + ")";
 	}
 
+	/**
+	 * Checks if valid main function exists.
+	 *
+	 * @param scope (the global) scope
+	 * @return true if main() was found
+	 */
 	private boolean mainFunctionExists(Scope scope)
 	{
 		Symbol sym = scope.find("main");

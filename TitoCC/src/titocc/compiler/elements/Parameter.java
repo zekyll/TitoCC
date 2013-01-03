@@ -8,6 +8,10 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Sngle parameter in a function parameter list. Cosists of a type and a name.
+ * Unnamed parameters are not yet supported.
+ */
 public class Parameter extends CodeElement implements Symbol
 {
 	private Type type;

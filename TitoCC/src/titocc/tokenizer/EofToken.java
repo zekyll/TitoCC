@@ -2,6 +2,9 @@ package titocc.tokenizer;
 
 import java.io.IOException;
 
+/**
+ * End of file token. Matches null character returned by the code reader.
+ */
 public class EofToken extends Token
 {
 	private EofToken(String string, int line, int column)

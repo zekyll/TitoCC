@@ -1,11 +1,12 @@
 package titocc.tokenizer;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import titocc.util.AsciiUtil;
 
+/**
+ * Word token that is found in the list of keywords.
+ */
 public class KeywordToken extends WordToken
 {
 	private static final String[] keywords = {

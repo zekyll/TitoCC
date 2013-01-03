@@ -10,6 +10,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ *List of statements surrounded by {} braces.
+ */
 public class BlockStatement extends Statement
 {
 	private List<Statement> statements;

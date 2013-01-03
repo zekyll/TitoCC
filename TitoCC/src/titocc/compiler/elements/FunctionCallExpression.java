@@ -8,6 +8,9 @@ import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Function call expression.
+ */
 public class FunctionCallExpression extends Expression
 {
 	private Expression function;
