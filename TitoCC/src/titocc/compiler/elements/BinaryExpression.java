@@ -106,13 +106,13 @@ public class BinaryExpression extends Expression
 				asm.addLabel(jumpLabel2);
 				break;
 			case "|":
-				asm.emit("or", operator, operator);
+				asm.emit("or", left.toString(), right.toString());
 				break;
 			case "^":
-				asm.emit("xor", operator, operator);
+				asm.emit("xor", left.toString(), right.toString());
 				break;
 			case "&":
-				asm.emit("and", operator, operator);
+				asm.emit("and", left.toString(), right.toString());
 				break;
 			case "==":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
