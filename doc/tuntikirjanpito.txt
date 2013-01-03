@@ -30,4 +30,8 @@ TI 1.1.2013:
 	(1h) Testejä kääntäjälle.
 KE 2.2.2013
 	(1h) Testausta, bugien korjausta ym.
+To 3.2.2013
+	(2h) Javadocceja usealle luokalle.
+	(4h) Manuaalisesti suoritettava testi kääntäjälle ja useita bugikorjauksia.
+	(0.5h) Dokumentaation ja luokkakaavion päivitys.
 
