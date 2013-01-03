@@ -66,10 +66,13 @@ public class BinaryExpression extends Expression
 		Register leftRegister = registers.pop();
 
 		// Evaluate right expression and store it in the next register.
-		right.compile(asm, scope, registers);
+		// With logical or/and don't evaluate yet because of the short circuit
+		// Evaluation.
+		if(!operator.equals("||") && !operator.equals("&&"))
+			right.compile(asm, scope, registers);
 
 		// Evaluate the operation and store the result in the left register.
-		compileOperator(asm, scope, leftRegister, registers.peek());
+		compileOperator(asm, scope, registers, leftRegister, registers.peek());
 
 		registers.push(leftRegister);
 
@@ -77,111 +80,114 @@ public class BinaryExpression extends Expression
 		popRegister(asm, registers, pushedRegister);
 	}
 
-	private void compileOperator(Assembler asm, Scope scope, Register left, Register right)
-			throws IOException, SyntaxException
+	private void compileOperator(Assembler asm, Scope scope, Stack<Register> registers,
+			Register leftReg, Register rightReg) throws IOException, SyntaxException
 	{
 		String jumpLabel, jumpLabel2;
 		switch (operator) {
-			//TODO short circuit && and ||
 			case "||":
+				// Short circuit evaluation; only evaluate RHS if LHS is false.
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
 				jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-				asm.emit("jnzer", left.toString(), jumpLabel);
-				asm.emit("jnzer", right.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=0");
-				asm.emit("jump", left.toString(), jumpLabel2);
+				asm.emit("jnzer", leftReg.toString(), jumpLabel);
+				right.compile(asm, scope, registers);
+				asm.emit("jnzer", rightReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=0");
+				asm.emit("jump", leftReg.toString(), jumpLabel2);
 				asm.addLabel(jumpLabel);
-				asm.emit("load", left.toString(), "=1");
+				asm.emit("load", leftReg.toString(), "=1");
 				asm.addLabel(jumpLabel2);
 				break;
 			case "&&":
+				// Short circuit evaluation; only evaluate RHS if LHS is true.
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
 				jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-				asm.emit("jzer", left.toString(), jumpLabel);
-				asm.emit("jzer", right.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=1");
-				asm.emit("jump", left.toString(), jumpLabel2);
+				asm.emit("jzer", leftReg.toString(), jumpLabel);
+				right.compile(asm, scope, registers);
+				asm.emit("jzer", rightReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=1");
+				asm.emit("jump", leftReg.toString(), jumpLabel2);
 				asm.addLabel(jumpLabel);
-				asm.emit("load", left.toString(), "=0");
+				asm.emit("load", leftReg.toString(), "=0");
 				asm.addLabel(jumpLabel2);
 				break;
 			case "|":
-				asm.emit("or", left.toString(), right.toString());
+				asm.emit("or", leftReg.toString(), rightReg.toString());
 				break;
 			case "^":
-				asm.emit("xor", left.toString(), right.toString());
+				asm.emit("xor", leftReg.toString(), rightReg.toString());
 				break;
 			case "&":
-				asm.emit("and", left.toString(), right.toString());
+				asm.emit("and", leftReg.toString(), rightReg.toString());
 				break;
 			case "==":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", left.toString(), right.toString());
-				asm.emit("load", left.toString(), "=1");
-				asm.emit("jequ", left.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=0");
+				asm.emit("comp", leftReg.toString(), rightReg.toString());
+				asm.emit("load", leftReg.toString(), "=1");
+				asm.emit("jequ", leftReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=0");
 				asm.addLabel(jumpLabel);
 				break;
 			case "!=":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", left.toString(), right.toString());
-				asm.emit("load", left.toString(), "=1");
-				asm.emit("jnequ", left.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=0");
+				asm.emit("comp", leftReg.toString(), rightReg.toString());
+				asm.emit("load", leftReg.toString(), "=1");
+				asm.emit("jnequ", leftReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=0");
 				asm.addLabel(jumpLabel);
 				break;
 			case "<":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", left.toString(), right.toString());
-				asm.emit("load", left.toString(), "=1");
-				asm.emit("jles", left.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=0");
+				asm.emit("comp", leftReg.toString(), rightReg.toString());
+				asm.emit("load", leftReg.toString(), "=1");
+				asm.emit("jles", leftReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=0");
 				asm.addLabel(jumpLabel);
 				break;
 			case "<=":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", left.toString(), right.toString());
-				asm.emit("load", left.toString(), "=1");
-				asm.emit("jngre", left.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=0");
+				asm.emit("comp", leftReg.toString(), rightReg.toString());
+				asm.emit("load", leftReg.toString(), "=1");
+				asm.emit("jngre", leftReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=0");
 				asm.addLabel(jumpLabel);
 				break;
 			case ">":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", left.toString(), right.toString());
-				asm.emit("load", left.toString(), "=1");
-				asm.emit("jgre", left.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=0");
+				asm.emit("comp", leftReg.toString(), rightReg.toString());
+				asm.emit("load", leftReg.toString(), "=1");
+				asm.emit("jgre", leftReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=0");
 				asm.addLabel(jumpLabel);
 				break;
 			case ">=":
 				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", left.toString(), right.toString());
-				asm.emit("load", left.toString(), "=1");
-				asm.emit("jnles", left.toString(), jumpLabel);
-				asm.emit("load", left.toString(), "=0");
+				asm.emit("comp", leftReg.toString(), rightReg.toString());
+				asm.emit("load", leftReg.toString(), "=1");
+				asm.emit("jnles", leftReg.toString(), jumpLabel);
+				asm.emit("load", leftReg.toString(), "=0");
 				asm.addLabel(jumpLabel);
 				break;
 			case "<<":
-				asm.emit("shl", left.toString(), right.toString());
+				asm.emit("shl", leftReg.toString(), rightReg.toString());
 				break;
 			case ">>":
-				asm.emit("shr", left.toString(), right.toString());
+				asm.emit("shr", leftReg.toString(), rightReg.toString());
 				break;
 			case "+":
-				asm.emit("add", left.toString(), right.toString());
+				asm.emit("add", leftReg.toString(), rightReg.toString());
 				break;
 			case "-":
-				asm.emit("sub", left.toString(), right.toString());
+				asm.emit("sub", leftReg.toString(), rightReg.toString());
 				break;
 			case "*":
-				asm.emit("mul", left.toString(), right.toString());
+				asm.emit("mul", leftReg.toString(), rightReg.toString());
 				break;
 			case "/":
-				asm.emit("div", left.toString(), right.toString());
+				asm.emit("div", leftReg.toString(), rightReg.toString());
 				break;
 			case "%":
-				asm.emit("mod", left.toString(), right.toString());
+				asm.emit("mod", leftReg.toString(), rightReg.toString());
 				break;
 			default:
 				throw new InternalCompilerException("Invalid operator in BinaryExpression.");
