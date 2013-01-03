@@ -139,7 +139,7 @@ public class PrefixExpression extends Expression
 
 		String op = tokens.read().toString();
 		if (Arrays.asList(prefixOperators).contains(op)) {
-			Expression operand = Expression.parse(tokens);
+			Expression operand = PrefixExpression.parse(tokens);
 			if (operand != null)
 				expr = new PrefixExpression(op, operand, line, column);
 		}
