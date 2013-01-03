@@ -127,18 +127,18 @@ public class AssignmentExpression extends Expression
 		// Make sure there are two registers available.
 		Register pushedRegister = pushRegister(asm, registers);
 
-		// Load RHS in first register.
+		// Load RHS in second register.
+		Register reg = registers.pop();
 		right.compile(asm, scope, registers);
-		Register rightRegister = registers.pop();
+		Register rightRegister = registers.peek();
+		registers.push(reg);
 
-		// Load LHS in second register and operate on it.
+		// Load LHS in first register and operate on it.
 		asm.emit("load", registers.peek().toString(), leftRef);
 		asm.emit(operator.mnemonic, registers.peek().toString(), rightRegister.toString());
 
 		// Store result to LHS variable.
 		asm.emit("store", registers.peek().toString(), leftRef);
-
-		registers.push(rightRegister);
 
 		// Pop register if one was pushed to stack.
 		popRegister(asm, registers, pushedRegister);
