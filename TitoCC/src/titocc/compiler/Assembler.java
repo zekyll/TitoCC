@@ -5,8 +5,8 @@ import java.io.Writer;
 
 /**
  * Formats and writes individual instructions to the output stream. Currently
- * just outputs symbolic assembly language (.k91 format) but this could be
- * changed to machine code (.b91).
+ * just outputs symbolic assembly language (.k91 format) but this could maybe be
+ * changed to machine code (.b91) if necessary.
  */
 public class Assembler
 {
@@ -55,6 +55,7 @@ public class Assembler
 	 * Adds a label for the next instruction.
 	 *
 	 * @param label Label.
+	 * @throws IOException if writer throws
 	 */
 	public void addLabel(String label) throws IOException
 	{
@@ -66,6 +67,8 @@ public class Assembler
 	/**
 	 * Emits a "nop" instruction in the end if there is a label without a
 	 * corresponding instruction.
+	 *
+	 * @throws IOException if writer throws
 	 */
 	public void finish() throws IOException
 	{
@@ -76,7 +79,7 @@ public class Assembler
 	/**
 	 * Returns the writer object for this Assembler.
 	 *
-	 * @return
+	 * @return the writer
 	 */
 	public Writer getWriter()
 	{

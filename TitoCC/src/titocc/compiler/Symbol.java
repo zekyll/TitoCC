@@ -8,21 +8,26 @@ public interface Symbol
 	/**
 	 * Returns name (aka identifier) of the symbol.
 	 *
-	 * @return
+	 * @return the name
 	 */
 	public String getName();
 
 	/**
-	 * Returns a globally unique name for the symbol.
+	 * Returns a globally unique name for the symbol. This is the name used in
+	 * the ttk-91 code, accounting for the fact that there is only one namespace
+	 * and names are case insensitive.
 	 *
-	 * @return
+	 * @return the globally unique name
 	 */
 	public String getGlobalName();
 
 	/**
-	 * Returns an assembly code reference to this symbol.
+	 * Returns the assembly code reference to this symbol. Can be used as the
+	 * right side operand in most instructions. E.g. for global variables and
+	 * functions it's the same as global name and for stack frame variables it
+	 * is suffixed with "(fp)".
 	 *
-	 * @return
+	 * @return assembly code reference
 	 */
 	public String getReference();
 }

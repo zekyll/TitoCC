@@ -77,7 +77,7 @@ public class Compiler
 	}
 
 	/**
-	 * Creates a stack of registers that will be available.
+	 * Creates a stack of registers that will be available for code generation.
 	 *
 	 * @return stack that contains the available registers
 	 */

@@ -23,7 +23,9 @@ public class Scope
 	/**
 	 * Constructs a new Scope.
 	 *
-	 * @param parent Parent scope. Null if this is the global scope.
+	 * @param parent parent scope, or null if this is the global scope
+	 * @param globalNamePrefix prefix used for this scope when generating
+	 * globally unique names
 	 */
 	public Scope(Scope parent, String globalNamePrefix)
 	{
@@ -38,7 +40,7 @@ public class Scope
 	/**
 	 * Tests whether this is the global scope.
 	 *
-	 * @return True if global scope.
+	 * @return true if global scope
 	 */
 	public boolean isGlobal()
 	{
@@ -48,7 +50,7 @@ public class Scope
 	/**
 	 * Returns the parent scope.
 	 *
-	 * @return parent scope.
+	 * @return the parent scope
 	 */
 	public Scope getParent()
 	{
@@ -58,7 +60,7 @@ public class Scope
 	/**
 	 * Returns a collection of all symbols in this scope.
 	 *
-	 * @return
+	 * @return collection of symbols
 	 */
 	public Collection<Symbol> getSymbols()
 	{
@@ -69,8 +71,8 @@ public class Scope
 	 * Finds a symbol (e.g. a variable or a function) defined in this scope or
 	 * any of its parent scopes.
 	 *
-	 * @param name Identifier of the object.
-	 * @return Searched symbol or null if none was found.
+	 * @param name identifier of the object
+	 * @return the searched symbol, or null if none was found
 	 */
 	public Symbol find(String name)
 	{
@@ -85,7 +87,8 @@ public class Scope
 	 * already.
 	 *
 	 * @param symbol Symbol to be added.
-	 * @return False if symbol was not added (already exists).
+	 * @return true if succeeded, or false if symbol was not added (already
+	 * exists)
 	 */
 	public boolean add(Symbol symbol)
 	{
@@ -96,19 +99,19 @@ public class Scope
 	}
 
 	/**
-	 * Adds a subscope in this scope.
+	 * Adds a new subscope in this scope.
 	 *
-	 * @param scope
+	 * @param subScope
 	 */
-	public void addSubScope(Scope scope)
+	public void addSubScope(Scope subScope)
 	{
-		subScopes.add(scope);
+		subScopes.add(subScope);
 	}
 
 	/**
 	 * Returns a collection of all subscopes.
 	 *
-	 * @return
+	 * @return collection of subscopes
 	 */
 	public Collection<Scope> getSubScopes()
 	{
@@ -120,8 +123,8 @@ public class Scope
 	 * scope and all its parent scopes. Then tries number suffixes starting from
 	 * 2 until the name is unique.
 	 *
-	 * @param Local name.
-	 * @return a globally unique name.
+	 * @param name local name
+	 * @return a globally unique name
 	 */
 	public String makeGloballyUniqueName(String name)
 	{
@@ -132,6 +135,12 @@ public class Scope
 		return uniqueName;
 	}
 
+	/**
+	 * Generates the global name prefix for this scope by combining the prefixes
+	 * from all parent scopes.
+	 *
+	 * @return the combined prefix
+	 */
 	private String generateGlobalNamePrefix()
 	{
 		if (parent != null)

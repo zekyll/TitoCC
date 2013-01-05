@@ -9,14 +9,17 @@ public class InternalSymbol implements Symbol
 	private String name, globallyUniqueName, suffix;
 
 	/**
-	 * Constructs a new internal symbol.
+	 * Constructs a new internal symbol. The actual name of the symbol is
+	 * prefixed with double underscore, because C standard reserves those
+	 * identifiers for implementation.
 	 *
-	 * @param name Name of the symbol.
-	 * @param scope Scope this symbol belongs to.
+	 * @param name name of the symbol
+	 * @param scope scope this symbol belongs to
+	 * @param referenceSuffix suffix that is added to global name to get the
+	 * reference ("(fp)" can be used for stack frame variables)
 	 */
-	public InternalSymbol(String name, Scope scope, String suffix)
+	public InternalSymbol(String name, Scope scope, String referenceSuffix)
 	{
-		// In C names starting with two underscores are reserved for implementation.
 		this.name = "__" + name;
 		this.globallyUniqueName = scope.makeGloballyUniqueName(name);
 		this.suffix = suffix;
