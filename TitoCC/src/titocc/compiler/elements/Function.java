@@ -16,9 +16,14 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Function declaration/definition. Forward declarations are not currently
- * supported so this is always both declaration and definition. Functions consist
- * of return type, function name, parameter list and a BlockStatement body.
+ * Function declaration and definition. Forward declarations are not currently
+ * supported so this is always both declaration and definition. Functions
+ * consist of return type, function name, parameter list and a BlockStatement
+ * body.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> FUNCTION = TYPE IDENTIFIER PARAMETER_LIST BLOCK_STATEMENT
  */
 public class Function extends Declaration implements Symbol
 {
@@ -29,6 +34,16 @@ public class Function extends Declaration implements Symbol
 	private String globallyUniqueName;
 	InternalSymbol retValSymbol, endSymbol;
 
+	/**
+	 * Constructs a Function.
+	 *
+	 * @param returnType return type
+	 * @param name function name
+	 * @param parameterList parameter list
+	 * @param body body of the function
+	 * @param line starting line number of the function
+	 * @param column starting column/character of the function
+	 */
 	public Function(Type returnType, String name, ParameterList parameterList,
 			BlockStatement body, int line, int column)
 	{
@@ -39,6 +54,11 @@ public class Function extends Declaration implements Symbol
 		this.body = body;
 	}
 
+	/**
+	 * Returns the return type.
+	 *
+	 * @return the return type
+	 */
 	public Type getReturnType()
 	{
 		return returnType;
@@ -50,16 +70,31 @@ public class Function extends Declaration implements Symbol
 		return name;
 	}
 
+	/**
+	 * Returns the parameter list()
+	 *
+	 * @return the parameter list
+	 */
 	public ParameterList getParameterList()
 	{
 		return parameterList;
 	}
 
+	/**
+	 * Returns the function body.
+	 *
+	 * @return the function body
+	 */
 	public BlockStatement getBody()
 	{
 		return body;
 	}
 
+	/**
+	 * Returns the number of parameters.
+	 *
+	 * @return number of parameters
+	 */
 	public int getParameterCount()
 	{
 		return parameterList.getParameters().size();
@@ -193,6 +228,13 @@ public class Function extends Declaration implements Symbol
 				+ " " + body + ")";
 	}
 
+	/**
+	 * Attempts to parse a function from token stream. If parsing fails the
+	 * stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return Function object or null if tokens don't form a valid function
+	 */
 	public static Function parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

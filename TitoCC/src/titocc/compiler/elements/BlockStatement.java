@@ -11,18 +11,34 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 /**
- *List of statements surrounded by {} braces.
+ * A compound statement that executes a list of statements.
+ *
+ * <p> EBNF Definition:
+ *
+ * <br> BLOCK_STATEMENT = "{" {STATEMENT} "}"
  */
 public class BlockStatement extends Statement
 {
 	private List<Statement> statements;
 
+	/**
+	 * Constructs a new block statement.
+	 *
+	 * @param statements list of statements in the block
+	 * @param line starting line number of the block statement
+	 * @param column starting column/character of the block statement
+	 */
 	public BlockStatement(List<Statement> statements, int line, int column)
 	{
 		super(line, column);
 		this.statements = statements;
 	}
 
+	/**
+	 * Returns the statements.
+	 *
+	 * @return list of statements
+	 */
 	public List<Statement> getStatements()
 	{
 		return statements;
@@ -50,6 +66,14 @@ public class BlockStatement extends Statement
 		return str + ")";
 	}
 
+	/**
+	 * Attempts to parse a block statement from token stream. If parsing fails
+	 * the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return BlockStatement object or null if tokens don't form a valid
+	 * block statement
+	 */
 	public static BlockStatement parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

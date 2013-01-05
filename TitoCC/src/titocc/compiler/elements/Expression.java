@@ -9,12 +9,16 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Abstract base for all expressions types.
+ * Abstract base for all expressions.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> EXPRESSION = ASSIGNMENT_EXPRESSION
  */
 public abstract class Expression extends CodeElement
 {
 	/**
-	 * Constructs a new Expression object.
+	 * Constructs an Expression.
 	 *
 	 * @param line starting line number of the expression
 	 * @param column starting column/character of the expression
@@ -102,7 +106,8 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Parses an expression from token stream.
+	 * Attempts to parse an expression from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression

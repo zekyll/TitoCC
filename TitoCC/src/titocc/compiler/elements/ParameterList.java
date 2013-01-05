@@ -10,27 +10,51 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * List of parameters in a function declaration/definition.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> PARAMETER_LIST = "(" [PARAMETER {"," PARAMETER}] ")"
  */
 public class ParameterList extends CodeElement
 {
 	private List<Parameter> parameters;
 
+	/**
+	 * Construcs a ParameterList.
+	 *
+	 * @param parameters list of parameters
+	 * @param line starting line number of the parameter list
+	 * @param column starting column/character of the parameter list
+	 */
 	public ParameterList(List<Parameter> parameters, int line, int column)
 	{
 		super(line, column);
 		this.parameters = parameters;
 	}
 
+	/**
+	 * Returns the parameters.
+	 *
+	 * @return the parameters
+	 */
 	public List<Parameter> getParameters()
 	{
 		return parameters;
 	}
 
+	/**
+	 * Generates the constants for accessing the parameters.
+	 *
+	 * @param asm assembler used for generating the code
+	 * @param scope scope in which the parameter list is evaluated
+	 * @throws SyntaxException if the parameters contain errors
+	 * @throws IOException if assembler throws
+	 */
 	public void compile(Assembler asm, Scope scope) throws SyntaxException, IOException
 	{
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
-			p.compile(asm, scope);
+			p.compile(scope);
 			asm.addLabel(p.getGlobalName());
 			asm.emit("equ", "" + paramOffset);
 			++paramOffset;
@@ -46,6 +70,14 @@ public class ParameterList extends CodeElement
 		return str + ")";
 	}
 
+	/**
+	 * Attempts to parse a parameter list from token stream. If parsing fails
+	 * the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return ParameterList object or null if tokens don't form a valid
+	 * parameter list
+	 */
 	public static ParameterList parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

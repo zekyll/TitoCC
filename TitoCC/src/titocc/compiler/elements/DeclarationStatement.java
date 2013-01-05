@@ -10,18 +10,34 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * A statement that declares a local variable.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> DECLARATION_STATEMENT = VARIABLE_DECLARATION
  */
 public class DeclarationStatement extends Statement
 {
 	private VariableDeclaration declaration;
 
+	/**
+	 * Constructs a DeclarationStatement.
+	 *
+	 * @param declaration variable declaration
+	 * @param line starting line number of the declaration statement
+	 * @param column starting column/character of the declaration statement
+	 */
 	public DeclarationStatement(VariableDeclaration declaration, int line, int column)
 	{
 		super(line, column);
 		this.declaration = declaration;
 	}
 
-	public Declaration getDeclaration()
+	/**
+	 * Returns the variable declaration.
+	 *
+	 * @return the variable declaration.
+	 */
+	public VariableDeclaration getDeclaration()
 	{
 		return declaration;
 	}
@@ -39,6 +55,14 @@ public class DeclarationStatement extends Statement
 		return "(DECL_ST " + declaration + ")";
 	}
 
+	/**
+	 * Attempts to parse a declaration statement from token stream. If parsing
+	 * fails the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return DeclarationStatement object or null if tokens don't form a valid
+	 * declaration statement
+	 */
 	public static DeclarationStatement parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

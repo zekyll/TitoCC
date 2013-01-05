@@ -11,6 +11,11 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * Expression formed by an operand followed by a postfix operator.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> POSTFIX_EXPRESSION = POSTFIX_EXPRESSION ("++" | "--") |
+ * FUNCTION_CALL_EXPRESSION | INTRINSIC_CALL_EXPRESSION | PRIMARY_EXPRESSION
  */
 public class PostfixExpression extends Expression
 {
@@ -18,6 +23,14 @@ public class PostfixExpression extends Expression
 	private String operator;
 	private Expression operand;
 
+	/**
+	 * Constructs a PostfixExpression.
+	 *
+	 * @param operator postfix operator as a string
+	 * @param operand operand expression
+	 * @param line starting line number of the postfix expression
+	 * @param column starting column/character of the postfix expression
+	 */
 	public PostfixExpression(String operator, Expression operand, int line, int column)
 	{
 		super(line, column);
@@ -25,11 +38,21 @@ public class PostfixExpression extends Expression
 		this.operand = operand;
 	}
 
+	/**
+	 * Returns the operator as a string.
+	 *
+	 * @return the operator
+	 */
 	public String getOperator()
 	{
 		return operator;
 	}
 
+	/**
+	 * Returns the operand expression.
+	 *
+	 * @return the operand expression
+	 */
 	public Expression getOperand()
 	{
 		return operand;
@@ -62,6 +85,13 @@ public class PostfixExpression extends Expression
 		return "(POST_EXPR " + operator + " " + operand + ")";
 	}
 
+	/**
+	 * Attempts to parse a syntactic postfix expression from token stream. If
+	 * parsing fails the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return Expression object or null if tokens don't form a valid expression
+	 */
 	public static Expression parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

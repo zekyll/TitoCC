@@ -11,15 +11,26 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Expression formed by any of the assignment operators.
+ * Expression formed by any of the assignment operators and two operands.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> ASSIGNMENT_EXPRESSION = BINARY_EXPRESSION [ASSIGNMENT_OPERATOR
+ * ASSIGNMENT_EXPRESSION]
+ *
+ * <br> ASSIGNMENT_OPERATOR = "=" | "+=" | "*=" | "&=" | "|=" | "^=" | "-=" |
+ * "/=" | "%=" | "<<=" | ">>="
  */
 public class AssignmentExpression extends Expression
 {
 	private enum Type
 	{
-		SIMPLE, SYMMETRIC, ASYMMETRIC
+		SIMPLE, COMMUTATIVE, NONCOMMUTATIVE
 	};
 
+	/**
+	 * Assignment operator with operator mnemonic and operation type.
+	 */
 	private static class Operator
 	{
 		public String mnemonic;
@@ -31,26 +42,38 @@ public class AssignmentExpression extends Expression
 			this.type = type;
 		}
 	}
+	/**
+	 * Map of assignment operators.
+	 */
 	static final Map<String, Operator> assignmentOperators = new HashMap<String, Operator>()
 	{
 		{
 			put("=", new Operator("", Type.SIMPLE));
-			put("+=", new Operator("add", Type.SYMMETRIC));
-			put("*=", new Operator("mul", Type.SYMMETRIC));
-			put("&=", new Operator("and", Type.SYMMETRIC));
-			put("|=", new Operator("or", Type.SYMMETRIC));
-			put("^=", new Operator("xor", Type.SYMMETRIC));
-			put("-=", new Operator("sub", Type.ASYMMETRIC));
-			put("/=", new Operator("div", Type.ASYMMETRIC));
-			put("%=", new Operator("mod", Type.ASYMMETRIC));
-			put("<<=", new Operator("shl", Type.ASYMMETRIC));
-			put(">>=", new Operator("shr", Type.ASYMMETRIC));
+			put("+=", new Operator("add", Type.COMMUTATIVE));
+			put("*=", new Operator("mul", Type.COMMUTATIVE));
+			put("&=", new Operator("and", Type.COMMUTATIVE));
+			put("|=", new Operator("or", Type.COMMUTATIVE));
+			put("^=", new Operator("xor", Type.COMMUTATIVE));
+			put("-=", new Operator("sub", Type.NONCOMMUTATIVE));
+			put("/=", new Operator("div", Type.NONCOMMUTATIVE));
+			put("%=", new Operator("mod", Type.NONCOMMUTATIVE));
+			put("<<=", new Operator("shl", Type.NONCOMMUTATIVE));
+			put(">>=", new Operator("shr", Type.NONCOMMUTATIVE));
 		}
 	};
 	private Operator operator;
 	private String operatorString;
 	private Expression left, right;
 
+	/**
+	 * Constructs a new AssignmentExpression
+	 *
+	 * @param operator string representation of the operator
+	 * @param left left operand
+	 * @param right right operand
+	 * @param line starting line number of the assignment expression
+	 * @param column starting column/character of the assignment expression
+	 */
 	public AssignmentExpression(String operator, Expression left,
 			Expression right, int line, int column)
 	{
@@ -61,11 +84,21 @@ public class AssignmentExpression extends Expression
 		this.right = right;
 	}
 
+	/**
+	 * Returns the left operand.
+	 *
+	 * @return left operand
+	 */
 	public Expression getLeft()
 	{
 		return left;
 	}
 
+	/**
+	 * Returns the right operand.
+	 *
+	 * @return right operand
+	 */
 	public Expression getRight()
 	{
 		return right;
@@ -81,10 +114,10 @@ public class AssignmentExpression extends Expression
 		// Compile RHS and the assignment operation.
 		if (operator.type == Type.SIMPLE)
 			compileSimple(asm, scope, registers, leftRef);
-		else if (operator.type == Type.SYMMETRIC)
-			compileSymmetric(asm, scope, registers, leftRef);
+		else if (operator.type == Type.COMMUTATIVE)
+			compileCommutative(asm, scope, registers, leftRef);
 		else
-			compileAsymmetric(asm, scope, registers, leftRef);
+			compileNoncommutative(asm, scope, registers, leftRef);
 	}
 
 	private String compileLeft(Assembler asm, Scope scope, Stack<Register> registers)
@@ -109,7 +142,7 @@ public class AssignmentExpression extends Expression
 		asm.emit("store", registers.peek().toString(), leftRef);
 	}
 
-	private void compileSymmetric(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileCommutative(Assembler asm, Scope scope, Stack<Register> registers,
 			String leftRef) throws SyntaxException, IOException
 	{
 		// Load RHS in first register.
@@ -121,7 +154,7 @@ public class AssignmentExpression extends Expression
 		asm.emit("store", registers.peek().toString(), leftRef);
 	}
 
-	private void compileAsymmetric(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileNoncommutative(Assembler asm, Scope scope, Stack<Register> registers,
 			String leftRef) throws SyntaxException, IOException
 	{
 		// Make sure there are two registers available.
@@ -150,6 +183,13 @@ public class AssignmentExpression extends Expression
 		return "(ASGN_EXPR " + operatorString + " " + left + " " + right + ")";
 	}
 
+	/**
+	 * Attempts to parse a syntactic assignment expression from token stream. If
+	 * parsing fails the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return Expression object or null if tokens don't form a valid expression
+	 */
 	public static Expression parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

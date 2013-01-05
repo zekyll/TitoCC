@@ -12,6 +12,11 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * Expression formed by a prefix operator followed by an operand.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~")
+ * PREFIX_EXPRESSION | POSTFIX_EXPRESSION
  */
 public class PrefixExpression extends Expression
 {
@@ -19,6 +24,14 @@ public class PrefixExpression extends Expression
 	private String operator;
 	private Expression operand;
 
+	/**
+	 * Constructs a PrefixExpression
+	 *
+	 * @param operator prefix operator as a string
+	 * @param operand operand expression
+	 * @param line starting line number of the prefix expression
+	 * @param column starting column/character of the prefix expression
+	 */
 	public PrefixExpression(String operator, Expression operand, int line, int column)
 	{
 		super(line, column);
@@ -26,11 +39,21 @@ public class PrefixExpression extends Expression
 		this.operand = operand;
 	}
 
+	/**
+	 * Returns the operator as a string.
+	 *
+	 * @return the operator
+	 */
 	public String getOperator()
 	{
 		return operator;
 	}
 
+	/**
+	 * Returns the operand expression.
+	 *
+	 * @return the operand expression
+	 */
 	public Expression getOperand()
 	{
 		return operand;
@@ -131,6 +154,13 @@ public class PrefixExpression extends Expression
 		return "(PRE_EXPR " + operator + " " + operand + ")";
 	}
 
+	/**
+	 * Attempts to parse a syntactic prefix expression from token stream. If
+	 * parsing fails the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return Expression object or null if tokens don't form a valid expression
+	 */
 	public static Expression parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

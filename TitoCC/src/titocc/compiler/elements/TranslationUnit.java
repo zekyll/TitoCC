@@ -13,7 +13,12 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Top level code element that represents a single translation unit.
+ * Top level code element that represents a single translation unit. Formed by a
+ * list of declarations.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> TRANSLATION_UNIT = {DECLARATION} EOF
  */
 public class TranslationUnit extends CodeElement
 {
@@ -69,10 +74,11 @@ public class TranslationUnit extends CodeElement
 	}
 
 	/**
-	 * Parses a translation unit from token stream.
+	 * Attempts to parse a translation unit from token stream. If parsing fails
+	 * the stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return Expression object or null if tokens don't form a valid
+	 * @return TranslationUnit object or null if tokens don't form a valid
 	 * translation unit
 	 */
 	public static TranslationUnit parse(TokenStream tokens)
@@ -96,11 +102,6 @@ public class TranslationUnit extends CodeElement
 		return translUnit;
 	}
 
-	/**
-	 * Returns a string representation for testing and debugging.
-	 *
-	 * @return
-	 */
 	@Override
 	public String toString()
 	{

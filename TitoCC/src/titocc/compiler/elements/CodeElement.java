@@ -49,6 +49,18 @@ public abstract class CodeElement
 	}
 
 	/**
+	 * Returns a string representation of the code element for testing and
+	 * debugging purposes.
+	 *
+	 * @return the string representation
+	 */
+	@Override
+	public String toString()
+	{
+		return "";
+	}
+
+	/**
 	 * Allocates an additional register. Assumes that at least one is available.
 	 * If two or more are available then does nothing. If only one is available,
 	 * then pushes one of the reserved registers to stack and it will be added

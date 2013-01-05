@@ -10,18 +10,36 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Return keyword followed by optional expression.
+ * Statement that exits the from the current function, optionally setting the
+ * return value.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> RETURN_STATEMENT = "return" [EXPRESSION] ";"
  */
 public class ReturnStatement extends Statement
 {
 	private Expression expression;
 
+	/**
+	 * Constructs a ReturnStatement.
+	 *
+	 * @param expression expression for the returned value, or null if there is
+	 * none
+	 * @param line starting line number of the return statement
+	 * @param column starting column/character of the return statement
+	 */
 	public ReturnStatement(Expression expression, int line, int column)
 	{
 		super(line, column);
 		this.expression = expression;
 	}
 
+	/**
+	 * Returns the return value expression.
+	 *
+	 * @return return value expression or null if there isn't one
+	 */
 	public Expression getExpression()
 	{
 		return expression;
@@ -53,6 +71,14 @@ public class ReturnStatement extends Statement
 		return "(RET " + expression + ")";
 	}
 
+	/**
+	 * Attempts to parse a return statement from token stream. If parsing fails
+	 * the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return ReturnStatement object or null if tokens don't form a valid
+	 * return statement
+	 */
 	public static ReturnStatement parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

@@ -12,22 +12,48 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * List of arguments in a function call.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> ARGUMENT_LIST = "(" [EXPRESSION "," {EXPRESSION}] ")"
  */
 public class ArgumentList extends CodeElement
 {
 	private List<Expression> arguments;
 
+	/**
+	 * Constructs a new ArgumentList.
+	 *
+	 * @param arguments list of expressions used as arguments
+	 * @param line starting line number of the argument list
+	 * @param column starting column/character of the argument list
+	 */
 	public ArgumentList(List<Expression> arguments, int line, int column)
 	{
 		super(line, column);
 		this.arguments = arguments;
 	}
 
+	/**
+	 * Returns the arguments.
+	 *
+	 * @return list of argument expressions
+	 */
 	public List<Expression> getArguments()
 	{
 		return arguments;
 	}
 
+	/**
+	 * Generates assembly code to evaluate the arguments from left to right and
+	 * push the values to stack.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the arguments are evaluated
+	 * @param registers available registers; must contain at least one register
+	 * @throws SyntaxException if argument list contains an error
+	 * @throws IOException if assembler throws
+	 */
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 			throws SyntaxException, IOException
 	{
@@ -46,6 +72,14 @@ public class ArgumentList extends CodeElement
 		return str + ")";
 	}
 
+	/**
+	 * Attempts to parse an argument list from token stream. If parsing fails
+	 * the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return ArgumentList object or null if tokens don't form a valid argument
+	 * list
+	 */
 	public static ArgumentList parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

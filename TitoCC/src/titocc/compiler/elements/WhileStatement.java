@@ -10,12 +10,24 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * While statement. Consists of a test expression and a statement.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> WHILE_STATEMENT = "while" "(" EXPRESSION ")" STATEMENT
  */
 public class WhileStatement extends Statement
 {
 	private Expression test;
 	private Statement statement;
 
+	/**
+	 * Constructs a WhileStatement.
+	 *
+	 * @param test
+	 * @param statement
+	 * @param line starting line number of the while statement
+	 * @param column starting column/character of the while statement
+	 */
 	public WhileStatement(Expression test, Statement statement, int line, int column)
 	{
 		super(line, column);
@@ -23,11 +35,21 @@ public class WhileStatement extends Statement
 		this.statement = statement;
 	}
 
+	/**
+	 * Returns the test expression.
+	 *
+	 * @return the test expression
+	 */
 	public Expression getTest()
 	{
 		return test;
 	}
 
+	/**
+	 * Returns the body of the while statement.
+	 *
+	 * @return the body statement
+	 */
 	public Statement getStatement()
 	{
 		return statement;
@@ -61,6 +83,14 @@ public class WhileStatement extends Statement
 		return "(WHILE " + test + " " + statement + ")";
 	}
 
+	/**
+	 * Attempts to parse a while statement from token stream. If parsing fails
+	 * the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return WhileStatement object or null if tokens don't form a valid while
+	 * statement
+	 */
 	public static WhileStatement parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

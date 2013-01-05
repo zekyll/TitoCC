@@ -11,11 +11,16 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * Abstract base for all statements.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> STATEMENT = EXPRESSION_STATEMENT | DECLARATION_STATEMENT | IF_STATEMENT
+ * | WHILE_STATEMENT | BLOCK_STATEMENT | RETURN_STATEMENT | ";"
  */
 public abstract class Statement extends CodeElement
 {
 	/**
-	 * Constructs a new Statement.
+	 * Constructs a Statement.
 	 *
 	 * @param line starting line number of the statement
 	 * @param column starting column/character of the statement
@@ -38,7 +43,8 @@ public abstract class Statement extends CodeElement
 			throws IOException, SyntaxException;
 
 	/**
-	 * Parses a statement from token stream.
+	 * Attempts to parse statement from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Statement object or null if tokens don't form a valid statement

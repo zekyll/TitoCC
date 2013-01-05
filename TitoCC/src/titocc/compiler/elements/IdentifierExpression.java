@@ -12,18 +12,34 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Name of a variable, parameter or function.
+ * Expression that evaluates a named variable, parameter or function.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> IDENTIFIER_EXPRESSION = IDENTIFIER
  */
 public class IdentifierExpression extends Expression
 {
 	private String identifier;
 
+	/**
+	 * Construcs an IdentifierExpression.
+	 *
+	 * @param identifier name of the object or function
+	 * @param line starting line number of the identifier expression
+	 * @param column starting column/character of the identifier expression
+	 */
 	public IdentifierExpression(String identifier, int line, int column)
 	{
 		super(line, column);
 		this.identifier = identifier;
 	}
 
+	/**
+	 * Returns the identifier.
+	 *
+	 * @return the identifier
+	 */
 	public String getIdentifier()
 	{
 		return identifier;
@@ -67,6 +83,13 @@ public class IdentifierExpression extends Expression
 		return "(ID_EXPR " + identifier + ")";
 	}
 
+	/**
+	 * Attempts to parse an identifier expression from token stream. If parsing
+	 * fails the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return Expression object or null if tokens don't form a valid expression
+	 */
 	public static IdentifierExpression parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

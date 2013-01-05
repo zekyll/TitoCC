@@ -13,6 +13,10 @@ import titocc.tokenizer.TokenStream;
  * Similar to function call expression but calls an intrinsic function.
  * Currently two instrinsic functions are supported: in() and out(x) that
  * correspond to the in/out instructions in ttk-91.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> INTRINSIC_CALL_EXPRESSION = ("in" | "out") ARGUMENT_LIST
  */
 public class IntrinsicCallExpression extends Expression
 {
@@ -20,6 +24,14 @@ public class IntrinsicCallExpression extends Expression
 	private String name;
 	private ArgumentList argumentList;
 
+	/**
+	 * Constructs an IntrinsicCallExpression.
+	 *
+	 * @param name name of the intrinsic call
+	 * @param argumentList arguments given to the intrinsic call
+	 * @param line starting line number of the intrinsic call expression
+	 * @param column starting column/character of the intrinsic call expression
+	 */
 	public IntrinsicCallExpression(String name, ArgumentList argumentList,
 			int line, int column)
 	{
@@ -28,11 +40,21 @@ public class IntrinsicCallExpression extends Expression
 		this.argumentList = argumentList;
 	}
 
+	/**
+	 * Returns the name of the intrinsic function.
+	 *
+	 * @return intrinsic function name
+	 */
 	public String getName()
 	{
 		return name;
 	}
 
+	/**
+	 * Returns the argument list.
+	 *
+	 * @return the argument list.
+	 */
 	public ArgumentList getArgumentList()
 	{
 		return argumentList;
@@ -89,6 +111,16 @@ public class IntrinsicCallExpression extends Expression
 		return "(INTR_EXPR " + name + " " + argumentList + ")";
 	}
 
+	/**
+	 * Attempts to parse an intrinsic call expression from token stream, given
+	 * the first operand of the expression. If parsing fails the stream is reset
+	 * to its initial position.
+	 *
+	 * @param firstOperand preparsed function expression
+	 * @param tokens source token stream
+	 * @return IntrinsicCallExpression object or null if tokens don't form a
+	 * valid intrinsic call expression
+	 */
 	public static IntrinsicCallExpression parse(Expression firstOperand, TokenStream tokens)
 	{
 		IntrinsicCallExpression expr = null;

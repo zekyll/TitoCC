@@ -46,9 +46,11 @@ public class Tokenizer
 	}
 
 	/**
+	 * Parses the next token from the input stream.
 	 *
-	 * @return @throws IOException
-	 * @throws SyntaxException
+	 * @return next token
+	 * @throws IOException if code reader throws
+	 * @throws SyntaxException if no tokens matched the input text
 	 */
 	private Token getNextToken() throws IOException, SyntaxException
 	{

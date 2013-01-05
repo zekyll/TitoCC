@@ -12,9 +12,13 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Declares a global or local variable. Consists of a type, a name and an
- * optional initializer expression. For global variables the initializer must
+ * Declares and defines global or local variable. Consists of a type, a name and
+ * an optional initializer expression. For global variables the initializer must
  * be a compile time constant expression (thanks to C standard).
+ *
+ * <p> EBNF definition:
+ *
+ * <br> VARIABLE_DECLARATION = TYPE IDENTIFIER ["=" EXPRESSION] ";"
  */
 public class VariableDeclaration extends Declaration implements Symbol
 {
@@ -24,6 +28,16 @@ public class VariableDeclaration extends Declaration implements Symbol
 	private Expression initializer;
 	private String globallyUniqueName;
 
+	/**
+	 * Constructs a VariableDeclaration.
+	 *
+	 * @param type type of the variable
+	 * @param name name of the variable
+	 * @param initializer initializer expression or null if the variable is left
+	 * uninitialized
+	 * @param line starting line number of the variable declaration
+	 * @param column starting column/character of the variable declaration
+	 */
 	public VariableDeclaration(Type type, String name,
 			Expression initializer, int line, int column)
 	{
@@ -33,6 +47,11 @@ public class VariableDeclaration extends Declaration implements Symbol
 		this.initializer = initializer;
 	}
 
+	/**
+	 * Returns the type of the variable declaration.
+	 *
+	 * @return the type
+	 */
 	public Type getType()
 	{
 		return type;
@@ -44,6 +63,11 @@ public class VariableDeclaration extends Declaration implements Symbol
 		return name;
 	}
 
+	/**
+	 * Returns the initializer expression.
+	 *
+	 * @return initializer expression or null if there isn't one
+	 */
 	public Expression getInitializer()
 	{
 		return initializer;
@@ -104,6 +128,14 @@ public class VariableDeclaration extends Declaration implements Symbol
 		}
 	}
 
+	/**
+	 * Attempts to parse a variable declaration from token stream. If parsing
+	 * fails the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return VariableDeclaration object or null if tokens don't form a valid
+	 * variable declaration
+	 */
 	public static VariableDeclaration parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

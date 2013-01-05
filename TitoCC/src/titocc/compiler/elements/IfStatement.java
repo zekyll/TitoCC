@@ -11,12 +11,26 @@ import titocc.tokenizer.TokenStream;
 /**
  * If statement. Consists of test expression, a "true statement" and optional
  * "else statement".
+ *
+ * <p> EBNF definition:
+ *
+ * <br> IF_STATEMENT = "if" "(" EXPRESSION ")" STATEMENT ["else" STATEMENT]
  */
 public class IfStatement extends Statement
 {
 	private Expression test;
 	private Statement trueStatement, elseStatement;
 
+	/**
+	 * Constructs an IfStatement.
+	 *
+	 * @param test expression used as the test
+	 * @param trueStatement statement evaluated when test is not 0
+	 * @param elseStatement statement evaluated when test is 0; this parameter
+	 * can be null if there is no else statement
+	 * @param line starting line number of the if statement
+	 * @param column starting column/character of the if statement
+	 */
 	public IfStatement(Expression test, Statement trueStatement,
 			Statement elseStatement, int line, int column)
 	{
@@ -26,16 +40,31 @@ public class IfStatement extends Statement
 		this.elseStatement = elseStatement;
 	}
 
+	/**
+	 * Returns the test expression.
+	 *
+	 * @return the test expression
+	 */
 	public Expression getTest()
 	{
 		return test;
 	}
 
+	/**
+	 * Returns the true/first statement.
+	 *
+	 * @return the true statement
+	 */
 	public Statement getTrueStatement()
 	{
 		return trueStatement;
 	}
 
+	/**
+	 * Returns the else/second statement.
+	 *
+	 * @return the else statement, or null if there isn't one
+	 */
 	public Statement getElseStatement()
 	{
 		return elseStatement;
@@ -80,6 +109,14 @@ public class IfStatement extends Statement
 		statement.compile(asm, subScope, registers);
 	}
 
+	/**
+	 * Attempts to parse an if statement from token stream. If parsing fails the
+	 * stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return IfStatement object or null if tokens don't form a valid if
+	 * statement
+	 */
 	public static IfStatement parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();

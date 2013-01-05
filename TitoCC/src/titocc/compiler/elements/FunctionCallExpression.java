@@ -10,12 +10,24 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * Function call expression.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> FUNCTION_CALL_EXPRESSION = POSTFIX_EXPRESSION ARGUMENT_LIST
  */
 public class FunctionCallExpression extends Expression
 {
 	private Expression function;
 	private ArgumentList argumentList;
 
+	/**
+	 * Constructs a function call expression.
+	 *
+	 * @param function expression that will be evaluated as the function
+	 * @param argumentList list of arguments passed to the function
+	 * @param line starting line number of the function call expression
+	 * @param column starting column/character of the function call expression
+	 */
 	public FunctionCallExpression(Expression function, ArgumentList argumentList,
 			int line, int column)
 	{
@@ -24,11 +36,21 @@ public class FunctionCallExpression extends Expression
 		this.argumentList = argumentList;
 	}
 
+	/**
+	 * Returns the function expression.
+	 *
+	 * @return the function
+	 */
 	public Expression getFunction()
 	{
 		return function;
 	}
 
+	/**
+	 * Returns the argument list.
+	 *
+	 * @return the argument list
+	 */
 	public ArgumentList getArgumentList()
 	{
 		return argumentList;
@@ -88,6 +110,16 @@ public class FunctionCallExpression extends Expression
 		return "(FCALL_EXPR " + function + " " + argumentList + ")";
 	}
 
+	/**
+	 * Attempts to parse a function call expression from token stream, given the
+	 * first operand of the expression. If parsing fails the stream is reset to
+	 * its initial position.
+	 *
+	 * @param firstOperand preparsed function expression
+	 * @param tokens source token stream
+	 * @return FunctionCallExpression object or null if tokens don't form a
+	 * valid function call expression
+	 */
 	public static FunctionCallExpression parse(Expression firstOperand, TokenStream tokens)
 	{
 		FunctionCallExpression expr = null;

@@ -13,11 +13,23 @@ import titocc.tokenizer.TokenStream;
 
 /**
  * Integer literal expression.
+ *
+ * <p> EBNF definition:
+ *
+ * <br> INTEGER_LITERAL_EXPRESSION = INTEGER_LITERAL
  */
 public class IntegerLiteralExpression extends Expression
 {
 	private String rawValue, suffix;
 
+	/**
+	 * Constructs an IntegerLiteralExpression.
+	 *
+	 * @param rawValue integer digits as a string
+	 * @param suffix suffix
+	 * @param line starting line number of the integer literal expression
+	 * @param column starting column/character of the integer literal expression
+	 */
 	public IntegerLiteralExpression(String rawValue, String suffix, int line, int column)
 	{
 		super(line, column);
@@ -25,11 +37,21 @@ public class IntegerLiteralExpression extends Expression
 		this.suffix = suffix;
 	}
 
+	/**
+	 * Returns the digits of the integer literal.
+	 *
+	 * @return string representation of the digits
+	 */
 	public String getRawValue()
 	{
 		return rawValue;
 	}
 
+	/**
+	 * Returns the suffix of the literal.
+	 *
+	 * @return the suffix
+	 */
 	public String getSuffix()
 	{
 		return suffix;
@@ -39,8 +61,6 @@ public class IntegerLiteralExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
 			throws IOException, SyntaxException
 	{
-		//TODO ICE if registers.empty()
-
 		compileConstantExpression(asm, scope, registers);
 	}
 
@@ -61,6 +81,13 @@ public class IntegerLiteralExpression extends Expression
 		return "(INT_EXPR " + rawValue + (suffix.isEmpty() ? "" : " " + suffix) + ")";
 	}
 
+	/**
+	 * Attempts to parse an integer literal expression from token stream. If
+	 * parsing fails the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return Expression object or null if tokens don't form a valid expression
+	 */
 	public static IntegerLiteralExpression parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();
