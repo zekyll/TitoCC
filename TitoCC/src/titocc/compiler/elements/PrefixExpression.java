@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import titocc.compiler.Assembler;
+import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
@@ -19,7 +20,7 @@ import titocc.tokenizer.TokenStream;
  */
 public class PrefixExpression extends Expression
 {
-	static final String[] prefixOperators = {"++", "--", "+", "-", "!", "~"};
+	static final String[] prefixOperators = {"++", "--", "+", "-", "!", "~", "&", "*"};
 	private String operator;
 	private Expression operand;
 
@@ -75,23 +76,43 @@ public class PrefixExpression extends Expression
 			compileLogicalNegation(asm, scope, regs);
 		else if (operator.equals("~"))
 			compileBitwiseNegation(asm, scope, regs);
+		else if (operator.equals("&"))
+			compileAddressOf(asm, scope, regs);
+		else if (operator.equals("*"))
+			compileDereference(asm, scope, regs);
+	}
+
+	@Override
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+			throws IOException, SyntaxException
+	{
+		if (!operator.equals("*"))
+			throw new SyntaxException("Operation requires an lvalue.", getLine(), getColumn());
+
+		// Operand for * must be a pointer so we just load its value.
+		operand.compile(asm, scope, regs);
+
+		return new Lvalue(regs.get(0));
 	}
 
 	private void compileIncDec(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		// Currently the only lvalue expression is variable identifier, so
-		// we can just get the variable name.
-		String ref = operand.getLvalueReference(scope);
-		if (ref == null)
-			throw new SyntaxException("Operator requires an lvalue.", getLine(), getColumn());
+		// Get reference or load address in second register.
+		regs.allocate(asm);
+		regs.removeFirst();
+		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
+		regs.addFirst();
 
-		// Load value in register.
-		asm.emit("load", regs.get(0).toString(), ref);
+		// Load value in first register.
+		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
 		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=1");
-		asm.emit("store", regs.get(0).toString(), ref);
+		asm.emit("store", regs.get(0).toString(), val.getReference());
+
+		// Deallocate the second register.
+		regs.deallocate(asm);
 	}
 
 	private void compileUnaryMinus(Assembler asm, Scope scope, Registers regs)
@@ -127,6 +148,23 @@ public class PrefixExpression extends Expression
 		// -1 has representation of all 1 bits (0xFFFFFFFF), and therefore
 		// xoring with it gives the bitwise negation.
 		asm.emit("xor", regs.get(0).toString(), "=-1");
+	}
+
+	private void compileAddressOf(Assembler asm, Scope scope, Registers regs)
+			throws IOException, SyntaxException
+	{
+		// Load the address of the operand in the first register.
+		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
+		val.loadToRegister(asm);
+	}
+
+	private void compileDereference(Assembler asm, Scope scope, Registers regs)
+			throws IOException, SyntaxException
+	{
+		// Load the value pointed by the first register by using indirect
+		// addressing mode (@).
+		operand.compile(asm, scope, regs);
+		asm.emit("load", regs.get(0).toString(), "@" + regs.get(0).toString());
 	}
 
 	@Override

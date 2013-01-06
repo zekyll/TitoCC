@@ -3,6 +3,7 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.Arrays;
 import titocc.compiler.Assembler;
+import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
@@ -61,21 +62,24 @@ public class PostfixExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		// Currently the only lvalue expression is variable identifier, so
-		// we can just get the variable name.
-		String ref = operand.getLvalueReference(scope);
-		if (ref == null)
-			throw new SyntaxException("Operator requires an lvalue.", getLine(), getColumn());
+		// Get reference or load address in second register.
+		regs.allocate(asm);
+		regs.removeFirst();
+		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
+		regs.addFirst();
 
-		// Load value in register.
-		asm.emit("load", regs.get(0).toString(), ref);
+		// Load value in first register.
+		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
 		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=1");
-		asm.emit("store", regs.get(0).toString(), ref);
+		asm.emit("store", regs.get(0).toString(), val.getReference());
 
 		// Expression must return the old value.
 		asm.emit(operator.equals("++") ? "sub" : "add", regs.get(0).toString(), "=1");
+
+		// Deallocate the second register.
+		regs.deallocate(asm);
 	}
 
 	@Override
@@ -114,6 +118,9 @@ public class PostfixExpression extends Expression
 
 				if (postfixExpr == null)
 					postfixExpr = FunctionCallExpression.parse(expr, tokens);
+
+				if (postfixExpr == null)
+					postfixExpr = SubscriptExpression.parse(expr, tokens);
 
 				if (postfixExpr != null)
 					expr = postfixExpr;

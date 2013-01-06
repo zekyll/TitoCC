@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import titocc.compiler.Assembler;
+import titocc.compiler.Lvalue;
 import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
@@ -108,71 +109,65 @@ public class AssignmentExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		// Compile LHS and get reference to the variable.
-		String leftRef = compileLeft(asm, scope, regs);
+		// Allocate second register.
+		regs.allocate(asm);
+
+		// Load LHS address in second register.
+		regs.removeFirst();
+		Lvalue leftVal = left.compileAsLvalue(asm, scope, regs);
+		regs.addFirst();
 
 		// Compile RHS and the assignment operation.
 		if (operator.type == Type.SIMPLE)
-			compileSimple(asm, scope, regs, leftRef);
+			compileSimple(asm, scope, regs, leftVal);
 		else if (operator.type == Type.COMMUTATIVE)
-			compileCommutative(asm, scope, regs, leftRef);
+			compileCommutative(asm, scope, regs, leftVal);
 		else
-			compileNoncommutative(asm, scope, regs, leftRef);
-	}
+			compileNoncommutative(asm, scope, regs, leftVal);
 
-	private String compileLeft(Assembler asm, Scope scope, Registers regs)
-			throws SyntaxException, IOException
-	{
-		// Currently assumes that the return value can always be reduced to
-		// variable name, so we can do a simple compile time evaluation. This
-		// will have to be changed if arrays, pointers and indirection operator
-		// are implemented.
-		String leftRef = left.getLvalueReference(scope);
-		if (leftRef == null)
-			throw new SyntaxException("Left side cannot be assigned to.", getLine(), getColumn());
-		//left.compile(asm, scope, registers);
-		return leftRef;
+		// Deallocate second register.
+		regs.deallocate(asm);
 	}
 
 	private void compileSimple(Assembler asm, Scope scope, Registers regs,
-			String leftRef) throws SyntaxException, IOException
+			Lvalue leftVal) throws SyntaxException, IOException
 	{
-		// Load RHS in the first register and stores it in the LHS variable.
+		// Load RHS value in first register and store in LHS.
 		right.compile(asm, scope, regs);
-		asm.emit("store", regs.get(0).toString(), leftRef);
+		asm.emit("store", regs.get(0).toString(), leftVal.getReference());
 	}
 
 	private void compileCommutative(Assembler asm, Scope scope, Registers regs,
-			String leftRef) throws SyntaxException, IOException
+			Lvalue leftVal) throws SyntaxException, IOException
 	{
 		// Load RHS in first register.
 		right.compile(asm, scope, regs);
 
 		// Because the operation is symmetric, we can use the left operand
 		// as the right operand in the assembly instruction, saving one register.
-		asm.emit(operator.mnemonic, regs.get(0).toString(), leftRef);
-		asm.emit("store", regs.get(0).toString(), leftRef);
+		asm.emit(operator.mnemonic, regs.get(0).toString(), leftVal.getReference());
+		asm.emit("store", regs.get(0).toString(), leftVal.getReference());
 	}
 
 	private void compileNoncommutative(Assembler asm, Scope scope, Registers regs,
-			String leftRef) throws SyntaxException, IOException
+			Lvalue leftVal) throws SyntaxException, IOException
 	{
-		// Allocate a second register for RHS.
+		// Load RHS in a third register.
 		regs.allocate(asm);
-
-		// Load RHS in the second register.
+		regs.removeFirst();
 		regs.removeFirst();
 		right.compile(asm, scope, regs);
 		regs.addFirst();
+		regs.addFirst();
 
 		// Load LHS in the first register and operate on it.
-		asm.emit("load", regs.get(0).toString(), leftRef);
-		asm.emit(operator.mnemonic, regs.get(0).toString(), regs.get(1).toString());
+		asm.emit("load", regs.get(0).toString(), leftVal.getReference());
+		asm.emit(operator.mnemonic, regs.get(0).toString(), regs.get(2).toString());
 
 		// Store result to LHS variable.
-		asm.emit("store", regs.get(0).toString(), leftRef);
+		asm.emit("store", regs.get(0).toString(), leftVal.getReference());
 
-		// Deallocate the second register.
+		// Deallocate the third register.
 		regs.deallocate(asm);
 	}
 

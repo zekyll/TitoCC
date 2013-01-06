@@ -2,6 +2,7 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
@@ -48,12 +49,14 @@ public class IdentifierExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		// Load value to first available register
-		asm.emit("load", regs.get(0).toString(), getLvalueReference(scope));
+		// Load value to first register.
+		Lvalue val = compileAsLvalue(asm, scope, regs);
+		asm.emit("load", regs.get(0).toString(), val.getReference());
 	}
 
 	@Override
-	public String getLvalueReference(Scope scope) throws SyntaxException
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
 		Symbol symbol = scope.find(identifier);
 		if (symbol == null)
@@ -61,7 +64,7 @@ public class IdentifierExpression extends Expression
 		if (symbol instanceof Function)
 			throw new SyntaxException("Identifier \"" + identifier + "\" is not a variable.", getLine(), getColumn());
 
-		return symbol.getReference();
+		return new Lvalue(regs.get(0), symbol.getReference());
 	}
 
 	@Override

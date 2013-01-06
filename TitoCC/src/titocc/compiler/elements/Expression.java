@@ -2,6 +2,7 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.Lvalue;
 import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
@@ -85,9 +86,10 @@ public abstract class Expression extends CodeElement
 	 * null if expression does not evaluate to an lvalue
 	 * @throws SyntaxException if expression contains an error
 	 */
-	public String getLvalueReference(Scope scope) throws SyntaxException
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
-		return null;
+		throw new SyntaxException("Operation requires an lvalue", getLine(), getColumn());
 	}
 
 	/**
