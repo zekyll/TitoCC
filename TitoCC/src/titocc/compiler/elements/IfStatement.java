@@ -122,7 +122,7 @@ public class IfStatement extends Statement
 		tokens.pushMark();
 		IfStatement ifStatement = null;
 
-		Type retType = Type.parse(tokens);
+		TypeSpecifier retType = TypeSpecifier.parse(tokens);
 
 		if (tokens.read().toString().equals("if")) {
 			if (tokens.read().toString().equals("(")) {

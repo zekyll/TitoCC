@@ -22,11 +22,11 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> FUNCTION = TYPE IDENTIFIER PARAMETER_LIST BLOCK_STATEMENT
+ * <br> FUNCTION = TYPE_SPECIFIER IDENTIFIER PARAMETER_LIST BLOCK_STATEMENT
  */
 public class Function extends Declaration implements Symbol
 {
-	private Type returnType;
+	private TypeSpecifier returnType;
 	private String name;
 	private ParameterList parameterList;
 	private BlockStatement body;
@@ -43,7 +43,7 @@ public class Function extends Declaration implements Symbol
 	 * @param line starting line number of the function
 	 * @param column starting column/character of the function
 	 */
-	public Function(Type returnType, String name, ParameterList parameterList,
+	public Function(TypeSpecifier returnType, String name, ParameterList parameterList,
 			BlockStatement body, int line, int column)
 	{
 		super(line, column);
@@ -58,7 +58,7 @@ public class Function extends Declaration implements Symbol
 	 *
 	 * @return the return type
 	 */
-	public Type getReturnType()
+	public TypeSpecifier getReturnType()
 	{
 		return returnType;
 	}
@@ -242,7 +242,7 @@ public class Function extends Declaration implements Symbol
 		tokens.pushMark();
 		Function function = null;
 
-		Type retType = Type.parse(tokens);
+		TypeSpecifier retType = TypeSpecifier.parse(tokens);
 
 		if (retType != null) {
 			Token id = tokens.read();

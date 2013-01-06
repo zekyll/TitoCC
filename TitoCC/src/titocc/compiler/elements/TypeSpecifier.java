@@ -11,9 +11,9 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> TYPE = "void" | "int"
+ * <br> TYPE_SPECIFIER = "void" | "int"
  */
-public class Type extends CodeElement
+public class TypeSpecifier extends CodeElement
 {
 	static final String[] types = {"void", "int"};
 	static final Set<String> typesSet = new HashSet<String>(Arrays.asList(types));
@@ -26,7 +26,7 @@ public class Type extends CodeElement
 	 * @param line starting line number of the type
 	 * @param column starting column/character of the type
 	 */
-	public Type(String name, int line, int column)
+	public TypeSpecifier(String name, int line, int column)
 	{
 		super(line, column);
 		this.name = name;
@@ -55,15 +55,15 @@ public class Type extends CodeElement
 	 * @param tokens source token stream
 	 * @return Type object or null if tokens don't form a valid type specifier
 	 */
-	public static Type parse(TokenStream tokens)
+	public static TypeSpecifier parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();
 		tokens.pushMark();
-		Type type = null;
+		TypeSpecifier type = null;
 
 		Token token = tokens.read();
 		if (typesSet.contains(token.toString()))
-			type = new Type(token.toString(), line, column);
+			type = new TypeSpecifier(token.toString(), line, column);
 
 		tokens.popMark(type == null);
 		return type;

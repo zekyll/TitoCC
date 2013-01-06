@@ -14,11 +14,11 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> PARAMETER = TYPE IDENTIFIER
+ * <br> PARAMETER = TYPE_SPECIFIER IDENTIFIER
  */
 public class Parameter extends CodeElement implements Symbol
 {
-	private Type type;
+	private TypeSpecifier type;
 	private String name;
 	private String globallyUniqueName;
 
@@ -30,7 +30,7 @@ public class Parameter extends CodeElement implements Symbol
 	 * @param line starting line number of the parameter
 	 * @param column starting column/character of the parameter
 	 */
-	public Parameter(Type type, String name, int line, int column)
+	public Parameter(TypeSpecifier type, String name, int line, int column)
 	{
 		super(line, column);
 		this.type = type;
@@ -42,7 +42,7 @@ public class Parameter extends CodeElement implements Symbol
 	 *
 	 * @return the type
 	 */
-	public Type getType()
+	public TypeSpecifier getType()
 	{
 		return type;
 	}
@@ -101,7 +101,7 @@ public class Parameter extends CodeElement implements Symbol
 		tokens.pushMark();
 		Parameter param = null;
 
-		Type type = Type.parse(tokens);
+		TypeSpecifier type = TypeSpecifier.parse(tokens);
 
 		if (type != null) {
 			Token id = tokens.read();

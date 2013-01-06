@@ -17,12 +17,12 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> VARIABLE_DECLARATION = TYPE IDENTIFIER ["=" EXPRESSION] ";"
+ * <br> VARIABLE_DECLARATION = TYPE_SPECIFIER IDENTIFIER ["=" EXPRESSION] ";"
  */
 public class VariableDeclaration extends Declaration implements Symbol
 {
 	private boolean isGlobal; // Used in the compilation phase
-	private Type type;
+	private TypeSpecifier type;
 	private String name;
 	private Expression initializer;
 	private String globallyUniqueName;
@@ -37,7 +37,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	 * @param line starting line number of the variable declaration
 	 * @param column starting column/character of the variable declaration
 	 */
-	public VariableDeclaration(Type type, String name,
+	public VariableDeclaration(TypeSpecifier type, String name,
 			Expression initializer, int line, int column)
 	{
 		super(line, column);
@@ -51,7 +51,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	 *
 	 * @return the type
 	 */
-	public Type getType()
+	public TypeSpecifier getType()
 	{
 		return type;
 	}
@@ -141,7 +141,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		tokens.pushMark();
 		VariableDeclaration varDeclaration = null;
 
-		Type type = Type.parse(tokens);
+		TypeSpecifier type = TypeSpecifier.parse(tokens);
 
 		if (type != null) {
 			Token id = tokens.read();

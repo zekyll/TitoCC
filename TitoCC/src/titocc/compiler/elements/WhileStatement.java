@@ -96,7 +96,7 @@ public class WhileStatement extends Statement
 		tokens.pushMark();
 		WhileStatement whileStatement = null;
 
-		Type retType = Type.parse(tokens);
+		TypeSpecifier retType = TypeSpecifier.parse(tokens);
 
 		if (tokens.read().toString().equals("while")) {
 			if (tokens.read().toString().equals("(")) {
