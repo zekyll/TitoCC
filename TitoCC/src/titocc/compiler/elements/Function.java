@@ -108,6 +108,8 @@ public class Function extends Declaration implements Symbol
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
 		globallyUniqueName = scope.makeGloballyUniqueName(name);
 
+		asm.addEmptyLines(1);
+
 		// Create new scope.
 		Scope functionScope = new Scope(scope, name + "_");
 		scope.addSubScope(functionScope);

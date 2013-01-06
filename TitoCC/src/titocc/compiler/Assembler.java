@@ -52,6 +52,18 @@ public class Assembler
 	}
 
 	/**
+	 * Adds empty lines that have no instructions. Just for cosmetic purposes.
+	 *
+	 * @param n number of empty lines to add
+	 * @throws IOException if writer throws
+	 */
+	public void addEmptyLines(int n) throws IOException
+	{
+		for (int i = 0; i < n; ++i)
+			writer.append('\n');
+	}
+
+	/**
 	 * Adds a label for the next instruction.
 	 *
 	 * @param label Label.

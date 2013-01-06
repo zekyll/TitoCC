@@ -82,6 +82,22 @@ public class AssemblerTest
 	}
 
 	@Test
+	public void longLabelWithSingleOperandInstruction() throws IOException
+	{
+		asm.addLabel("this_is_a_very_long_label");
+		asm.emit("abc", "xy");
+		assertEquals("this_is_a_very_long_label abc     xy\n", asm.getWriter().toString());
+	}
+
+	@Test
+	public void longLabelWithDoubleOperandInstruction() throws IOException
+	{
+		asm.addLabel("this_is_a_very_long_label");
+		asm.emit("abc", "xy", "zv");
+		assertEquals("this_is_a_very_long_label abc     xy, zv\n", asm.getWriter().toString());
+	}
+
+	@Test
 	public void addingTwoLabelsEmitsNop() throws IOException
 	{
 		asm.addLabel("lbl1");
@@ -105,5 +121,25 @@ public class AssemblerTest
 		asm.addLabel("l");
 		asm.finish();
 		assertEquals("            abc     xy, zv\nl           nop     \n", asm.getWriter().toString());
+	}
+
+	@Test
+	public void addEmptyLinesWorksWithZeroLines() throws IOException
+	{
+		asm.emit("abc", "xy");
+		asm.addLabel("l");
+		asm.addEmptyLines(0);
+		asm.emit("abc", "xy");
+		assertEquals("            abc     xy\nl           abc     xy\n", asm.getWriter().toString());
+	}
+
+	@Test
+	public void addEmptyLinesWorksWithTwoLines() throws IOException
+	{
+		asm.emit("abc", "xy");
+		asm.addLabel("l");
+		asm.addEmptyLines(2);
+		asm.emit("abc", "xy");
+		assertEquals("            abc     xy\n\n\nl           abc     xy\n", asm.getWriter().toString());
 	}
 }
