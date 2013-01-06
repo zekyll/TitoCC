@@ -2,9 +2,8 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -61,38 +60,38 @@ public class IntrinsicCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		compile(asm, scope, registers, true);
+		compile(asm, scope, regs, true);
 	}
 
 	@Override
-	public void compileAsVoid(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compileAsVoid(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		compile(asm, scope, registers, false);
+		compile(asm, scope, regs, false);
 	}
 
-	private void compile(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compile(Assembler asm, Scope scope, Registers regs,
 			boolean returnValueRequired) throws SyntaxException, IOException
 	{
 		if (name.equals("in"))
-			compileIn(asm, scope, registers, returnValueRequired);
+			compileIn(asm, scope, regs, returnValueRequired);
 		else if (name.equals("out"))
-			compileOut(asm, scope, registers, returnValueRequired);
+			compileOut(asm, scope, regs, returnValueRequired);
 	}
 
-	private void compileIn(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileIn(Assembler asm, Scope scope, Registers regs,
 			boolean returnValueRequired) throws SyntaxException, IOException
 	{
 		if (!argumentList.getArguments().isEmpty())
 			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
 
-		asm.emit("in", registers.peek().toString(), "=kbd");
+		asm.emit("in", regs.get(0).toString(), "=kbd");
 	}
 
-	private void compileOut(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileOut(Assembler asm, Scope scope, Registers regs,
 			boolean returnValueRequired) throws SyntaxException, IOException
 	{
 		if (returnValueRequired)
@@ -101,8 +100,8 @@ public class IntrinsicCallExpression extends Expression
 		if (argumentList.getArguments().size() != 1)
 			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
 
-		argumentList.getArguments().get(0).compile(asm, scope, registers);
-		asm.emit("out", registers.peek().toString(), "=crt");
+		argumentList.getArguments().get(0).compile(asm, scope, regs);
+		asm.emit("out", regs.get(0).toString(), "=crt");
 	}
 
 	@Override

@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -71,25 +70,25 @@ public class IfStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
 		// Evaluates and loads the test expression in the first register.
-		test.compile(asm, scope, registers);
+		test.compile(asm, scope, regs);
 
 		// Skip true statement if test was false.
 		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jzer", registers.peek().toString(), skipTrueLabel);
+		asm.emit("jzer", regs.get(0).toString(), skipTrueLabel);
 
 		// True statement.
-		compileInNewScope(asm, scope, registers, trueStatement);
+		compileInNewScope(asm, scope, regs, trueStatement);
 
 		// Else statement.
 		if (elseStatement != null) {
 			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
 			asm.emit("jump", skipElseLabel);
 			asm.addLabel(skipTrueLabel);
-			compileInNewScope(asm, scope, registers, elseStatement);
+			compileInNewScope(asm, scope, regs, elseStatement);
 			asm.addLabel(skipElseLabel);
 		} else
 			asm.addLabel(skipTrueLabel);
@@ -101,7 +100,7 @@ public class IfStatement extends Statement
 		return "(IF " + test + " " + trueStatement + " " + elseStatement + ")";
 	}
 
-	private void compileInNewScope(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileInNewScope(Assembler asm, Scope scope, Registers registers,
 			Statement statement) throws IOException, SyntaxException
 	{
 		Scope subScope = new Scope(scope, "");

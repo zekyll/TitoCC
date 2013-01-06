@@ -3,7 +3,6 @@ package titocc.compiler;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Stack;
 import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Tokenizer;
@@ -59,7 +58,7 @@ public class Compiler
 		Scope scope = new Scope(null, "");
 		reserveNames(scope);
 		Assembler asm = new Assembler(writer);
-		translationUnit.compile(asm, scope, getUsableRegisters());
+		translationUnit.compile(asm, scope, new Registers());
 		asm.finish();
 	}
 
@@ -74,23 +73,6 @@ public class Compiler
 		Tokenizer tokenizer = new Tokenizer(reader);
 		Parser parser = new Parser(tokenizer.tokenize());
 		translationUnit = parser.parse();
-	}
-
-	/**
-	 * Creates a stack of registers that will be available for code generation.
-	 *
-	 * @return stack that contains the available registers
-	 */
-	private Stack<Register> getUsableRegisters()
-	{
-		// Use all general purpose registers except R0 because it behaves differently.
-		Stack<Register> registers = new Stack<Register>();
-		registers.push(Register.R5);
-		registers.push(Register.R4);
-		registers.push(Register.R3);
-		registers.push(Register.R2);
-		registers.push(Register.R1);
-		return registers;
 	}
 
 	/**

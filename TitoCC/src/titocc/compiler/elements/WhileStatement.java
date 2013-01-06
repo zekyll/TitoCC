@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -56,7 +55,7 @@ public class WhileStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
 		// Loop start.
@@ -68,13 +67,13 @@ public class WhileStatement extends Statement
 		// Body.
 		Scope subScope = new Scope(scope, "");
 		scope.addSubScope(subScope);
-		statement.compile(asm, subScope, registers);
+		statement.compile(asm, subScope, regs);
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
 		asm.addLabel(loopTestLabel);
-		test.compile(asm, scope, registers);
-		asm.emit("jnzer", registers.peek().toString(), loopStartLabel);
+		test.compile(asm, scope, regs);
+		asm.emit("jnzer", regs.get(0).toString(), loopStartLabel);
 	}
 
 	@Override

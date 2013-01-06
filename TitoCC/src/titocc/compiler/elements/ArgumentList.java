@@ -3,9 +3,9 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -50,16 +50,16 @@ public class ArgumentList extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the arguments are evaluated
-	 * @param registers available registers; must contain at least one register
+	 * @param regs available registers; must have at least one active register
 	 * @throws SyntaxException if argument list contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
 		for (Expression arg : arguments) {
-			arg.compile(asm, scope, registers);
-			asm.emit("push", "sp", registers.peek().toString());
+			arg.compile(asm, scope, regs);
+			asm.emit("push", "sp", regs.get(0).toString());
 		}
 	}
 

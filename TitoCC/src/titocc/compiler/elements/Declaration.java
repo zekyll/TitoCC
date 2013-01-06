@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -33,11 +32,11 @@ public abstract class Declaration extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the declaration is evaluated
-	 * @param registers available registers; must contain at least one register
+	 * @param regs available registers; must have at least one active register
 	 * @throws SyntaxException if the declaration contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException;
+	public abstract void compile(Assembler asm, Scope scope, Registers regs) throws IOException, SyntaxException;
 
 	/**
 	 * Attempts to parse a declaration from token stream. If parsing fails the

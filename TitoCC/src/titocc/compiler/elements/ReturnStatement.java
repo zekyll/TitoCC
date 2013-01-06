@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.SyntaxException;
@@ -46,18 +45,18 @@ public class ReturnStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
 		// No need to check whether function actually has return type
 		// because C allows returning stuff from any function.
 		if (expression != null) {
 			// Loads expression's value to first available register
-			expression.compile(asm, scope, registers);
+			expression.compile(asm, scope, regs);
 
 			// Store the register to return value
 			Symbol retVal = scope.find("__Ret");
-			asm.emit("store", registers.peek().toString(), retVal.getReference());
+			asm.emit("store", regs.get(0).toString(), retVal.getReference());
 		}
 
 		// Jump to function end

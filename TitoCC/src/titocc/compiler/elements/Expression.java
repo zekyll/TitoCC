@@ -1,9 +1,9 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -34,12 +34,12 @@ public abstract class Expression extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param registers available registers, must contain at least one register
-	 * and the first one is used for the return value
+	 * @param regs available registers; must have at least one active register
+	 * and the first one is used for return value
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public abstract void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException;
 
 	/**
@@ -49,14 +49,14 @@ public abstract class Expression extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param registers available registers, must contain at least one register
+	 * @param regs available registers; must have at least one active register
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compileAsVoid(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compileAsVoid(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		compile(asm, scope, registers);
+		compile(asm, scope, regs);
 	}
 
 	/**
@@ -125,25 +125,26 @@ public abstract class Expression extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param registers available registers; must contain at least one register
+	 * @param regs available registers; must have at least one active register
+	 * and the first one is used for return value
 	 * @return true if compile time constant, otherwise false
 	 * @throws IOException if assembler throws
 	 * @throws SyntaxException if expression contains an error
 	 */
 	protected boolean compileConstantExpression(Assembler asm, Scope scope,
-			Stack<Register> registers) throws IOException, SyntaxException
+			Registers regs) throws IOException, SyntaxException
 	{
 		Integer value = getCompileTimeValue();
 		if (value != null) {
 			// Use immediate operand if value fits in 16 bits; otherwise allocate
 			// a data constant. Load value in first available register.
 			if (value < 32768 && value >= -32768)
-				asm.emit("load", registers.peek().toString(), "=" + value);
+				asm.emit("load", regs.get(0).toString(), "=" + value);
 			else {
 				String name = scope.makeGloballyUniqueName("int");
 				asm.addLabel(name);
 				asm.emit("dc", "" + value);
-				asm.emit("load", registers.peek().toString(), name);
+				asm.emit("load", regs.get(0).toString(), name);
 			}
 			return true;
 		} else

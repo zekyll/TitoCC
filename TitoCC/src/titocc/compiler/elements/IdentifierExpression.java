@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
@@ -46,11 +45,11 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
 		// Load value to first available register
-		asm.emit("load", registers.peek().toString(), getLvalueReference(scope));
+		asm.emit("load", regs.get(0).toString(), getLvalueReference(scope));
 	}
 
 	@Override

@@ -2,9 +2,8 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -59,7 +58,7 @@ public class PostfixExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
 		// Currently the only lvalue expression is variable identifier, so
@@ -69,14 +68,14 @@ public class PostfixExpression extends Expression
 			throw new SyntaxException("Operator requires an lvalue.", getLine(), getColumn());
 
 		// Load value in register.
-		asm.emit("load", registers.peek().toString(), ref);
+		asm.emit("load", regs.get(0).toString(), ref);
 
 		// Modify and write back the value.
-		asm.emit(operator.equals("++") ? "add" : "sub", registers.peek().toString(), "=1");
-		asm.emit("store", registers.peek().toString(), ref);
+		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=1");
+		asm.emit("store", regs.get(0).toString(), ref);
 
 		// Expression must return the old value.
-		asm.emit(operator.equals("++") ? "sub" : "add", registers.peek().toString(), "=1");
+		asm.emit(operator.equals("++") ? "sub" : "add", regs.get(0).toString(), "=1");
 	}
 
 	@Override

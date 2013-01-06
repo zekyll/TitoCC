@@ -3,9 +3,8 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -45,7 +44,7 @@ public class BlockStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
 		//Create new scope for the block.
@@ -54,7 +53,7 @@ public class BlockStatement extends Statement
 
 		// Compile statements
 		for (Statement st : statements)
-			st.compile(asm, blockScope, registers);
+			st.compile(asm, blockScope, regs);
 	}
 
 	@Override

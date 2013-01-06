@@ -3,9 +3,8 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -60,25 +59,25 @@ public class PrefixExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (compileConstantExpression(asm, scope, registers))
+		if (compileConstantExpression(asm, scope, regs))
 			return;
 
 		if (operator.equals("++") || operator.equals("--"))
-			compileIncDec(asm, scope, registers);
+			compileIncDec(asm, scope, regs);
 		else if (operator.equals("+"))
-			operand.compile(asm, scope, registers);
+			operand.compile(asm, scope, regs);
 		else if (operator.equals("-"))
-			compileUnaryMinus(asm, scope, registers);
+			compileUnaryMinus(asm, scope, regs);
 		else if (operator.equals("!"))
-			compileLogicalNegation(asm, scope, registers);
+			compileLogicalNegation(asm, scope, regs);
 		else if (operator.equals("~"))
-			compileBitwiseNegation(asm, scope, registers);
+			compileBitwiseNegation(asm, scope, regs);
 	}
 
-	private void compileIncDec(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileIncDec(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
 		// Currently the only lvalue expression is variable identifier, so
@@ -88,46 +87,46 @@ public class PrefixExpression extends Expression
 			throw new SyntaxException("Operator requires an lvalue.", getLine(), getColumn());
 
 		// Load value in register.
-		asm.emit("load", registers.peek().toString(), ref);
+		asm.emit("load", regs.get(0).toString(), ref);
 
 		// Modify and write back the value.
-		asm.emit(operator.equals("++") ? "add" : "sub", registers.peek().toString(), "=1");
-		asm.emit("store", registers.peek().toString(), ref);
+		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=1");
+		asm.emit("store", regs.get(0).toString(), ref);
 	}
 
-	private void compileUnaryMinus(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileUnaryMinus(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		operand.compile(asm, scope, registers);
+		operand.compile(asm, scope, regs);
 
 		// Negative in two's complement: negate all bits and add 1.
-		asm.emit("xor", registers.peek().toString(), "=-1");
-		asm.emit("add", registers.peek().toString(), "=1");
+		asm.emit("xor", regs.get(0).toString(), "=-1");
+		asm.emit("add", regs.get(0).toString(), "=1");
 	}
 
-	private void compileLogicalNegation(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileLogicalNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		operand.compile(asm, scope, registers);
+		operand.compile(asm, scope, regs);
 
 		// Compares operand to zero and sets register value according to
 		// the result.
-		asm.emit("comp", registers.peek().toString(), "=0");
-		asm.emit("load", registers.peek().toString(), "=1");
+		asm.emit("comp", regs.get(0).toString(), "=0");
+		asm.emit("load", regs.get(0).toString(), "=1");
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		asm.emit("jequ", jumpLabel);
-		asm.emit("load", registers.peek().toString(), "=0");
+		asm.emit("load", regs.get(0).toString(), "=0");
 		asm.addLabel(jumpLabel);
 	}
 
-	private void compileBitwiseNegation(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileBitwiseNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		operand.compile(asm, scope, registers);
+		operand.compile(asm, scope, regs);
 
 		// -1 has representation of all 1 bits (0xFFFFFFFF), and therefore
 		// xoring with it gives the bitwise negation.
-		asm.emit("xor", registers.peek().toString(), "=-1");
+		asm.emit("xor", regs.get(0).toString(), "=-1");
 	}
 
 	@Override

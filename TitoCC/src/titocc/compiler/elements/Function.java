@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.InternalSymbol;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
@@ -101,7 +100,7 @@ public class Function extends Declaration implements Symbol
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
 		if (!scope.add(this))
@@ -115,13 +114,13 @@ public class Function extends Declaration implements Symbol
 		scope.addSubScope(functionScope);
 
 		addInternalSymbols(functionScope);
-		compileParameters(asm, functionScope, registers);
+		compileParameters(asm, functionScope);
 
 		// Compile body before prologue because we want to know all the local
 		// variables in the prologue.
 		StringWriter bodyWriter = new StringWriter();
 		Assembler bodyAsm = new Assembler(bodyWriter);
-		compileBody(bodyAsm, functionScope, registers);
+		compileBody(bodyAsm, functionScope, regs);
 		List<Symbol> localVariables = getLocalVariables(functionScope);
 		bodyAsm.finish();
 
@@ -141,7 +140,7 @@ public class Function extends Declaration implements Symbol
 		scope.add(retValSymbol);
 	}
 
-	private void compileParameters(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileParameters(Assembler asm, Scope scope)
 			throws IOException, SyntaxException
 	{
 		// Define constants for return value and parameters and add their symbols.
@@ -172,7 +171,7 @@ public class Function extends Declaration implements Symbol
 		asm.emit("pushr", "sp");
 	}
 
-	private void compileBody(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileBody(Assembler asm, Scope scope, Registers registers)
 			throws IOException, SyntaxException
 	{
 		// Compile statements directly, so that BlockStatement doesn't create

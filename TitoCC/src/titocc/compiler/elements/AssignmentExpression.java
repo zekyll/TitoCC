@@ -3,9 +3,9 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -105,22 +105,22 @@ public class AssignmentExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
 		// Compile LHS and get reference to the variable.
-		String leftRef = compileLeft(asm, scope, registers);
+		String leftRef = compileLeft(asm, scope, regs);
 
 		// Compile RHS and the assignment operation.
 		if (operator.type == Type.SIMPLE)
-			compileSimple(asm, scope, registers, leftRef);
+			compileSimple(asm, scope, regs, leftRef);
 		else if (operator.type == Type.COMMUTATIVE)
-			compileCommutative(asm, scope, registers, leftRef);
+			compileCommutative(asm, scope, regs, leftRef);
 		else
-			compileNoncommutative(asm, scope, registers, leftRef);
+			compileNoncommutative(asm, scope, regs, leftRef);
 	}
 
-	private String compileLeft(Assembler asm, Scope scope, Stack<Register> registers)
+	private String compileLeft(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
 		// Currently assumes that the return value can always be reduced to
@@ -134,47 +134,46 @@ public class AssignmentExpression extends Expression
 		return leftRef;
 	}
 
-	private void compileSimple(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileSimple(Assembler asm, Scope scope, Registers regs,
 			String leftRef) throws SyntaxException, IOException
 	{
 		// Load RHS in the first register and stores it in the LHS variable.
-		right.compile(asm, scope, registers);
-		asm.emit("store", registers.peek().toString(), leftRef);
+		right.compile(asm, scope, regs);
+		asm.emit("store", regs.get(0).toString(), leftRef);
 	}
 
-	private void compileCommutative(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileCommutative(Assembler asm, Scope scope, Registers regs,
 			String leftRef) throws SyntaxException, IOException
 	{
 		// Load RHS in first register.
-		right.compile(asm, scope, registers);
+		right.compile(asm, scope, regs);
 
 		// Because the operation is symmetric, we can use the left operand
 		// as the right operand in the assembly instruction, saving one register.
-		asm.emit(operator.mnemonic, registers.peek().toString(), leftRef);
-		asm.emit("store", registers.peek().toString(), leftRef);
+		asm.emit(operator.mnemonic, regs.get(0).toString(), leftRef);
+		asm.emit("store", regs.get(0).toString(), leftRef);
 	}
 
-	private void compileNoncommutative(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compileNoncommutative(Assembler asm, Scope scope, Registers regs,
 			String leftRef) throws SyntaxException, IOException
 	{
-		// Make sure there are two registers available.
-		Register pushedRegister = pushRegister(asm, registers);
+		// Allocate a second register.
+		regs.allocate(asm);
 
-		// Load RHS in second register.
-		Register reg = registers.pop();
-		right.compile(asm, scope, registers);
-		Register rightRegister = registers.peek();
-		registers.push(reg);
+		// Load RHS in the second register.
+		regs.removeFirst();
+		right.compile(asm, scope, regs);
+		regs.addFirst();
 
-		// Load LHS in first register and operate on it.
-		asm.emit("load", registers.peek().toString(), leftRef);
-		asm.emit(operator.mnemonic, registers.peek().toString(), rightRegister.toString());
+		// Load LHS in the first register and operate on it.
+		asm.emit("load", regs.get(0).toString(), leftRef);
+		asm.emit(operator.mnemonic, regs.get(0).toString(), regs.get(1).toString());
 
 		// Store result to LHS variable.
-		asm.emit("store", registers.peek().toString(), leftRef);
+		asm.emit("store", regs.get(0).toString(), leftRef);
 
 		// Pop register if one was pushed to stack.
-		popRegister(asm, registers, pushedRegister);
+		regs.deallocate(asm);
 	}
 
 	@Override

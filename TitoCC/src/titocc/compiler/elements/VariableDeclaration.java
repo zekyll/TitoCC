@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.IdentifierToken;
@@ -74,7 +73,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws SyntaxException, IOException
+	public void compile(Assembler asm, Scope scope, Registers regs) throws SyntaxException, IOException
 	{
 		if (!scope.add(this))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
@@ -84,7 +83,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		if (isGlobal)
 			compileGlobalVariable(asm, scope);
 		else
-			compileLocalVariable(asm, scope, registers);
+			compileLocalVariable(asm, scope, regs);
 	}
 
 	@Override
@@ -119,12 +118,12 @@ public class VariableDeclaration extends Declaration implements Symbol
 		asm.emit("dc", "" + initValue);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope, Stack<Register> registers)
+	private void compileLocalVariable(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
 		if (initializer != null) {
-			initializer.compile(asm, scope, registers);
-			asm.emit("store", registers.peek().toString(), getReference());
+			initializer.compile(asm, scope, regs);
+			asm.emit("store", regs.get(0).toString(), getReference());
 		}
 	}
 

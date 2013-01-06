@@ -3,9 +3,8 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.EofToken;
@@ -55,11 +54,11 @@ public class TranslationUnit extends CodeElement
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the translation unit is compiled (should be
 	 * global scope)
-	 * @param registers available registers
+	 * @param regs available registers; must have at least one active register
 	 * @throws SyntaxException if translation unit contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers) throws IOException, SyntaxException
+	public void compile(Assembler asm, Scope scope, Registers regs) throws IOException, SyntaxException
 	{
 		// Call main function and then halt.
 		asm.emit("add", "sp", "=1");
@@ -67,8 +66,8 @@ public class TranslationUnit extends CodeElement
 		asm.emit("svc", "sp", "=halt");
 
 		for (Declaration decl : declarations)
-			decl.compile(asm, scope, registers);
-
+			decl.compile(asm, scope, regs);
+		
 		if (!mainFunctionExists(scope))
 			throw new SyntaxException("Function \"int main()\" was not found.", getLine(), getColumn());
 	}

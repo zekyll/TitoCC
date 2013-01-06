@@ -2,9 +2,8 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.IntegerLiteralToken;
 import titocc.tokenizer.SyntaxException;
@@ -58,10 +57,10 @@ public class IntegerLiteralExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		compileConstantExpression(asm, scope, registers);
+		compileConstantExpression(asm, scope, regs);
 	}
 
 	@Override

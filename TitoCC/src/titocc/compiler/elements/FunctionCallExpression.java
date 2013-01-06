@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Stack;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -57,20 +56,20 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		compile(asm, scope, registers, true);
+		compile(asm, scope, regs, true);
 	}
 
 	@Override
-	public void compileAsVoid(Assembler asm, Scope scope, Stack<Register> registers)
+	public void compileAsVoid(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		compile(asm, scope, registers, false);
+		compile(asm, scope, regs, false);
 	}
 
-	private void compile(Assembler asm, Scope scope, Stack<Register> registers,
+	private void compile(Assembler asm, Scope scope, Registers regs,
 			boolean returnValueRequired) throws SyntaxException, IOException
 	{
 		Function func = validateFunction(scope);
@@ -84,14 +83,14 @@ public class FunctionCallExpression extends Expression
 		}
 
 		// Push arguments to stack.
-		argumentList.compile(asm, scope, registers);
+		argumentList.compile(asm, scope, regs);
 
 		// Make the call.
 		asm.emit("call", "sp", func.getReference());
 
 		// Read the return value.
 		if (!func.getReturnType().getName().equals("void"))
-			asm.emit("pop", "sp", registers.peek().toString());
+			asm.emit("pop", "sp", regs.get(0).toString());
 	}
 
 	private Function validateFunction(Scope scope) throws SyntaxException
