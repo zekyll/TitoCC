@@ -6,7 +6,7 @@ package titocc.compiler;
  */
 public class InternalSymbol implements Symbol
 {
-	private String name, globallyUniqueName, suffix;
+	private String name, globallyUniqueName, referenceSuffix;
 
 	/**
 	 * Constructs a new internal symbol. The actual name of the symbol is
@@ -22,7 +22,7 @@ public class InternalSymbol implements Symbol
 	{
 		this.name = "__" + name;
 		this.globallyUniqueName = scope.makeGloballyUniqueName(name);
-		this.suffix = suffix;
+		this.referenceSuffix = referenceSuffix;
 	}
 
 	@Override
@@ -40,6 +40,6 @@ public class InternalSymbol implements Symbol
 	@Override
 	public String getReference()
 	{
-		return globallyUniqueName + suffix;
+		return globallyUniqueName + referenceSuffix;
 	}
 }
