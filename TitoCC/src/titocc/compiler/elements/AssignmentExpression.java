@@ -157,7 +157,7 @@ public class AssignmentExpression extends Expression
 	private void compileNoncommutative(Assembler asm, Scope scope, Registers regs,
 			String leftRef) throws SyntaxException, IOException
 	{
-		// Allocate a second register.
+		// Allocate a second register for RHS.
 		regs.allocate(asm);
 
 		// Load RHS in the second register.
@@ -172,7 +172,7 @@ public class AssignmentExpression extends Expression
 		// Store result to LHS variable.
 		asm.emit("store", regs.get(0).toString(), leftRef);
 
-		// Pop register if one was pushed to stack.
+		// Deallocate the second register.
 		regs.deallocate(asm);
 	}
 

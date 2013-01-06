@@ -95,7 +95,7 @@ public class TranslationUnit extends CodeElement
 		}
 
 		if (tokens.read() instanceof EofToken)
-			translUnit = new TranslationUnit(declarations, line, column);
+			translUnit = new TranslationUnit(declarations, 0, 0);
 
 		tokens.popMark(translUnit == null);
 		return translUnit;
