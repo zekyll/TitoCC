@@ -17,13 +17,13 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> VARIABLE_DECLARATION = TYPE_SPECIFIER IDENTIFIER ["=" EXPRESSION] ";"
+ * <br> VARIABLE_DECLARATION = TYPE_SPECIFIER DECLARATOR ["=" EXPRESSION] ";"
  */
 public class VariableDeclaration extends Declaration implements Symbol
 {
 	private boolean isGlobal; // Used in the compilation phase
 	private TypeSpecifier type;
-	private String name;
+	private Declarator declarator;
 	private Expression initializer;
 	private String globallyUniqueName;
 
@@ -37,12 +37,12 @@ public class VariableDeclaration extends Declaration implements Symbol
 	 * @param line starting line number of the variable declaration
 	 * @param column starting column/character of the variable declaration
 	 */
-	public VariableDeclaration(TypeSpecifier type, String name,
+	public VariableDeclaration(TypeSpecifier type, Declarator declarator,
 			Expression initializer, int line, int column)
 	{
 		super(line, column);
 		this.type = type;
-		this.name = name;
+		this.declarator = declarator;
 		this.initializer = initializer;
 	}
 
@@ -59,7 +59,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	@Override
 	public String getName()
 	{
-		return name;
+		return declarator.getName();
 	}
 
 	/**
@@ -76,8 +76,8 @@ public class VariableDeclaration extends Declaration implements Symbol
 	public void compile(Assembler asm, Scope scope, Registers regs) throws SyntaxException, IOException
 	{
 		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
-		globallyUniqueName = scope.makeGloballyUniqueName(name);
+			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getLine(), getColumn());
+		globallyUniqueName = scope.makeGloballyUniqueName(getName());
 
 		isGlobal = scope.isGlobal();
 		if (isGlobal)
@@ -101,7 +101,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	@Override
 	public String toString()
 	{
-		return "(VAR_DECL " + type + " " + name + " " + initializer + ")";
+		return "(VAR_DECL " + type + " " + declarator + " " + initializer + ")";
 	}
 
 	private void compileGlobalVariable(Assembler asm, Scope scope)
@@ -144,11 +144,11 @@ public class VariableDeclaration extends Declaration implements Symbol
 		TypeSpecifier type = TypeSpecifier.parse(tokens);
 
 		if (type != null) {
-			Token id = tokens.read();
-			if (id instanceof IdentifierToken) {
+			Declarator declarator = Declarator.parse(tokens);
+			if (declarator != null) {
 				Expression init = parseInitializer(tokens);
 				if (tokens.read().toString().equals(";"))
-					varDeclaration = new VariableDeclaration(type, id.toString(), init, line, column);
+					varDeclaration = new VariableDeclaration(type, declarator, init, line, column);
 			}
 		}
 
