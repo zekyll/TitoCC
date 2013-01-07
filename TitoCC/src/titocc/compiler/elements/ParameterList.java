@@ -1,10 +1,12 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -43,22 +45,26 @@ public class ParameterList extends CodeElement
 	}
 
 	/**
-	 * Generates the constants for accessing the parameters.
+	 * Generates the constants for accessing the parameters, declares their
+	 * symbols and deduces parameter types.
 	 *
 	 * @param asm assembler used for generating the code
 	 * @param scope scope in which the parameter list is evaluated
+	 * @return list of parameter types
 	 * @throws SyntaxException if the parameters contain errors
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope) throws SyntaxException, IOException
+	public List<CType> compile(Assembler asm, Scope scope) throws SyntaxException, IOException
 	{
+		List<CType> paramTypes = new ArrayList<CType>();
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
-			p.compile(scope);
+			paramTypes.add(p.compile(scope));
 			asm.addLabel(p.getGlobalName());
 			asm.emit("equ", "" + paramOffset);
 			++paramOffset;
 		}
+		return paramTypes;
 	}
 
 	@Override

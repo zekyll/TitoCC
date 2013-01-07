@@ -5,9 +5,9 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
-import titocc.tokenizer.IdentifierToken;
+import titocc.compiler.types.ArrayType;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
-import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
@@ -22,7 +22,8 @@ import titocc.tokenizer.TokenStream;
 public class VariableDeclaration extends Declaration implements Symbol
 {
 	private boolean isGlobal; // Used in the compilation phase
-	private TypeSpecifier type;
+	private TypeSpecifier typeSpecifier;
+	private CType type;
 	private Declarator declarator;
 	private Expression initializer;
 	private String globallyUniqueName;
@@ -30,18 +31,18 @@ public class VariableDeclaration extends Declaration implements Symbol
 	/**
 	 * Constructs a VariableDeclaration.
 	 *
-	 * @param type type of the variable
-	 * @param name name of the variable
+	 * @param typeSpecifier specifier of the variable
+	 * @param declarator declarator of the variable
 	 * @param initializer initializer expression or null if the variable is left
 	 * uninitialized
 	 * @param line starting line number of the variable declaration
 	 * @param column starting column/character of the variable declaration
 	 */
-	public VariableDeclaration(TypeSpecifier type, Declarator declarator,
+	public VariableDeclaration(TypeSpecifier typeSpecifier, Declarator declarator,
 			Expression initializer, int line, int column)
 	{
 		super(line, column);
-		this.type = type;
+		this.typeSpecifier = typeSpecifier;
 		this.declarator = declarator;
 		this.initializer = initializer;
 	}
@@ -51,7 +52,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	 *
 	 * @return the type
 	 */
-	public TypeSpecifier getType()
+	public CType getType()
 	{
 		return type;
 	}
@@ -75,6 +76,13 @@ public class VariableDeclaration extends Declaration implements Symbol
 	@Override
 	public void compile(Assembler asm, Scope scope, Registers regs) throws SyntaxException, IOException
 	{
+		type = declarator.getModifiedType(typeSpecifier.getType());
+		if (!type.isObject())
+			throw new SyntaxException("Variable must have object type.", getLine(), getColumn());
+
+		if (type instanceof ArrayType && initializer != null)
+			throw new SyntaxException("Array initializers are not supported.", getLine(), getColumn());
+
 		if (!scope.add(this))
 			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getLine(), getColumn());
 		globallyUniqueName = scope.makeGloballyUniqueName(getName());
@@ -101,7 +109,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	@Override
 	public String toString()
 	{
-		return "(VAR_DECL " + type + " " + declarator + " " + initializer + ")";
+		return "(VAR_DECL " + typeSpecifier + " " + declarator + " " + initializer + ")";
 	}
 
 	private void compileGlobalVariable(Assembler asm, Scope scope)
@@ -115,7 +123,10 @@ public class VariableDeclaration extends Declaration implements Symbol
 		}
 
 		asm.addLabel(globallyUniqueName);
-		asm.emit("dc", "" + initValue);
+		if (type instanceof ArrayType)
+			asm.emit("ds", "" + type.getSize());
+		else
+			asm.emit("dc", "" + initValue);
 	}
 
 	private void compileLocalVariable(Assembler asm, Scope scope, Registers regs)

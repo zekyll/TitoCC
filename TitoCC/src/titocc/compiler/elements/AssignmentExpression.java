@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import titocc.compiler.Assembler;
 import titocc.compiler.Lvalue;
-import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -169,6 +169,12 @@ public class AssignmentExpression extends Expression
 
 		// Deallocate the third register.
 		regs.deallocate(asm);
+	}
+
+	@Override
+	public CType getType(Scope scope) throws SyntaxException
+	{
+		return left.getType(scope);
 	}
 
 	@Override

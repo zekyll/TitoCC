@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.IntType;
 import titocc.tokenizer.IntegerLiteralToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -61,6 +63,12 @@ public class IntegerLiteralExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		compileConstantExpression(asm, scope, regs);
+	}
+
+	@Override
+	public CType getType(Scope scope)
+	{
+		return new IntType();
 	}
 
 	@Override

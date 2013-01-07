@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import titocc.compiler.types.CType;
 
 public class ScopeTest
 {
@@ -34,6 +35,12 @@ public class ScopeTest
 		public String getReference()
 		{
 			return name;
+		}
+
+		@Override
+		public CType getType()
+		{
+			return null;
 		}
 	}
 	private Scope globalScope;

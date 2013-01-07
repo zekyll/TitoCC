@@ -6,6 +6,7 @@ import titocc.compiler.Lvalue;
 import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -91,6 +92,8 @@ public abstract class Expression extends CodeElement
 	{
 		throw new SyntaxException("Operation requires an lvalue", getLine(), getColumn());
 	}
+
+	public abstract CType getType(Scope scope) throws SyntaxException;
 
 	/**
 	 * Attempts to evaluates the expression as a function. As with

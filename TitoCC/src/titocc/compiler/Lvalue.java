@@ -37,7 +37,7 @@ public class Lvalue
 	 * @param asm assembler used for emitting the load instruction
 	 * @throws IOException if the assembler throws
 	 */
-	public void loadToRegister(Assembler asm) throws IOException
+	public void loadAddressToRegister(Assembler asm) throws IOException
 	{
 		if (reference != null)
 			asm.emit("load", register.toString(), "=" + reference);

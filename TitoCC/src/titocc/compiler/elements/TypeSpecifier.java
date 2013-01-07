@@ -1,8 +1,10 @@
 package titocc.compiler.elements;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.IntType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
@@ -15,8 +17,13 @@ import titocc.tokenizer.TokenStream;
  */
 public class TypeSpecifier extends CodeElement
 {
-	static final String[] types = {"void", "int"};
-	static final Set<String> typesSet = new HashSet<String>(Arrays.asList(types));
+	static final Map<String, CType> typeMap = new HashMap<String, CType>()
+	{
+		{
+			put("void", new VoidType());
+			put("int", new IntType());
+		}
+	};
 	private String name;
 
 	/**
@@ -42,6 +49,16 @@ public class TypeSpecifier extends CodeElement
 		return name;
 	}
 
+	/**
+	 * Returns the type corresponding to the type specifier.
+	 *
+	 * @return the type
+	 */
+	public CType getType()
+	{
+		return typeMap.get(name);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -62,7 +79,7 @@ public class TypeSpecifier extends CodeElement
 		TypeSpecifier type = null;
 
 		Token token = tokens.read();
-		if (typesSet.contains(token.toString()))
+		if (typeMap.containsKey(token.toString()))
 			type = new TypeSpecifier(token.toString(), line, column);
 
 		tokens.popMark(type == null);

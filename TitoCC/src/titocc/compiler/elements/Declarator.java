@@ -1,7 +1,10 @@
 package titocc.compiler.elements;
 
+import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.PointerType;
 import titocc.tokenizer.IdentifierToken;
+import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
@@ -65,9 +68,16 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType getModifiedType(CType type)
+		public CType getModifiedType(CType type) throws SyntaxException
 		{
-			return type;
+			Integer len = arrayLength.getCompileTimeValue();
+			if (!type.isObject())
+				throw new SyntaxException("Array elements must have object type.", getLine(), getColumn());
+			if (len == null)
+				throw new SyntaxException("Array length must be a compile time constant.", getLine(), getColumn());
+			else if(len <= 0)
+				throw new SyntaxException("Array length must be a positive integer.", getLine(), getColumn());
+			return subDeclarator.getModifiedType(new ArrayType(type, len));
 		}
 
 		@Override
@@ -94,9 +104,9 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType getModifiedType(CType type)
+		public CType getModifiedType(CType type) throws SyntaxException
 		{
-			return type;
+			return subDeclarator.getModifiedType(new PointerType(type));
 		}
 
 		@Override
@@ -113,7 +123,7 @@ public abstract class Declarator extends CodeElement
 
 	public abstract String getName();
 
-	public abstract CType getModifiedType(CType type);
+	public abstract CType getModifiedType(CType type) throws SyntaxException;
 
 	public static Declarator parse(TokenStream tokens)
 	{

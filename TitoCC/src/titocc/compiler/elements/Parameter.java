@@ -3,6 +3,9 @@ package titocc.compiler.elements;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.types.ArrayType;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -14,27 +17,28 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> PARAMETER = TYPE_SPECIFIER IDENTIFIER
+ * <br> PARAMETER = TYPE_SPECIFIER DECLARATOR
  */
 public class Parameter extends CodeElement implements Symbol
 {
-	private TypeSpecifier type;
-	private String name;
+	private TypeSpecifier typeSpecifier;
+	private Declarator declarator;
 	private String globallyUniqueName;
+	private CType type;
 
 	/**
 	 * Constructs a Parameter.
 	 *
-	 * @param type type of the parameter
-	 * @param name name of the parameter
+	 * @param typeSpecifier type specifier
+	 * @param declarator declarator
 	 * @param line starting line number of the parameter
 	 * @param column starting column/character of the parameter
 	 */
-	public Parameter(TypeSpecifier type, String name, int line, int column)
+	public Parameter(TypeSpecifier typeSpecifier, Declarator declarator, int line, int column)
 	{
 		super(line, column);
-		this.type = type;
-		this.name = name;
+		this.typeSpecifier = typeSpecifier;
+		this.declarator = declarator;
 	}
 
 	/**
@@ -42,7 +46,7 @@ public class Parameter extends CodeElement implements Symbol
 	 *
 	 * @return the type
 	 */
-	public TypeSpecifier getType()
+	public CType getType()
 	{
 		return type;
 	}
@@ -50,24 +54,32 @@ public class Parameter extends CodeElement implements Symbol
 	@Override
 	public String getName()
 	{
-		return name;
+		return declarator.getName();
 	}
 
 	/**
 	 * Checks the parameter type and defines the symbol for the parameter.
 	 *
 	 * @param scope scope in which the parameter is evaluated
+	 * @return type of the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was
 	 * redefined
 	 */
-	public void compile(Scope scope) throws SyntaxException
+	public CType compile(Scope scope) throws SyntaxException
 	{
-		if (type.getName().equals("void"))
-			throw new SyntaxException("Parameter type cannot be void.", getLine(), getColumn());
+		// Compile the type and check that it is valid.
+		type = declarator.getModifiedType(typeSpecifier.getType());
+		if (!type.isObject())
+			throw new SyntaxException("Parameter must have object type.", getLine(), getColumn());
+		if (type instanceof ArrayType)
+			throw new SyntaxException("Array parameters are not supported.", getLine(), getColumn());
+
 		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
-		globallyUniqueName = scope.makeGloballyUniqueName(name);
+			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getLine(), getColumn());
+		globallyUniqueName = scope.makeGloballyUniqueName(getName());
 		scope.add(this);
+
+		return type;
 	}
 
 	@Override
@@ -85,7 +97,7 @@ public class Parameter extends CodeElement implements Symbol
 	@Override
 	public String toString()
 	{
-		return "(PRM " + type + " " + name + ")";
+		return "(PRM " + typeSpecifier + " " + declarator + ")";
 	}
 
 	/**
@@ -101,12 +113,12 @@ public class Parameter extends CodeElement implements Symbol
 		tokens.pushMark();
 		Parameter param = null;
 
-		TypeSpecifier type = TypeSpecifier.parse(tokens);
+		TypeSpecifier typeSpecifier = TypeSpecifier.parse(tokens);
 
-		if (type != null) {
-			Token id = tokens.read();
-			if (id instanceof IdentifierToken)
-				param = new Parameter(type, id.toString(), line, column);
+		if (typeSpecifier != null) {
+			Declarator declarator = Declarator.parse(tokens);
+			if (declarator != null)
+				param = new Parameter(typeSpecifier, declarator, line, column);
 		}
 
 		tokens.popMark(param == null);

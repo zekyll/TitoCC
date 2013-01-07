@@ -12,4 +12,12 @@ public class VoidType extends CType
 	{
 		return obj instanceof IntType;
 	}
+
+	@Override
+	public int getSize()
+	{
+		// Could return 1 here to allow void pointer arithmetic, but it's not
+		// standard compliant.
+		return 0;
+	}
 }

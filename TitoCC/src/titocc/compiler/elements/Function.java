@@ -9,6 +9,8 @@ import titocc.compiler.InternalSymbol;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -31,7 +33,8 @@ public class Function extends Declaration implements Symbol
 	private ParameterList parameterList;
 	private BlockStatement body;
 	private String globallyUniqueName;
-	InternalSymbol retValSymbol, endSymbol;
+	private InternalSymbol retValSymbol, endSymbol;
+	private CType type;
 
 	/**
 	 * Constructs a Function.
@@ -58,9 +61,9 @@ public class Function extends Declaration implements Symbol
 	 *
 	 * @return the return type
 	 */
-	public TypeSpecifier getReturnType()
+	public CType getReturnType()
 	{
-		return returnType;
+		return returnType.getType();
 	}
 
 	@Override
@@ -114,7 +117,8 @@ public class Function extends Declaration implements Symbol
 		scope.addSubScope(functionScope);
 
 		addInternalSymbols(functionScope);
-		compileParameters(asm, functionScope);
+		List<CType> paramTypes = compileParameters(asm, functionScope);
+		type = new FunctionType(returnType.getType(), paramTypes);
 
 		// Compile body before prologue because we want to know all the local
 		// variables in the prologue.
@@ -126,46 +130,46 @@ public class Function extends Declaration implements Symbol
 
 		compilePrologue(asm, localVariables);
 		asm.getWriter().append(bodyWriter.toString());
-		compileEpilogue(asm, localVariables.size());
+		compileEpilogue(asm, localVariables);
 	}
 
 	private void addInternalSymbols(Scope scope)
 	{
 		// Add symbol for the function end so that return statements can jump to it.
-		endSymbol = new InternalSymbol("End", scope, ""); //__End
+		endSymbol = new InternalSymbol("End", scope, "", null); //__End
 		scope.add(endSymbol);
 
 		// Add symbol for location of the return value.
-		retValSymbol = new InternalSymbol("Ret", scope, "(fp)"); //__Ret
+		retValSymbol = new InternalSymbol("Ret", scope, "(fp)", returnType.getType()); //__Ret
 		scope.add(retValSymbol);
 	}
 
-	private void compileParameters(Assembler asm, Scope scope)
+	private List<CType> compileParameters(Assembler asm, Scope scope)
 			throws IOException, SyntaxException
 	{
 		// Define constants for return value and parameters and add their symbols.
 		asm.addLabel(retValSymbol.getGlobalName());
 		asm.emit("equ", "-" + (getParameterCount() + 2));
-		parameterList.compile(asm, scope);
+		return parameterList.compile(asm, scope);
 	}
 
 	private void compilePrologue(Assembler asm, List<Symbol> localVariables)
 			throws IOException, SyntaxException
 	{
 		// Define constants for local variables.
-		int varIdx = 0;
+		int varOffset = 0;
 		for (Symbol var : localVariables) {
 			asm.addLabel(var.getGlobalName());
-			asm.emit("equ", "" + varIdx);
-			++varIdx;
+			asm.emit("equ", "" + varOffset);
+			varOffset += var.getType().getSize();
 		}
 
 		// Label for function entry point.
 		asm.addLabel(getReference());
 
 		// Allocate stack space for local variables.
-		if (localVariables.size() > 0)
-			asm.emit("add", "sp", "=" + localVariables.size());
+		if (varOffset > 0)
+			asm.emit("add", "sp", "=" + varOffset);
 
 		// Push registers.
 		asm.emit("pushr", "sp");
@@ -180,7 +184,7 @@ public class Function extends Declaration implements Symbol
 			st.compile(asm, scope, registers);
 	}
 
-	private void compileEpilogue(Assembler asm, int localVariableCount)
+	private void compileEpilogue(Assembler asm, List<Symbol> localVariables)
 			throws IOException, SyntaxException
 	{
 		// Pop registers from stack.
@@ -188,8 +192,11 @@ public class Function extends Declaration implements Symbol
 		asm.emit("popr", "sp");
 
 		// Remove local variables from stack.
-		if (localVariableCount > 0)
-			asm.emit("sub", "sp", "=" + localVariableCount);
+		int localVarTotalSize = 0;
+		for (Symbol var : localVariables)
+			localVarTotalSize += var.getType().getSize();
+		if (localVarTotalSize > 0)
+			asm.emit("sub", "sp", "=" + localVarTotalSize);
 
 		// Exit from function.
 		asm.emit("exit", "sp", "=" + getParameterCount());
@@ -220,6 +227,20 @@ public class Function extends Declaration implements Symbol
 	public String getReference()
 	{
 		return globallyUniqueName;
+	}
+
+	@Override
+	public CType getType()
+	{
+		return type;
+	}
+
+	private void compileType()
+	{
+		List<CType> paramTypes = new ArrayList<CType>();
+		for (Parameter p : parameterList.getParameters())
+			paramTypes.add(p.getType());
+		type = new FunctionType(returnType.getType(), paramTypes);
 	}
 
 	@Override

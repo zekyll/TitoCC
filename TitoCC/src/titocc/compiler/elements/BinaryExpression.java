@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import titocc.compiler.Assembler;
 import titocc.compiler.InternalCompilerException;
-import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -258,6 +258,12 @@ public class BinaryExpression extends Expression
 		// Compile time evaluation of binary operators could be implemented here.
 
 		return null;
+	}
+
+	@Override
+	public CType getType(Scope scope) throws SyntaxException
+	{
+		return left.getType(scope); //TODO
 	}
 
 	@Override

@@ -6,6 +6,8 @@ import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.types.ArrayType;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -49,20 +51,22 @@ public class IdentifierExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		// Load value to first register.
-		Lvalue val = compileAsLvalue(asm, scope, regs);
-		asm.emit("load", regs.get(0).toString(), val.getReference());
+		Symbol symbol = findSymbol(scope);
+
+		// Load value to first register (or address if we have an array).
+		if (symbol.getType() instanceof ArrayType)
+			asm.emit("load", regs.get(0).toString(), "=" + symbol.getReference());
+		else
+			asm.emit("load", regs.get(0).toString(), symbol.getReference());
 	}
 
 	@Override
 	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		Symbol symbol = scope.find(identifier);
-		if (symbol == null)
-			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
+		Symbol symbol = findSymbol(scope);
 		if (symbol instanceof Function)
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not a variable.", getLine(), getColumn());
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getLine(), getColumn());
 
 		return new Lvalue(regs.get(0), symbol.getReference());
 	}
@@ -70,9 +74,7 @@ public class IdentifierExpression extends Expression
 	@Override
 	public Function getFunction(Scope scope) throws SyntaxException
 	{
-		Symbol symbol = scope.find(identifier);
-		if (symbol == null)
-			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
+		Symbol symbol = findSymbol(scope);
 		if (!(symbol instanceof Function))
 			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.", getLine(), getColumn());
 
@@ -80,9 +82,23 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
+	public CType getType(Scope scope) throws SyntaxException
+	{
+		return findSymbol(scope).getType();
+	}
+
+	@Override
 	public String toString()
 	{
 		return "(ID_EXPR " + identifier + ")";
+	}
+
+	private Symbol findSymbol(Scope scope) throws SyntaxException
+	{
+		Symbol symbol = scope.find(identifier);
+		if (symbol == null)
+			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
+		return symbol;
 	}
 
 	/**

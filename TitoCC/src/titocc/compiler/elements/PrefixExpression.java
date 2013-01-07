@@ -7,6 +7,9 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.IntType;
+import titocc.compiler.types.PointerType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -15,7 +18,7 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~")
+ * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~", "&", "*")
  * PREFIX_EXPRESSION | POSTFIX_EXPRESSION
  */
 public class PrefixExpression extends Expression
@@ -68,10 +71,8 @@ public class PrefixExpression extends Expression
 
 		if (operator.equals("++") || operator.equals("--"))
 			compileIncDec(asm, scope, regs);
-		else if (operator.equals("+"))
-			operand.compile(asm, scope, regs);
-		else if (operator.equals("-"))
-			compileUnaryMinus(asm, scope, regs);
+		else if (operator.equals("+") || operator.equals("-"))
+			compileUnaryPlusMinus(asm, scope, regs);
 		else if (operator.equals("!"))
 			compileLogicalNegation(asm, scope, regs);
 		else if (operator.equals("~"))
@@ -108,26 +109,36 @@ public class PrefixExpression extends Expression
 		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
-		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=1");
+		int incSize = getIncrementSize(scope);
+		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=" + incSize);
 		asm.emit("store", regs.get(0).toString(), val.getReference());
 
 		// Deallocate the second register.
 		regs.deallocate(asm);
 	}
 
-	private void compileUnaryMinus(Assembler asm, Scope scope, Registers regs)
+	private void compileUnaryPlusMinus(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		if (!operand.getType(scope).isArithmetic())
+			throw new SyntaxException("Operator " + operator + " requires an arithmetic type.", getLine(), getColumn());
+
+		operand.compile(asm, scope, regs);
 		operand.compile(asm, scope, regs);
 
 		// Negative in two's complement: negate all bits and add 1.
-		asm.emit("xor", regs.get(0).toString(), "=-1");
-		asm.emit("add", regs.get(0).toString(), "=1");
+		if (operator.equals("--")) {
+			asm.emit("xor", regs.get(0).toString(), "=-1");
+			asm.emit("add", regs.get(0).toString(), "=1");
+		}
 	}
 
 	private void compileLogicalNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		if (!operand.getType(scope).isScalar())
+			throw new SyntaxException("Operator " + operator + " requires a scalar type.", getLine(), getColumn());
+
 		operand.compile(asm, scope, regs);
 
 		// Compares operand to zero and sets register value according to
@@ -143,6 +154,9 @@ public class PrefixExpression extends Expression
 	private void compileBitwiseNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		if (!operand.getType(scope).isInteger())
+			throw new SyntaxException("Operator " + operator + " requires an integer type.", getLine(), getColumn());
+
 		operand.compile(asm, scope, regs);
 
 		// -1 has representation of all 1 bits (0xFFFFFFFF), and therefore
@@ -155,16 +169,34 @@ public class PrefixExpression extends Expression
 	{
 		// Load the address of the operand in the first register.
 		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
-		val.loadToRegister(asm);
+		val.loadAddressToRegister(asm);
 	}
 
 	private void compileDereference(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		if(operand.getType(scope).dereference() == null)
+			throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
+
 		// Load the value pointed by the first register by using indirect
 		// addressing mode (@).
 		operand.compile(asm, scope, regs);
 		asm.emit("load", regs.get(0).toString(), "@" + regs.get(0).toString());
+	}
+
+	@Override
+	public CType getType(Scope scope) throws SyntaxException
+	{
+		if (operator.equals("&")) {
+			return new PointerType(operand.getType(scope));
+		} if (operator.equals("*")) {
+			if(operand.getType(scope).dereference() == null)
+				throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
+			return operand.getType(scope).dereference();
+		} else if (operator.equals("!") || operator.equals("~")) {
+			return new IntType();
+		} else
+			return operand.getType(scope);
 	}
 
 	@Override
@@ -189,6 +221,14 @@ public class PrefixExpression extends Expression
 	public String toString()
 	{
 		return "(PRE_EXPR " + operator + " " + operand + ")";
+	}
+
+	private int getIncrementSize(Scope scope) throws SyntaxException
+	{
+		int incSize = operand.getType(scope).getIncrementSize();
+		if (incSize == 0)
+			throw new SyntaxException("Operator " + operator + " cannot be applied to the type.", getLine(), getColumn());
+		return incSize;
 	}
 
 	/**

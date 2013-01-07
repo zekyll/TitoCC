@@ -6,6 +6,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -72,14 +73,29 @@ public class PostfixExpression extends Expression
 		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
-		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=1");
+		int incSize = getIncrementSize(scope);
+		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=" + incSize);
 		asm.emit("store", regs.get(0).toString(), val.getReference());
 
 		// Expression must return the old value.
-		asm.emit(operator.equals("++") ? "sub" : "add", regs.get(0).toString(), "=1");
+		asm.emit(operator.equals("++") ? "sub" : "add", regs.get(0).toString(), "=" + incSize);
 
 		// Deallocate the second register.
 		regs.deallocate(asm);
+	}
+
+	private int getIncrementSize(Scope scope) throws SyntaxException
+	{
+		int incSize = operand.getType(scope).getIncrementSize();
+		if (incSize == 0)
+			throw new SyntaxException("Operator " + operator + " cannot be applied to the type.", getLine(), getColumn());
+		return incSize;
+	}
+
+	@Override
+	public CType getType(Scope scope) throws SyntaxException
+	{
+		return operand.getType(scope);
 	}
 
 	@Override

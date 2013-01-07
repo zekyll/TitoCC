@@ -7,6 +7,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.types.IntType;
 import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -123,6 +124,6 @@ public class TranslationUnit extends CodeElement
 			return false;
 
 		Function main = (Function) sym;
-		return main.getReturnType().getName().equals("int") && main.getParameterCount() == 0;
+		return main.getReturnType().equals(new IntType()) && main.getParameterCount() == 0;
 	}
 }

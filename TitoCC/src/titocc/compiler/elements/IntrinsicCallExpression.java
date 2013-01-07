@@ -5,6 +5,9 @@ import java.util.Arrays;
 import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.IntType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -102,6 +105,16 @@ public class IntrinsicCallExpression extends Expression
 
 		argumentList.getArguments().get(0).compile(asm, scope, regs);
 		asm.emit("out", regs.get(0).toString(), "=crt");
+	}
+
+	@Override
+	public CType getType(Scope scope)
+	{
+		if(name.equals("in"))
+			return new IntType();
+		else if(name.equals("out"))
+			return new VoidType();
+		return null;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package titocc.compiler;
 
+import titocc.compiler.types.CType;
+
 /**
  * Represents a declared name like variable, function or code position.
  */
@@ -30,4 +32,6 @@ public interface Symbol
 	 * @return assembly code reference
 	 */
 	public String getReference();
+
+	public CType getType();
 }

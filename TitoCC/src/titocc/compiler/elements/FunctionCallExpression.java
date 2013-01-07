@@ -4,6 +4,8 @@ import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -74,7 +76,7 @@ public class FunctionCallExpression extends Expression
 	{
 		Function func = validateFunction(scope);
 
-		if (func.getReturnType().getName().equals("void")) {
+		if (func.getReturnType().equals(new VoidType())) {
 			if (returnValueRequired)
 				throw new SyntaxException("Void return value used in an expression.", getLine(), getColumn());
 		} else {
@@ -89,7 +91,7 @@ public class FunctionCallExpression extends Expression
 		asm.emit("call", "sp", func.getReference());
 
 		// Read the return value.
-		if (!func.getReturnType().getName().equals("void"))
+		if (!func.getReturnType().equals(new VoidType()))
 			asm.emit("pop", "sp", regs.get(0).toString());
 	}
 
@@ -101,6 +103,13 @@ public class FunctionCallExpression extends Expression
 		if (func.getParameterCount() != argumentList.getArguments().size())
 			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
 		return func;
+	}
+
+	@Override
+	public CType getType(Scope scope) throws SyntaxException
+	{
+		Function func = validateFunction(scope);
+		return func.getReturnType();
 	}
 
 	@Override

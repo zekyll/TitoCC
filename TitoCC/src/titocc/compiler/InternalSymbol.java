@@ -1,5 +1,7 @@
 package titocc.compiler;
 
+import titocc.compiler.types.CType;
+
 /**
  * Class for symbols that are only used internally by the compiler, like code
  * positions inside functions etc.
@@ -7,6 +9,7 @@ package titocc.compiler;
 public class InternalSymbol implements Symbol
 {
 	private String name, globallyUniqueName, referenceSuffix;
+	private CType type;
 
 	/**
 	 * Constructs a new internal symbol. The actual name of the symbol is
@@ -17,12 +20,14 @@ public class InternalSymbol implements Symbol
 	 * @param scope scope this symbol belongs to
 	 * @param referenceSuffix suffix that is added to global name to get the
 	 * reference ("(fp)" can be used for stack frame variables)
+	 * @param type type of the symbol
 	 */
-	public InternalSymbol(String name, Scope scope, String referenceSuffix)
+	public InternalSymbol(String name, Scope scope, String referenceSuffix, CType type)
 	{
 		this.name = "__" + name;
 		this.globallyUniqueName = scope.makeGloballyUniqueName(name);
 		this.referenceSuffix = referenceSuffix;
+		this.type = type;
 	}
 
 	@Override
@@ -41,5 +46,11 @@ public class InternalSymbol implements Symbol
 	public String getReference()
 	{
 		return globallyUniqueName + referenceSuffix;
+	}
+
+	@Override
+	public CType getType()
+	{
+		return type;
 	}
 }

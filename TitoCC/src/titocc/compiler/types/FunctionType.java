@@ -2,7 +2,7 @@ package titocc.compiler.types;
 
 import java.util.List;
 
-public class FunctionType
+public class FunctionType extends CType
 {
 	private CType returnType;
 	private List<CType> parameterTypes;
@@ -11,11 +11,6 @@ public class FunctionType
 	{
 		this.returnType = returnType;
 		this.parameterTypes = parameterTypes;
-	}
-
-	public boolean isObject()
-	{
-		return true;
 	}
 
 	@Override
@@ -28,5 +23,11 @@ public class FunctionType
 
 		return parameterTypes.equals(func.parameterTypes)
 				&& returnType.equals(func.returnType);
+	}
+
+	@Override
+	public int getSize()
+	{
+		return 0;
 	}
 }

@@ -5,21 +5,31 @@ public class ArrayType extends CType
 	private CType elementType;
 	private int length;
 
-	public ArrayType(CType elementType, int size)
+	public ArrayType(CType elementType, int length)
 	{
 		this.elementType = elementType;
+		this.length = length;
 	}
 
+	@Override
+	public boolean isObject()
+	{
+		return true;
+	}
+
+	@Override
 	public boolean isPointer()
 	{
 		return true;
 	}
 
+	@Override
 	public CType dereference()
 	{
 		return elementType;
 	}
 
+	@Override
 	public int getSize()
 	{
 		return elementType.getSize() * length;
