@@ -153,7 +153,7 @@ public class BinaryExpression extends Expression
 			compileSimpleOperator(asm, scope, regs);
 		else if (binaryOperators.get(operator).type == Type.BOOLEAN)
 			compileBooleanOperator(asm, scope, regs);
-		else if (binaryOperators.get(operator).type == Type.BOOLEAN)
+		else if (binaryOperators.get(operator).type == Type.COMPARISON)
 			compileComparisonOperator(asm, scope, regs);
 
 		// Deallocate the second register.
