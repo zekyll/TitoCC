@@ -11,11 +11,27 @@ import titocc.util.AsciiUtil;
  */
 public abstract class WordToken extends Token
 {
+	/**
+	 * Constructs a WordToken.
+	 *
+	 * @param string word string
+	 * @param line line number where the token is located
+	 * @param column column number where the token is located
+	 */
 	protected WordToken(String string, int line, int column)
 	{
 		super(string, line, column);
 	}
 
+	/**
+	 * Attempts to parse a word token from input. If the characters don't
+	 * match a valid word token then resets the stream to its original position
+	 * and returns null.
+	 *
+	 * @param reader code reader from which charactes are read
+	 * @return WordToken object or null if no valid word was found
+	 * @throws IOException if code reader throws
+	 */	
 	public static WordToken parse(CodeReader reader) throws IOException
 	{
 		WordToken token = null;
