@@ -102,8 +102,7 @@ public class SourceFile
 			List<Token> tokens = tokenizer.tokenize();
 			log.logMessage("Tokenization completed successfully.");
 
-			Parser parser = new Parser(tokens);
-			TranslationUnit trUnit = parser.parse();
+			TranslationUnit trUnit = Parser.parse(tokens);
 			//writer.append(";PARSER OUTPUT: " + trUnit.toString() + "\n");
 			log.logMessage("Parsing completed successfully.");
 

@@ -7,33 +7,24 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Main parser class. Just a wrapper class and the actual work is done by the
- * CodeElement classes. The parser takes a list of tokens and produces a code
- * element tree structure where TranslationUnit is the root element.
+ * Main parser class. Really just a wrapper and the actual parsing is done by
+ * the CodeElement classes.
  */
 public class Parser
 {
-	private TokenStream tokens;
-
 	/**
-	 * Constructs the parser object using a list of tokens.
+	 * Parses a list of tokens. Produces a code element tree structure where
+	 * TranslationUnit is the root element.
 	 *
-	 * @param tokens list of input tokens created by Tokenizer class.
-	 */
-	public Parser(List<Token> tokens)
-	{
-		this.tokens = new TokenStream(tokens);
-	}
-
-	/**
-	 *
-	 * @return TranslationUnit object which is the top level element in the code
-	 * element hierarchy
+	 * @return a TranslationUnit object which is the top level element in the
+	 * code element hierarchy
 	 * @throws SyntaxException if the source code has errors
 	 */
-	public TranslationUnit parse() throws SyntaxException
+	static public TranslationUnit parse(List<Token> tokens) throws SyntaxException
 	{
-		TranslationUnit trUnit = TranslationUnit.parse(tokens);
+		TokenStream tokenStream = new TokenStream(tokens);
+
+		TranslationUnit trUnit = TranslationUnit.parse(tokenStream);
 		if (trUnit == null) {
 			throw new SyntaxException("Parser error.", -1, -1);
 		}

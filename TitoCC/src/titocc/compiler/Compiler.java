@@ -71,8 +71,7 @@ public class Compiler
 	private void tokenizeAndParse() throws IOException, SyntaxException
 	{
 		Tokenizer tokenizer = new Tokenizer(reader);
-		Parser parser = new Parser(tokenizer.tokenize());
-		translationUnit = parser.parse();
+		translationUnit = Parser.parse(tokenizer.tokenize());
 	}
 
 	/**

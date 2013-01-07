@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import titocc.compiler.Assembler;
 import titocc.compiler.InternalCompilerException;
-import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
