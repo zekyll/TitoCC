@@ -43,8 +43,7 @@ public class ParserTest
 	private String parse(String code) throws IOException, SyntaxException
 	{
 		tokenizer = new Tokenizer(new StringReader(code));
-		Parser p = new Parser(tokenizer.tokenize());
-		TranslationUnit translationUnit = p.parse();
+		TranslationUnit translationUnit = Parser.parse(tokenizer.tokenize());
 		return translationUnit.toString();
 	}
 
@@ -211,8 +210,7 @@ public class ParserTest
 				+ "}"
 				+ "int x;";
 		Tokenizer t = new Tokenizer(new StringReader(code));
-		Parser p = new Parser(t.tokenize());
-		TranslationUnit tunit = p.parse();
+		TranslationUnit tunit = Parser.parse(t.tokenize());
 		assertEquals(""
 				+ "(TRUNIT "
 				+ "(FUNC (TYPE int) foo "

@@ -36,3 +36,12 @@ To 3.2.2013
 	(0.5h) Dokumentaation ja luokkakaavion päivitys.
 LA 5.2.2013
 	(5h) Lisää Javadocceja.
+SU 6.2.2013
+	(5h) Kääntäjän refaktorointia ja parantelua.
+	(1.5h) Testejä kääntäjän virheilmoituksille.
+	(8h) Aloitettu osoittimien ja taulukkojen toteutus erilliseen branchiin.
+MA 6.2.2013
+	(8h) Pointterien/taulukoiden toteutusta, deklaraattorit ja tyyppijärjestelmä.
+	(1h) Refaktorointia.
+	(2h) Sekvenssikaaviot.
+	(1h) Tokenisoijan javadocit.

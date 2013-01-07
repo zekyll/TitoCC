@@ -60,11 +60,27 @@ public class PunctuatorToken extends Token
 	};
 	private static Set<String> punctuators = new HashSet<String>(Arrays.asList(punctuatorList));
 
-	private PunctuatorToken(String string, int line, int column)
+	/**
+	 * Constructs a PunctuatorToken.
+	 *
+	 * @param string punctuator string
+	 * @param line line number where the token is located
+	 * @param column column number where the token is located
+	 */	
+	public PunctuatorToken(String string, int line, int column)
 	{
 		super(string, line, column);
 	}
 
+	/**
+	 * Attempts to parse a punctuator from input. If the characters don't match
+	 * any punctuators then resets the stream to its original position and
+	 * returns null.
+	 *
+	 * @param reader code reader from which charactes are read
+	 * @return PunctuatorToken object or null if no valid punctuator was found
+	 * @throws IOException if code reader throws
+	 */
 	public static PunctuatorToken parse(CodeReader reader) throws IOException
 	{
 		PunctuatorToken token = null;
