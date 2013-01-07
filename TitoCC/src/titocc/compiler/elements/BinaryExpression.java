@@ -1,9 +1,9 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import titocc.compiler.Assembler;
-import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
@@ -42,24 +42,56 @@ import titocc.tokenizer.TokenStream;
  */
 public class BinaryExpression extends Expression
 {
-	// Binary operators grouped according to their priority.
-	static final String[][] binaryOperators = {
-		{"||"},
-		{"&&"},
-		{"|"},
-		{"^"},
-		{"&"},
-		{"=="},
-		{"!="},
-		{"<", "<=", ">", ">="},
-		{"<<", ">>"},
-		{"+", "-"},
-		{"*", "/", "%"}
+	private enum Type
+	{
+		SIMPLE, COMPARISON, BOOLEAN
+	};
+
+	/**
+	 * Binary operator with mnemonic and operation type.
+	 */
+	private static class Operator
+	{
+		public String mnemonic;
+		public Type type;
+		int priority;
+
+		public Operator(String mnemonic, Type type, int priority)
+		{
+			this.mnemonic = mnemonic;
+			this.type = type;
+			this.priority = priority;
+		}
+	}
+	// Binary operators, their main instructions and priorities.
+	static final Map<String, Operator> binaryOperators = new HashMap<String, Operator>()
+	{
+		{
+			put("||", new Operator("jnzer", Type.BOOLEAN, 1));
+			put("&&", new Operator("jzer", Type.BOOLEAN, 2));
+			put("|", new Operator("or", Type.SIMPLE, 3));
+			put("^", new Operator("xor", Type.SIMPLE, 4));
+			put("&", new Operator("and", Type.SIMPLE, 5));
+			put("==", new Operator("jequ", Type.COMPARISON, 6));
+			put("!=", new Operator("jnequ", Type.COMPARISON, 7));
+			put("<", new Operator("jles", Type.COMPARISON, 8));
+			put("<=", new Operator("jngre", Type.COMPARISON, 8));
+			put(">", new Operator("jgre", Type.COMPARISON, 8));
+			put(">=", new Operator("jnles", Type.COMPARISON, 8));
+			put("<<", new Operator("shl", Type.SIMPLE, 9));
+			put(">>", new Operator("shr", Type.SIMPLE, 9));
+			put("+", new Operator("add", Type.SIMPLE, 10));
+			put("-", new Operator("sub", Type.SIMPLE, 10));
+			put("*", new Operator("mul", Type.SIMPLE, 11));
+			put("/", new Operator("div", Type.SIMPLE, 11));
+			put("%", new Operator("mod", Type.SIMPLE, 11));
+		}
 	};
 	private String operator;
 	private Expression left, right;
 
 	/**
+	 * Constructs a BinaryExpression.
 	 *
 	 * @param operator operator as string
 	 * @param left left operand
@@ -116,14 +148,13 @@ public class BinaryExpression extends Expression
 		// Allocate a second register for right operand.
 		regs.allocate(asm);
 
-		// Evaluate right expression and store it in the second register.
-		// With logical or/and don't evaluate yet because of the short circuit
-		// Evaluation.
-		if (!operator.equals("||") && !operator.equals("&&"))
-			compileRight(asm, scope, regs);
-
-		// Evaluate the operation and store the result in the left register.
-		compileOperator(asm, scope, regs);
+		// Compile right expression and the operator.
+		if (binaryOperators.get(operator).type == Type.SIMPLE)
+			compileSimpleOperator(asm, scope, regs);
+		else if (binaryOperators.get(operator).type == Type.BOOLEAN)
+			compileBooleanOperator(asm, scope, regs);
+		else if (binaryOperators.get(operator).type == Type.BOOLEAN)
+			compileComparisonOperator(asm, scope, regs);
 
 		// Deallocate the second register.
 		regs.deallocate(asm);
@@ -137,125 +168,45 @@ public class BinaryExpression extends Expression
 		regs.addFirst();
 	}
 
-	private void compileOperator(Assembler asm, Scope scope, Registers regs)
+	private void compileSimpleOperator(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		String jumpLabel, jumpLabel2;
-		switch (operator) {
-			case "||":
-				// Short circuit evaluation; only evaluate RHS if LHS is false.
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-				asm.emit("jnzer", regs.get(0).toString(), jumpLabel);
-				compileRight(asm, scope, regs);
-				asm.emit("jnzer", regs.get(1).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.emit("jump", regs.get(0).toString(), jumpLabel2);
-				asm.addLabel(jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.addLabel(jumpLabel2);
-				break;
-			case "&&":
-				// Short circuit evaluation; only evaluate RHS if LHS is true.
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-				asm.emit("jzer", regs.get(0).toString(), jumpLabel);
-				compileRight(asm, scope, regs);
-				asm.emit("jzer", regs.get(1).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.emit("jump", regs.get(0).toString(), jumpLabel2);
-				asm.addLabel(jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.addLabel(jumpLabel2);
-				break;
-			case "|":
-				asm.emit("or", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "^":
-				asm.emit("xor", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "&":
-				asm.emit("and", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "==":
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.emit("jequ", regs.get(0).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.addLabel(jumpLabel);
-				break;
-			case "!=":
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.emit("jnequ", regs.get(0).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.addLabel(jumpLabel);
-				break;
-			case "<":
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.emit("jles", regs.get(0).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.addLabel(jumpLabel);
-				break;
-			case "<=":
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.emit("jngre", regs.get(0).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.addLabel(jumpLabel);
-				break;
-			case ">":
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.emit("jgre", regs.get(0).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.addLabel(jumpLabel);
-				break;
-			case ">=":
-				jumpLabel = scope.makeGloballyUniqueName("lbl");
-				asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
-				asm.emit("load", regs.get(0).toString(), "=1");
-				asm.emit("jnles", regs.get(0).toString(), jumpLabel);
-				asm.emit("load", regs.get(0).toString(), "=0");
-				asm.addLabel(jumpLabel);
-				break;
-			case "<<":
-				asm.emit("shl", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case ">>":
-				asm.emit("shr", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "+":
-				asm.emit("add", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "-":
-				asm.emit("sub", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "*":
-				asm.emit("mul", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "/":
-				asm.emit("div", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			case "%":
-				asm.emit("mod", regs.get(0).toString(), regs.get(1).toString());
-				break;
-			default:
-				throw new InternalCompilerException("Invalid operator in BinaryExpression.");
-		}
+		compileRight(asm, scope, regs);
+		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+	}
+
+	private void compileComparisonOperator(Assembler asm, Scope scope, Registers regs)
+			throws IOException, SyntaxException
+	{
+		compileRight(asm, scope, regs);
+		String jumpLabel = scope.makeGloballyUniqueName("lbl");
+		asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
+		asm.emit("load", regs.get(0).toString(), "=1");
+		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), jumpLabel);
+		asm.emit("load", regs.get(0).toString(), "=0");
+		asm.addLabel(jumpLabel);
+	}
+
+	private void compileBooleanOperator(Assembler asm, Scope scope, Registers regs)
+			throws IOException, SyntaxException
+	{
+		// Short circuit evaluation; only evaluate RHS if LHS is false.
+		String jumpLabel = scope.makeGloballyUniqueName("lbl");
+		String jumpLabel2 = scope.makeGloballyUniqueName("lbl");
+		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), jumpLabel);
+		compileRight(asm, scope, regs);
+		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(1).toString(), jumpLabel);
+		asm.emit("load", regs.get(0).toString(), operator.equals("||") ? "=0" : "=1");
+		asm.emit("jump", regs.get(0).toString(), jumpLabel2);
+		asm.addLabel(jumpLabel);
+		asm.emit("load", regs.get(0).toString(), operator.equals("||") ? "=1" : "=0");
+		asm.addLabel(jumpLabel2);
 	}
 
 	@Override
 	public Integer getCompileTimeValue()
 	{
 		// Compile time evaluation of binary operators could be implemented here.
-
 		return null;
 	}
 
@@ -279,7 +230,7 @@ public class BinaryExpression extends Expression
 
 	private static Expression parseImpl(TokenStream tokens, int priority)
 	{
-		if (priority == binaryOperators.length)
+		if (priority == 12)
 			return PrefixExpression.parse(tokens);
 
 		int line = tokens.getLine(), column = tokens.getColumn();
@@ -291,7 +242,7 @@ public class BinaryExpression extends Expression
 				tokens.pushMark();
 				Expression right = null;
 				String op = tokens.read().toString();
-				if (Arrays.asList(binaryOperators[priority]).contains(op))
+				if (binaryOperators.containsKey(op) && binaryOperators.get(op).priority == priority)
 					right = parseImpl(tokens, priority + 1);
 
 				tokens.popMark(right == null);
