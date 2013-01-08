@@ -45,7 +45,7 @@ public class ExpressionStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		expression.compileAsVoid(asm, scope, regs);
+		expression.compile(asm, scope, regs);
 	}
 
 	@Override

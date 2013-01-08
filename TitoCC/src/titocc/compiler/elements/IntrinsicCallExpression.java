@@ -66,27 +66,14 @@ public class IntrinsicCallExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		compile(asm, scope, regs, true);
-	}
-
-	@Override
-	public void compileAsVoid(Assembler asm, Scope scope, Registers regs)
-			throws SyntaxException, IOException
-	{
-		compile(asm, scope, regs, false);
-	}
-
-	private void compile(Assembler asm, Scope scope, Registers regs,
-			boolean returnValueRequired) throws SyntaxException, IOException
-	{
 		if (name.equals("in"))
-			compileIn(asm, scope, regs, returnValueRequired);
+			compileIn(asm, scope, regs);
 		else if (name.equals("out"))
-			compileOut(asm, scope, regs, returnValueRequired);
+			compileOut(asm, scope, regs);
 	}
 
-	private void compileIn(Assembler asm, Scope scope, Registers regs,
-			boolean returnValueRequired) throws SyntaxException, IOException
+	private void compileIn(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
 		if (!argumentList.getArguments().isEmpty())
 			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
@@ -94,12 +81,9 @@ public class IntrinsicCallExpression extends Expression
 		asm.emit("in", regs.get(0).toString(), "=kbd");
 	}
 
-	private void compileOut(Assembler asm, Scope scope, Registers regs,
-			boolean returnValueRequired) throws SyntaxException, IOException
+	private void compileOut(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
-		if (returnValueRequired)
-			throw new SyntaxException("Void return value used in an expression.", getLine(), getColumn());
-
 		if (argumentList.getArguments().size() != 1)
 			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
 
@@ -110,9 +94,9 @@ public class IntrinsicCallExpression extends Expression
 	@Override
 	public CType getType(Scope scope)
 	{
-		if(name.equals("in"))
+		if (name.equals("in"))
 			return new IntType();
-		else if(name.equals("out"))
+		else if (name.equals("out"))
 			return new VoidType();
 		return null;
 	}

@@ -46,23 +46,6 @@ public abstract class Expression extends CodeElement
 			throws SyntaxException, IOException;
 
 	/**
-	 * Generates assembly code for the expression without returning a value.
-	 * Behaves like normal compile() but the expression is allowed to have void
-	 * type and it is not requierd to return a value.
-	 *
-	 * @param asm assembler used for code generation
-	 * @param scope scope in which the expression is evaluated
-	 * @param regs available registers; must have at least one active register
-	 * @throws SyntaxException if expression contains an error
-	 * @throws IOException if assembler throws
-	 */
-	public void compileAsVoid(Assembler asm, Scope scope, Registers regs)
-			throws SyntaxException, IOException
-	{
-		compile(asm, scope, regs);
-	}
-
-	/**
 	 * Evaluates the expression at compile time if possible.
 	 *
 	 * @return value of the expression or null if expression cannot be evaluated

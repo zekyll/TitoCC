@@ -58,31 +58,13 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
-			throws SyntaxException, IOException
-	{
-		compile(asm, scope, regs, true);
-	}
-
-	@Override
-	public void compileAsVoid(Assembler asm, Scope scope, Registers regs)
-			throws SyntaxException, IOException
-	{
-		compile(asm, scope, regs, false);
-	}
-
-	private void compile(Assembler asm, Scope scope, Registers regs,
-			boolean returnValueRequired) throws SyntaxException, IOException
+	public void compile(Assembler asm, Scope scope, Registers regs) throws SyntaxException, IOException
 	{
 		Function func = validateFunction(scope);
 
-		if (func.getReturnType().equals(new VoidType())) {
-			if (returnValueRequired)
-				throw new SyntaxException("Void return value used in an expression.", getLine(), getColumn());
-		} else {
-			// Reserve space for return value.
+		// Reserve space for return value.
+		if (!func.getReturnType().equals(new VoidType()))
 			asm.emit("add", "sp", "=1");
-		}
 
 		// Push arguments to stack.
 		argumentList.compile(asm, scope, regs, func.getParameterTypes());

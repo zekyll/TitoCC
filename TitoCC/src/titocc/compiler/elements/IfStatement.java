@@ -73,6 +73,9 @@ public class IfStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		if (!test.getType(scope).isScalar())
+			throw new SyntaxException("Scalar expression required.", getLine(), getColumn());
+
 		// Evaluates and loads the test expression in the first register.
 		test.compile(asm, scope, regs);
 

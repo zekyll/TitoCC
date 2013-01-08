@@ -58,6 +58,9 @@ public class WhileStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		if (!test.getType(scope).isScalar())
+			throw new SyntaxException("Scalar expression required.", getLine(), getColumn());
+
 		// Loop start.
 		String loopStartLabel = scope.makeGloballyUniqueName("lbl");
 		String loopTestLabel = scope.makeGloballyUniqueName("lbl");
