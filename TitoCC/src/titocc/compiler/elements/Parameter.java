@@ -1,14 +1,10 @@
 package titocc.compiler.elements;
 
-import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
-import titocc.compiler.types.VoidType;
-import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
-import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**

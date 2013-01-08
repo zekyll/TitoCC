@@ -10,7 +10,7 @@ public class VoidType extends CType
 	@Override
 	public boolean equals(Object obj)
 	{
-		return obj instanceof IntType;
+		return obj instanceof VoidType;
 	}
 
 	@Override

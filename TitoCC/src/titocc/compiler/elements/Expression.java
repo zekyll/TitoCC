@@ -90,7 +90,7 @@ public abstract class Expression extends CodeElement
 	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		throw new SyntaxException("Operation requires an lvalue", getLine(), getColumn());
+		throw new SyntaxException("Operation requires an lvalue.", getLine(), getColumn());
 	}
 
 	public abstract CType getType(Scope scope) throws SyntaxException;

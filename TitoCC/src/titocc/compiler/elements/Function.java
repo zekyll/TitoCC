@@ -11,6 +11,7 @@ import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -136,7 +137,7 @@ public class Function extends Declaration implements Symbol
 	private void addInternalSymbols(Scope scope)
 	{
 		// Add symbol for the function end so that return statements can jump to it.
-		endSymbol = new InternalSymbol("End", scope, "", null); //__End
+		endSymbol = new InternalSymbol("End", scope, "", new VoidType()); //__End
 		scope.add(endSymbol);
 
 		// Add symbol for location of the return value.

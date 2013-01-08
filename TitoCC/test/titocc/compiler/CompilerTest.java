@@ -83,19 +83,19 @@ public class CompilerTest
 	@Test
 	public void errorWhenAssigningToLiteral() throws IOException
 	{
-		testErr("\nint main() { 0 = 1; }", "Left side cannot be assigned to.", 1, 13);
+		testErr("\nint main() { 0 = 1; }", "Operation requires an lvalue.", 1, 13);
 	}
 
 	@Test
 	public void errorWhenAssigningToExpression() throws IOException
 	{
-		testErr("\nint main() { (1 + 2) = 1; }", "Left side cannot be assigned to.", 1, 13);
+		testErr("\nint main() { (1 + 2) = 1; }", "Operation requires an lvalue.", 1, 14);
 	}
 
 	@Test
 	public void errorWhenAssigningToFunction() throws IOException
 	{
-		testErr("\nint main() { main = 1; }", "Identifier \"main\" is not a variable.", 1, 13);
+		testErr("\nint main() { main = 1; }", "Identifier \"main\" is not an object.", 1, 13);
 	}
 
 	@Test
@@ -155,7 +155,7 @@ public class CompilerTest
 	@Test
 	public void errorWhenUsingVoidParameter() throws IOException
 	{
-		testErr("\nvoid f(void a) { }", "Parameter type cannot be void.", 1, 7);
+		testErr("\nvoid f(void a) { }", "Parameter must have object type.", 1, 7);
 	}
 
 	@Test
@@ -168,15 +168,15 @@ public class CompilerTest
 	@Test
 	public void errorWhenIncrementingNonLValue() throws IOException
 	{
-		testErr("\nvoid f() { 0++; }", "Operator requires an lvalue.", 1, 11);
-		testErr("\nvoid f() { ++0; }", "Operator requires an lvalue.", 1, 11);
+		testErr("\nvoid f() { 0++; }", "Operation requires an lvalue.", 1, 11);
+		testErr("\nvoid f() { ++0; }", "Operation requires an lvalue.", 1, 13);
 	}	
 
 	@Test
 	public void errorWhenDecrementingNonLValue() throws IOException
 	{
-		testErr("\nvoid f() { 0--; }", "Operator requires an lvalue.", 1, 11);
-		testErr("\nvoid f() { --0; }", "Operator requires an lvalue.", 1, 11);
+		testErr("\nvoid f() { 0--; }", "Operation requires an lvalue.", 1, 11);
+		testErr("\nvoid f() { --0; }", "Operation requires an lvalue.", 1, 13);
 	}	
 
 	@Test
