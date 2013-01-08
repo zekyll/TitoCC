@@ -96,7 +96,7 @@ public class CompilerTest
 	@Test
 	public void errorWhenAssigningToFunction() throws IOException
 	{
-		testErr("\nint main() { main = 1; }", "Identifier \"main\" is not an object.", 1, 13);
+		testErr("\nint main() { main = 1; }", "Incompatible operands for operator =.", 1, 13);
 	}
 
 	@Test
@@ -121,9 +121,13 @@ public class CompilerTest
 	@Test
 	public void errorWhenVoidUsedInExpression() throws IOException
 	{
-		testErr("\nvoid f() { 2 + f(); }", "Void return value used in an expression.", 1, 15);
-		testErr("\nvoid f() { int x = f(); }", "Void return value used in an expression.", 1, 19);
-		testErr("\nvoid f(int a) { f(out()); }", "Void return value used in an expression.", 1, 18);
+		testErr("\nvoid f() { 2 + f(); }", "Incompatible operands for operator +.", 1, 11);
+		testErr("\nvoid f() { !f(); }", "Operator ! requires a scalar type.", 1, 11);
+		testErr("\nvoid f() { int x; x = f(); }", "Incompatible operands for operator =.", 1, 18);
+		testErr("\nvoid f() { if(f()); }", "Scalar expression required.", 1, 14);
+		testErr("\nvoid f() { while(f()); }", "Scalar expression required.", 1, 17);
+		testErr("\nvoid f() { int x = f(); }", "Initializer type doesn't match variable type.", 1, 11);
+		testErr("\nvoid f(int a) { f(out()); }", "Argument type doesn't match type of the parameter.", 1, 18);
 	}
 
 	@Test
@@ -136,8 +140,8 @@ public class CompilerTest
 	@Test
 	public void errorWhenWrongNumberOfArguments() throws IOException
 	{
-		testErr("\nvoid f() { f(1); }", "Number of arguments doesn't match the number of parameters.", 1, 11);
-		testErr("\nvoid f(int a) { f(); }", "Number of arguments doesn't match the number of parameters.", 1, 16);
+		testErr("\nvoid f() { f(1); }", "Number of arguments doesn't match the number of parameters.", 1, 12);
+		testErr("\nvoid f(int a) { f(); }", "Number of arguments doesn't match the number of parameters.", 1, 17);
 	}
 
 	@Test

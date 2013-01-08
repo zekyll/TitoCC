@@ -59,7 +59,7 @@ public class WhileStatement extends Statement
 			throws IOException, SyntaxException
 	{
 		if (!test.getType(scope).isScalar())
-			throw new SyntaxException("Scalar expression required.", getLine(), getColumn());
+			throw new SyntaxException("Scalar expression required.", test.getLine(), test.getColumn());
 
 		// Loop start.
 		String loopStartLabel = scope.makeGloballyUniqueName("lbl");

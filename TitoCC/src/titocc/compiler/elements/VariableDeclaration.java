@@ -88,7 +88,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		globallyUniqueName = scope.makeGloballyUniqueName(getName());
 
 		if (initializer != null && !initializer.isAssignableTo(type, scope))
-			throw new SyntaxException("Initializers type doesn't match variable type.", getLine(), getColumn());
+			throw new SyntaxException("Initializer type doesn't match variable type.", getLine(), getColumn());
 
 		isGlobal = scope.isGlobal();
 		if (isGlobal)

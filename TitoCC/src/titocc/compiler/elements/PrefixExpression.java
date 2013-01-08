@@ -7,6 +7,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.IntType;
 import titocc.compiler.types.InvalidType;
@@ -176,13 +177,15 @@ public class PrefixExpression extends Expression
 	private void compileDereference(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if(!operand.getType(scope).dereference().isValid())
+		if (!operand.getType(scope).dereference().isValid())
 			throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
 
-		// Load the value pointed by the first register by using indirect
-		// addressing mode (@).
+		// Operand must be a pointer; load the address.
 		operand.compile(asm, scope, regs);
-		asm.emit("load", regs.get(0).toString(), "@" + regs.get(0).toString());
+
+		// Dereference the pointer unless the result type is an array!
+		if (!(getType(scope) instanceof ArrayType))
+			asm.emit("load", regs.get(0).toString(), "@" + regs.get(0).toString());
 	}
 
 	@Override
@@ -190,8 +193,9 @@ public class PrefixExpression extends Expression
 	{
 		if (operator.equals("&")) {
 			return new PointerType(operand.getType(scope));
-		} if (operator.equals("*")) {
-			if(!operand.getType(scope).dereference().isValid())
+		}
+		if (operator.equals("*")) {
+			if (!operand.getType(scope).dereference().isValid())
 				throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
 			return operand.getType(scope).dereference();
 		} else if (operator.equals("!") || operator.equals("~")) {

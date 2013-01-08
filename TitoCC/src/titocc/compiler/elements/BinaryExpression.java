@@ -178,9 +178,9 @@ public class BinaryExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		int leftIncrSize = left.getType(scope).getIncrementSize();
-		int rightIncrSize = left.getType(scope).getIncrementSize();
+		int rightIncrSize = right.getType(scope).getIncrementSize();
 
-		if (leftIncrSize > 1 && leftIncrSize > 1) {
+		if (leftIncrSize > 1 && rightIncrSize > 1) {
 			// POINTER - POINTER.
 			compileRight(asm, scope, regs);
 			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
@@ -188,11 +188,11 @@ public class BinaryExpression extends Expression
 		} else if (leftIncrSize > 1) {
 			// POINTER + INTEGER or POINTER - INTEGER.
 			compileRight(asm, scope, regs);
-			asm.emit("div", regs.get(1).toString(), "=" + leftIncrSize);
+			asm.emit("mul", regs.get(1).toString(), "=" + leftIncrSize);
 			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
-		} else if (leftIncrSize > 1) {
+		} else if (rightIncrSize > 1) {
 			// INTEGER + POINTER.
-			asm.emit("div", regs.get(0).toString(), "=" + leftIncrSize);
+			asm.emit("mul", regs.get(0).toString(), "=" + rightIncrSize);
 			compileRight(asm, scope, regs);
 			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
 		} else {
@@ -286,7 +286,7 @@ public class BinaryExpression extends Expression
 			if (leftDeref.isObject() && rightType.isInteger())
 				return leftType;
 			if (leftType.isInteger() && rightDeref.isObject())
-				return new IntType();
+				return rightType;
 		} else if (operator.equals("-")) {
 			if (leftType.isArithmetic() && rightType.isArithmetic())
 				return new IntType();
