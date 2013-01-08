@@ -64,6 +64,34 @@ public class ParserTest
 	}
 
 	@Test
+	public void matchArrayDeclarator() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR (DCLTOR (DCLTOR xyz) (ID_EXPR a)) (INT_EXPR 3)) null))",
+				parse("int xyz[a][3];"));
+	}
+
+	@Test
+	public void matchPointerDeclarator() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR (DCLTOR (DCLTOR xyz))) null))",
+				parse("int * * xyz;"));
+	}
+
+	@Test
+	public void matchBraceDeclarator() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR xyz) null))",
+				parse("int (xyz);"));
+	}
+
+	@Test
+	public void matchComplexDeclaration() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR (DCLTOR (DCLTOR (DCLTOR xyz) (INT_EXPR 2))) (ID_EXPR a)) null))",
+				parse("int (*xyz[2])[a];"));
+	}
+
+	@Test
 	public void matchIdentifierExpression() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (ID_EXPR a)))",
@@ -94,7 +122,8 @@ public class ParserTest
 	@Test
 	public void matchBinaryExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (BIN_EXPR + (BIN_EXPR - (ID_EXPR a) (INT_EXPR 7)) (INT_EXPR 4))))",
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (BIN_EXPR +"
+				+ " (BIN_EXPR - (ID_EXPR a) (INT_EXPR 7)) (INT_EXPR 4))))",
 				parse("int x = a - 7 + 4;"));
 	}
 
@@ -113,6 +142,21 @@ public class ParserTest
 	}
 
 	@Test
+	public void matchSubscriptExpression() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (SUBSCR_EXPR (ID_EXPR a) (INT_EXPR 2))))",
+				parse("int x = a[2];"));
+	}
+
+	@Test
+	public void matchChainedPostfixExpressions() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (POST_EXPR -- (SUBSCR_EXPR"
+				+ " (FCALL_EXPR (POST_EXPR -- (POST_EXPR ++ (ID_EXPR y))) (ARG_LIST)) (INT_EXPR 2)))))",
+				parse("int x = y++--()[2]--;"));
+	}
+
+	@Test
 	public void matchFunction() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (FUNC (TYPE void) foo (PRM_LIST) (BLK_ST)))",
@@ -122,8 +166,17 @@ public class ParserTest
 	@Test
 	public void matchFunctionWithParameters() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) foo (PRM_LIST (PRM (TYPE int) (DCLTOR a)) (PRM (TYPE int) (DCLTOR b))) (BLK_ST)))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) foo (PRM_LIST (PRM (TYPE int)"
+				+ " (DCLTOR a)) (PRM (TYPE int) (DCLTOR b))) (BLK_ST)))",
 				parse("void foo(int a, int b) {}"));
+	}
+
+	@Test
+	public void matchDeclaratorsInParameters() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (FUNC (TYPE void) foo (PRM_LIST (PRM (TYPE int)"
+				+ " (DCLTOR (DCLTOR (DCLTOR a) (INT_EXPR 2))))) (BLK_ST)))",
+				parse("void foo(int *a[2]) {}"));
 	}
 
 	@Test
@@ -136,7 +189,8 @@ public class ParserTest
 	@Test
 	public void matchBlockStatement() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (BLK_ST (DECL_ST (VAR_DECL (TYPE int) (DCLTOR x) null))))))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (BLK_ST"
+				+ " (DECL_ST (VAR_DECL (TYPE int) (DCLTOR x) null))))))",
 				parse("void f() { { int x; } }"));
 	}
 
@@ -150,7 +204,8 @@ public class ParserTest
 	@Test
 	public void matchDeclarationStatement() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (DECL_ST (VAR_DECL (TYPE int) (DCLTOR x) null)))))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (DECL_ST"
+				+ " (VAR_DECL (TYPE int) (DCLTOR x) null)))))",
 				parse("void f() { int x; }"));
 	}
 
@@ -164,21 +219,22 @@ public class ParserTest
 	@Test
 	public void matchIfStatement() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (IF (ID_EXPR a) (EXPR_ST (PRE_EXPR ++ (ID_EXPR a))) null))))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (IF"
+				+ " (ID_EXPR a) (EXPR_ST (PRE_EXPR ++ (ID_EXPR a))) null))))",
 				parse("void f() { if(a) ++a; }"));
 	}
 
 	@Test
 	public void matchIfElseStatement() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (IF (ID_EXPR a) (EXPR_ST (PRE_EXPR ++ (ID_EXPR a))) (BLK_ST)))))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (IF" + " (ID_EXPR a) (EXPR_ST (PRE_EXPR ++ (ID_EXPR a))) (BLK_ST)))))",
 				parse("void f() { if(a) ++a; else ; }"));
 	}
 
 	@Test
 	public void matchWhileStatement() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (WHILE (BIN_EXPR == (ID_EXPR y) (INT_EXPR 2)) (BLK_ST)))))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (WHILE" + " (BIN_EXPR == (ID_EXPR y) (INT_EXPR 2)) (BLK_ST)))))",
 				parse("void f() { while(y == 2) {} }"));
 	}
 
