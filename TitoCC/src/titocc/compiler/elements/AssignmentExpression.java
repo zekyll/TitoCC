@@ -189,8 +189,8 @@ public class AssignmentExpression extends Expression
 
 	private void checkTypes(Scope scope) throws SyntaxException
 	{
-		CType leftType = left.getType(scope);
-		CType rightType = right.getType(scope);
+		CType leftType = left.getType(scope).decay();
+		CType rightType = right.getType(scope).decay();
 		CType leftDeref = leftType.dereference();
 		CType rightDeref = rightType.dereference();
 

@@ -98,4 +98,14 @@ public abstract class CType
 	{
 		return !(this instanceof InvalidType);
 	}
+
+	/**
+	 * Decays an array type into a pointer type. All other types are unaffected.
+	 *
+	 * @return the decayed type
+	 */
+	public CType decay()
+	{
+		return this;
+	}
 }

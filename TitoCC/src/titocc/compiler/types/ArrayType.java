@@ -18,12 +18,6 @@ public class ArrayType extends CType
 	}
 
 	@Override
-	public boolean isPointer()
-	{
-		return true;
-	}
-
-	@Override
 	public CType dereference()
 	{
 		return elementType;
@@ -33,6 +27,12 @@ public class ArrayType extends CType
 	public int getSize()
 	{
 		return elementType.getSize() * length;
+	}
+
+	@Override
+	public CType decay()
+	{
+		return new PointerType(elementType);
 	}
 
 	@Override

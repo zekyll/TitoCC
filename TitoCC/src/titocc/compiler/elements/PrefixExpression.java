@@ -138,7 +138,7 @@ public class PrefixExpression extends Expression
 	private void compileLogicalNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).isScalar())
+		if (!operand.getType(scope).decay().isScalar())
 			throw new SyntaxException("Operator " + operator + " requires a scalar type.", getLine(), getColumn());
 
 		operand.compile(asm, scope, regs);
@@ -193,15 +193,14 @@ public class PrefixExpression extends Expression
 	{
 		if (operator.equals("&")) {
 			return new PointerType(operand.getType(scope));
-		}
-		if (operator.equals("*")) {
+		} else if (operator.equals("*")) {
 			if (!operand.getType(scope).dereference().isValid())
 				throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
 			return operand.getType(scope).dereference();
 		} else if (operator.equals("!") || operator.equals("~")) {
 			return new IntType();
 		} else
-			return operand.getType(scope);
+			return operand.getType(scope).decay();
 	}
 
 	@Override

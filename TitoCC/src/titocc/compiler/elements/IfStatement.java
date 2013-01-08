@@ -73,7 +73,7 @@ public class IfStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!test.getType(scope).isScalar())
+		if (!test.getType(scope).decay().isScalar())
 			throw new SyntaxException("Scalar expression required.", test.getLine(), test.getColumn());
 
 		// Evaluates and loads the test expression in the first register.

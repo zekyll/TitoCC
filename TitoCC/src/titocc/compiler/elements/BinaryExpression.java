@@ -251,8 +251,8 @@ public class BinaryExpression extends Expression
 	private CType checkTypes(Scope scope) throws SyntaxException
 	{
 		Operator op = binaryOperators.get(operator);
-		CType leftType = left.getType(scope);
-		CType rightType = right.getType(scope);
+		CType leftType = left.getType(scope).decay();
+		CType rightType = right.getType(scope).decay();
 		CType leftDeref = leftType.dereference();
 		CType rightDeref = rightType.dereference();
 

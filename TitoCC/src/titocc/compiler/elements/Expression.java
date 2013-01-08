@@ -77,8 +77,6 @@ public abstract class Expression extends CodeElement
 		throw new SyntaxException("Operation requires an lvalue.", getLine(), getColumn());
 	}
 
-	public abstract CType getType(Scope scope) throws SyntaxException;
-
 	/**
 	 * Attempts to evaluates the expression as a function. As with
 	 * getLvalueReference() this will have to be replaced with something more
@@ -93,6 +91,15 @@ public abstract class Expression extends CodeElement
 	{
 		return null;
 	}
+
+	/**
+	 * Returns the type of the expression.
+	 *
+	 * @param scope scope in which the expression is evaluated
+	 * @return the type
+	 * @throws SyntaxException if expression contains errors
+	 */
+	public abstract CType getType(Scope scope) throws SyntaxException;
 
 	/**
 	 * Attempts to parse an expression from token stream. If parsing fails the
@@ -150,15 +157,15 @@ public abstract class Expression extends CodeElement
 	 */
 	protected boolean isAssignableTo(CType targetType, Scope scope) throws SyntaxException
 	{
-		CType sourceType = getType(scope);
+		CType sourceType = getType(scope).decay();
 		CType sourceDeref = sourceType.dereference();
 		CType targetDeref = targetType.dereference();
 
 		if (targetType.isArithmetic() && sourceType.isArithmetic())
 			return true;
-		if (targetDeref.equals(sourceDeref))
+		if (targetType.isPointer() && sourceDeref.equals(targetDeref))
 			return true;
-		if (targetDeref.isValid() && sourceDeref.isValid()
+		if (targetType.isPointer() && sourceDeref.isValid()
 				&& (targetDeref instanceof VoidType || sourceDeref instanceof VoidType))
 			return true;
 
