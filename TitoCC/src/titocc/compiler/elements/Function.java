@@ -156,7 +156,7 @@ public class Function extends Declaration implements Symbol
 		int varIdx = 0;
 		for (Symbol var : localVariables) {
 			asm.addLabel(var.getGlobalName());
-			asm.emit("equ", "" + varIdx);
+			asm.emit("equ", "" + (1 + varIdx));
 			++varIdx;
 		}
 
