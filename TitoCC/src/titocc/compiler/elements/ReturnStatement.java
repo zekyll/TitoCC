@@ -48,14 +48,15 @@ public class ReturnStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		// No need to check whether function actually has return type
-		// because C allows returning stuff from any function.
+		// Compile return value.
 		if (expression != null) {
-			// Loads expression's value to first available register
-			expression.compile(asm, scope, regs);
-
-			// Store the register to return value
 			Symbol retVal = scope.find("__Ret");
+
+			if (!expression.isAssignableTo(retVal.getType(), scope))
+				throw new SyntaxException("Returned expression doesn't match return value type.", getLine(), getColumn());
+
+			// Load expression to first register and store to the return value.
+			expression.compile(asm, scope, regs);
 			asm.emit("store", regs.get(0).toString(), retVal.getReference());
 		}
 
