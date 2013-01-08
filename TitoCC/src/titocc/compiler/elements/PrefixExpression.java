@@ -9,6 +9,7 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.IntType;
+import titocc.compiler.types.InvalidType;
 import titocc.compiler.types.PointerType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -127,7 +128,7 @@ public class PrefixExpression extends Expression
 		operand.compile(asm, scope, regs);
 
 		// Negative in two's complement: negate all bits and add 1.
-		if (operator.equals("--")) {
+		if (operator.equals("-")) {
 			asm.emit("xor", regs.get(0).toString(), "=-1");
 			asm.emit("add", regs.get(0).toString(), "=1");
 		}
@@ -175,7 +176,7 @@ public class PrefixExpression extends Expression
 	private void compileDereference(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if(operand.getType(scope).dereference() == null)
+		if(!operand.getType(scope).dereference().isValid())
 			throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
 
 		// Load the value pointed by the first register by using indirect
@@ -190,7 +191,7 @@ public class PrefixExpression extends Expression
 		if (operator.equals("&")) {
 			return new PointerType(operand.getType(scope));
 		} if (operator.equals("*")) {
-			if(operand.getType(scope).dereference() == null)
+			if(!operand.getType(scope).dereference().isValid())
 				throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
 			return operand.getType(scope).dereference();
 		} else if (operator.equals("!") || operator.equals("~")) {

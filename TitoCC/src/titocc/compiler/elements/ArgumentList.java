@@ -1,11 +1,13 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -50,13 +52,22 @@ public class ArgumentList extends CodeElement
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the arguments are evaluated
 	 * @param regs available registers; must have at least one active register
+	 * @param paramTypes parameter types for the called function
 	 * @throws SyntaxException if argument list contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Registers regs, List<CType> paramTypes)
 			throws SyntaxException, IOException
 	{
+		if (paramTypes.size() != arguments.size())
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
+
+		Iterator<CType> paramIterator = paramTypes.iterator();
 		for (Expression arg : arguments) {
+			CType paramType = paramIterator.next();
+			if (!arg.isAssignableTo(paramType, scope))
+				throw new SyntaxException("Argument type doesn't match type of the parameter.", arg.getLine(), arg.getColumn());
+
 			arg.compile(asm, scope, regs);
 			asm.emit("push", "sp", regs.get(0).toString());
 		}

@@ -8,6 +8,8 @@ import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.IntType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -109,6 +111,8 @@ public class AssignmentExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
+		checkTypes(scope);
+
 		// Allocate second register.
 		regs.allocate(asm);
 
@@ -143,6 +147,12 @@ public class AssignmentExpression extends Expression
 		// Load RHS in first register.
 		right.compile(asm, scope, regs);
 
+		// If operation is POINTER += INTEGER, we need to scale the integer value.
+		int incSize = left.getType(scope).getIncrementSize();
+		if (incSize > 1) {
+			asm.emit("mul", regs.get(0).toString(), "=" + incSize);
+		}
+
 		// Because the operation is symmetric, we can use the left operand
 		// as the right operand in the assembly instruction, saving one register.
 		asm.emit(operator.mnemonic, regs.get(0).toString(), leftVal.getReference());
@@ -160,6 +170,12 @@ public class AssignmentExpression extends Expression
 		regs.addFirst();
 		regs.addFirst();
 
+		// If operation is POINTER -= INTEGER, we need to scale the integer value.
+		int incSize = left.getType(scope).getIncrementSize();
+		if (incSize > 1) {
+			asm.emit("mul", regs.get(2).toString(), "=" + incSize);
+		}
+
 		// Load LHS in the first register and operate on it.
 		asm.emit("load", regs.get(0).toString(), leftVal.getReference());
 		asm.emit(operator.mnemonic, regs.get(0).toString(), regs.get(2).toString());
@@ -169,6 +185,36 @@ public class AssignmentExpression extends Expression
 
 		// Deallocate the third register.
 		regs.deallocate(asm);
+	}
+
+	private void checkTypes(Scope scope) throws SyntaxException
+	{
+		CType leftType = left.getType(scope);
+		CType rightType = right.getType(scope);
+		CType leftDeref = leftType.dereference();
+		CType rightDeref = rightType.dereference();
+
+		if (operatorString.equals("=")) {
+			if(right.isAssignableTo(leftType, scope))
+				return;
+		} else if (operatorString.equals("+=") || operatorString.equals("-=")) {
+			if (leftType.isArithmetic() && rightType.isArithmetic())
+				return;
+			if (leftDeref.isObject() && rightType.isInteger())
+				return;
+		} else if (operatorString.equals("&=") || operatorString.equals("|=")
+				|| operatorString.equals("^=")) {
+			if (leftType.isInteger() && rightType.isInteger())
+				return;
+		} else if (operatorString.equals("%=")) {
+			if (leftType.isArithmetic() && rightType.isInteger())
+				return;
+		} else {
+			if (leftType.isArithmetic() && rightType.isArithmetic())
+				return;
+		}
+
+		throw new SyntaxException("Incompatible operands for operator " + operatorString + ".", getLine(), getColumn());
 	}
 
 	@Override

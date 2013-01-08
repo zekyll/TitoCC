@@ -7,6 +7,8 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.IntType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -45,7 +47,7 @@ public class BinaryExpression extends Expression
 {
 	private enum Type
 	{
-		SIMPLE, COMPARISON, BOOLEAN
+		BITWISE, ARITHMETIC, EQUALITY, RELATIONAL, LOGICAL
 	};
 
 	/**
@@ -68,24 +70,24 @@ public class BinaryExpression extends Expression
 	static final Map<String, Operator> binaryOperators = new HashMap<String, Operator>()
 	{
 		{
-			put("||", new Operator("jnzer", Type.BOOLEAN, 1));
-			put("&&", new Operator("jzer", Type.BOOLEAN, 2));
-			put("|", new Operator("or", Type.SIMPLE, 3));
-			put("^", new Operator("xor", Type.SIMPLE, 4));
-			put("&", new Operator("and", Type.SIMPLE, 5));
-			put("==", new Operator("jequ", Type.COMPARISON, 6));
-			put("!=", new Operator("jnequ", Type.COMPARISON, 7));
-			put("<", new Operator("jles", Type.COMPARISON, 8));
-			put("<=", new Operator("jngre", Type.COMPARISON, 8));
-			put(">", new Operator("jgre", Type.COMPARISON, 8));
-			put(">=", new Operator("jnles", Type.COMPARISON, 8));
-			put("<<", new Operator("shl", Type.SIMPLE, 9));
-			put(">>", new Operator("shr", Type.SIMPLE, 9));
-			put("+", new Operator("add", Type.SIMPLE, 10));
-			put("-", new Operator("sub", Type.SIMPLE, 10));
-			put("*", new Operator("mul", Type.SIMPLE, 11));
-			put("/", new Operator("div", Type.SIMPLE, 11));
-			put("%", new Operator("mod", Type.SIMPLE, 11));
+			put("||", new Operator("jnzer", Type.LOGICAL, 1));
+			put("&&", new Operator("jzer", Type.LOGICAL, 2));
+			put("|", new Operator("or", Type.BITWISE, 3));
+			put("^", new Operator("xor", Type.BITWISE, 4));
+			put("&", new Operator("and", Type.BITWISE, 5));
+			put("==", new Operator("jequ", Type.EQUALITY, 6));
+			put("!=", new Operator("jnequ", Type.EQUALITY, 7));
+			put("<", new Operator("jles", Type.RELATIONAL, 8));
+			put("<=", new Operator("jngre", Type.RELATIONAL, 8));
+			put(">", new Operator("jgre", Type.RELATIONAL, 8));
+			put(">=", new Operator("jnles", Type.RELATIONAL, 8));
+			put("<<", new Operator("shl", Type.BITWISE, 9));
+			put(">>", new Operator("shr", Type.BITWISE, 9));
+			put("+", new Operator("add", Type.ARITHMETIC, 10));
+			put("-", new Operator("sub", Type.ARITHMETIC, 10));
+			put("*", new Operator("mul", Type.ARITHMETIC, 11));
+			put("/", new Operator("div", Type.ARITHMETIC, 11));
+			put("%", new Operator("mod", Type.ARITHMETIC, 11));
 		}
 	};
 	private String operator;
@@ -143,6 +145,8 @@ public class BinaryExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		checkTypes(scope);
+
 		// Evaluate left expression and store it in the first register.
 		left.compile(asm, scope, regs);
 
@@ -150,11 +154,12 @@ public class BinaryExpression extends Expression
 		regs.allocate(asm);
 
 		// Compile right expression and the operator.
-		if (binaryOperators.get(operator).type == Type.SIMPLE)
+		Type opType = binaryOperators.get(operator).type;
+		if (opType == Type.BITWISE || opType == Type.ARITHMETIC)
 			compileSimpleOperator(asm, scope, regs);
-		else if (binaryOperators.get(operator).type == Type.BOOLEAN)
-			compileBooleanOperator(asm, scope, regs);
-		else if (binaryOperators.get(operator).type == Type.COMPARISON)
+		else if (opType == Type.LOGICAL)
+			compileLogicalOperator(asm, scope, regs);
+		else if (opType == Type.RELATIONAL || opType == Type.EQUALITY)
 			compileComparisonOperator(asm, scope, regs);
 
 		// Deallocate the second register.
@@ -172,8 +177,28 @@ public class BinaryExpression extends Expression
 	private void compileSimpleOperator(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		compileRight(asm, scope, regs);
-		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+		int leftIncrSize = left.getType(scope).getIncrementSize();
+		int rightIncrSize = left.getType(scope).getIncrementSize();
+
+		if (leftIncrSize > 1 && leftIncrSize > 1) {
+			// POINTER - POINTER.
+			compileRight(asm, scope, regs);
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+			asm.emit("div", regs.get(0).toString(), "=" + leftIncrSize);
+		} else if (leftIncrSize > 1) {
+			// POINTER + INTEGER or POINTER - INTEGER.
+			compileRight(asm, scope, regs);
+			asm.emit("div", regs.get(1).toString(), "=" + leftIncrSize);
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+		} else if (leftIncrSize > 1) {
+			// INTEGER + POINTER.
+			asm.emit("div", regs.get(0).toString(), "=" + leftIncrSize);
+			compileRight(asm, scope, regs);
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+		} else {
+			compileRight(asm, scope, regs);
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+		}
 	}
 
 	private void compileComparisonOperator(Assembler asm, Scope scope, Registers regs)
@@ -188,10 +213,10 @@ public class BinaryExpression extends Expression
 		asm.addLabel(jumpLabel);
 	}
 
-	private void compileBooleanOperator(Assembler asm, Scope scope, Registers regs)
+	private void compileLogicalOperator(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		// Short circuit evaluation; only evaluate RHS if LHS is false.
+		// Short circuit evaluation; only evaluate RHS if necessary.
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		String jumpLabel2 = scope.makeGloballyUniqueName("lbl");
 		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), jumpLabel);
@@ -214,13 +239,71 @@ public class BinaryExpression extends Expression
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
-		return left.getType(scope); //TODO
+		return checkTypes(scope);
 	}
 
 	@Override
 	public String toString()
 	{
 		return "(BIN_EXPR " + operator + " " + left + " " + right + ")";
+	}
+
+	private CType checkTypes(Scope scope) throws SyntaxException
+	{
+		Operator op = binaryOperators.get(operator);
+		CType leftType = left.getType(scope);
+		CType rightType = right.getType(scope);
+		CType leftDeref = leftType.dereference();
+		CType rightDeref = rightType.dereference();
+
+		if (op.type == Type.LOGICAL) {
+			if (leftType.isArithmetic() && rightType.isArithmetic())
+				return new IntType();
+			if (leftType.isScalar() && rightType.isScalar())
+				return new IntType();
+		} else if (op.type == Type.EQUALITY) {
+			if (leftType.isArithmetic() && rightType.isArithmetic())
+				return new IntType();
+			if (leftDeref.equals(rightDeref))
+				return new IntType();
+			if (leftDeref.isValid() && rightDeref.isValid()
+					&& (leftDeref instanceof VoidType || rightDeref instanceof VoidType))
+				return new IntType();
+			if (leftDeref.isValid() && rightType.isInteger()
+					&& new Integer(0).equals(right.getCompileTimeValue()))
+				return new IntType();
+			if (rightDeref.isValid() && leftType.isInteger()
+					&& new Integer(0).equals(left.getCompileTimeValue()))
+				return new IntType();
+		} else if (op.type == Type.RELATIONAL) {
+			if (leftType.isArithmetic() && rightType.isArithmetic())
+				return new IntType();
+			if (leftDeref.equals(rightDeref))
+				return new IntType();
+		} else if (operator.equals("+")) {
+			if (leftType.isArithmetic() && rightType.isArithmetic())
+				return new IntType();
+			if (leftDeref.isObject() && rightType.isInteger())
+				return leftType;
+			if (leftType.isInteger() && rightDeref.isObject())
+				return new IntType();
+		} else if (operator.equals("-")) {
+			if (leftType.isArithmetic() && rightType.isArithmetic())
+				return new IntType();
+			if (leftDeref.isObject() && rightType.isInteger())
+				return leftType;
+			if (leftDeref.isObject() && rightDeref.equals(leftDeref))
+				return new IntType();
+		} else if (op.type == Type.BITWISE) {
+			if (leftType.isInteger() && rightType.isInteger())
+				return new IntType();
+		} else if (op.type == Type.ARITHMETIC) {
+			if (leftType.isArithmetic() && (rightType.isInteger()
+					|| (!operator.equals("%") && rightType.isArithmetic())))
+				return new IntType();
+		}
+
+		throw new SyntaxException("Incompatible operands for operator " + operator + ".", getLine(), getColumn());
 	}
 
 	/**

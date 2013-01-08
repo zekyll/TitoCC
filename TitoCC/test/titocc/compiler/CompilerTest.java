@@ -5,10 +5,11 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import titocc.compiler.Compiler;
 import titocc.tokenizer.SyntaxException;
 
 public class CompilerTest
@@ -57,13 +58,13 @@ public class CompilerTest
 	}
 
 	@Test
-	public void throwsIfMainNotFound() throws IOException
+	public void errorWhenMainNotFound() throws IOException
 	{
 		testErr("int main2() {}", "Function \"int main()\" was not found.", 0, 0);
 	}
 
 	@Test
-	public void throwsWhenMainReturnTypeWrong() throws IOException
+	public void errorWhenMainReturnTypeWrong() throws IOException
 	{
 		testErr("void main2() {}", "Function \"int main()\" was not found.", 0, 0);
 	}

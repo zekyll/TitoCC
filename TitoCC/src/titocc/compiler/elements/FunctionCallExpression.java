@@ -85,7 +85,7 @@ public class FunctionCallExpression extends Expression
 		}
 
 		// Push arguments to stack.
-		argumentList.compile(asm, scope, regs);
+		argumentList.compile(asm, scope, regs, func.getParameterTypes());
 
 		// Make the call.
 		asm.emit("call", "sp", func.getReference());
@@ -100,8 +100,6 @@ public class FunctionCallExpression extends Expression
 		Function func = function.getFunction(scope);
 		if (func == null)
 			throw new SyntaxException("Expression is not a function.", getLine(), getColumn());
-		if (func.getParameterCount() != argumentList.getArguments().size())
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
 		return func;
 	}
 

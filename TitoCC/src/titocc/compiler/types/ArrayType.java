@@ -38,7 +38,7 @@ public class ArrayType extends CType
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (!(obj instanceof PointerType))
+		if (!(obj instanceof ArrayType))
 			return false;
 
 		return elementType.equals(((ArrayType) obj).elementType)

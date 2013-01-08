@@ -67,12 +67,12 @@ public class SubscriptExpression extends Expression
 
 	private Expression getActualArrayOperand(Scope scope) throws SyntaxException
 	{
-		if (isConvertableToObjectPointer(array, scope))
+		if (array.getType(scope).dereference().isObject())
 			return array;
-		else if (isConvertableToObjectPointer(subscript, scope))
+		else if (subscript.getType(scope).dereference().isObject())
 			return subscript;
 		else
-			throw new SyntaxException("Operator [] requires an array or object pointer.", getLine(), getColumn());
+			throw new SyntaxException("Operator [] requires an object pointer or an array.", getLine(), getColumn());
 	}
 
 	private Expression getActualSubscriptOperand(Scope scope) throws SyntaxException
@@ -83,13 +83,6 @@ public class SubscriptExpression extends Expression
 			return array;
 		else
 			throw new SyntaxException("Operator [] requires an integer operand.", getLine(), getColumn());
-	}
-
-	private boolean isConvertableToObjectPointer(Expression expr, Scope scope)
-			throws SyntaxException
-	{
-		CType derefType = expr.getType(scope).dereference();
-		return derefType != null && derefType.isObject();
 	}
 
 	@Override

@@ -87,6 +87,9 @@ public class VariableDeclaration extends Declaration implements Symbol
 			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getLine(), getColumn());
 		globallyUniqueName = scope.makeGloballyUniqueName(getName());
 
+		if (initializer != null && !initializer.isAssignableTo(type, scope))
+			throw new SyntaxException("Initializers type doesn't match variable type.", getLine(), getColumn());
+
 		isGlobal = scope.isGlobal();
 		if (isGlobal)
 			compileGlobalVariable(asm, scope);

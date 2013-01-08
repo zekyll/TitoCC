@@ -38,11 +38,12 @@ public abstract class CType
 	/**
 	 * Returns type obtained from dereferencing a pointer or array type.
 	 *
-	 * @return dereferenced type or null if this is not a pointer or array type
+	 * @return dereferenced type or an instance of InvalidType if this is not a
+	 * pointer or array type
 	 */
 	public CType dereference()
 	{
-		return null;
+		return new InvalidType();
 	}
 
 	/**
@@ -64,7 +65,7 @@ public abstract class CType
 	{
 		return false;
 	}
-	
+
 	/**
 	 * Returns the size of the type in chars. Note that in ttk-91 char is the
 	 * same as int (i.e. 4 bytes).
@@ -84,10 +85,17 @@ public abstract class CType
 	 */
 	public int getIncrementSize()
 	{
-		CType derefType = dereference();
-		if (derefType != null)
-			return derefType.getSize();
-		else
-			return 0;
+		return dereference().getSize();
+	}
+
+	/**
+	 * Returns whether the type is valid. (i.e. it is not instance of
+	 * InvalidType).
+	 *
+	 * @return true if valid
+	 */
+	public boolean isValid()
+	{
+		return !(this instanceof InvalidType);
 	}
 }

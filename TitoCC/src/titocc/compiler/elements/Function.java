@@ -74,13 +74,17 @@ public class Function extends Declaration implements Symbol
 	}
 
 	/**
-	 * Returns the parameter list()
+	 * Returns the parameter types.
 	 *
-	 * @return the parameter list
+	 * @return parameter list
 	 */
-	public ParameterList getParameterList()
+	public List<CType> getParameterTypes()
 	{
-		return parameterList;
+		List<CType> paramTypes = new ArrayList<CType>();
+		for (Parameter prm : parameterList.getParameters()) {
+			paramTypes.add(prm.getType());
+		}
+		return paramTypes;
 	}
 
 	/**

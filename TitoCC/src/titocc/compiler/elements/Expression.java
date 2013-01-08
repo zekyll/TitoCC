@@ -7,6 +7,7 @@ import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -154,5 +155,34 @@ public abstract class Expression extends CodeElement
 			return true;
 		} else
 			return false;
+	}
+
+	/**
+	 * Returns whether the expression can be assigned to the target type.
+	 *
+	 * @param targetType target type of the assignment
+	 * @param scope scope in which the expression is evaluated
+	 * @return true if assignment is possible
+	 * @throws SyntaxException if expression has errors
+	 */
+	protected boolean isAssignableTo(CType targetType, Scope scope) throws SyntaxException
+	{
+		CType sourceType = getType(scope);
+		CType sourceDeref = sourceType.dereference();
+		CType targetDeref = targetType.dereference();
+
+		if (targetType.isArithmetic() && sourceType.isArithmetic())
+			return true;
+		if (targetDeref.equals(sourceDeref))
+			return true;
+		if (targetDeref.isValid() && sourceDeref.isValid()
+				&& (targetDeref instanceof VoidType || sourceDeref instanceof VoidType))
+			return true;
+
+		if (targetType.isPointer() && sourceType.isInteger()
+				&& new Integer(0).equals(getCompileTimeValue()))
+			return true;
+
+		return false;
 	}
 }

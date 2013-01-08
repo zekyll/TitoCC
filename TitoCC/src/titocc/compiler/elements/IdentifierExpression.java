@@ -8,6 +8,7 @@ import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -52,6 +53,8 @@ public class IdentifierExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
+		if (!symbol.getType().isObject())
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getLine(), getColumn());
 
 		// Load value to first register (or address if we have an array).
 		if (symbol.getType() instanceof ArrayType)
@@ -65,7 +68,7 @@ public class IdentifierExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (symbol instanceof Function)
+		if (!symbol.getType().isObject())
 			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getLine(), getColumn());
 
 		return new Lvalue(regs.get(0), symbol.getReference());
@@ -75,7 +78,7 @@ public class IdentifierExpression extends Expression
 	public Function getFunction(Scope scope) throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (!(symbol instanceof Function))
+		if (!(symbol.getType() instanceof FunctionType))
 			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.", getLine(), getColumn());
 
 		return (Function) symbol;
