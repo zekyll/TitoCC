@@ -165,7 +165,7 @@ public class Function extends Declaration implements Symbol
 		int varOffset = 0;
 		for (Symbol var : localVariables) {
 			asm.addLabel(var.getGlobalName());
-			asm.emit("equ", "" + varOffset);
+			asm.emit("equ", "" + (1 + varOffset));
 			varOffset += var.getType().getSize();
 		}
 
