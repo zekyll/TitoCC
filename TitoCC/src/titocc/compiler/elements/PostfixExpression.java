@@ -67,13 +67,13 @@ public class PostfixExpression extends Expression
 		if (!operandType.isArithmetic() && !(operandType.isPointer() && operandType.dereference().isObject()))
 			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getLine(), getColumn());
 
-		// Get reference or load address in second register.
+		// Evaluate operand; load address to 2nd register.
 		regs.allocate(asm);
 		regs.removeFirst();
 		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
 		regs.addFirst();
 
-		// Load value in first register.
+		// Load value to 1st register.
 		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.

@@ -147,7 +147,7 @@ public class BinaryExpression extends Expression
 	{
 		checkTypes(scope);
 
-		// Evaluate left expression and store it in the first register.
+		// Evaluate LHS; load value to 1st register.
 		left.compile(asm, scope, regs);
 
 		// Allocate a second register for right operand.
@@ -169,6 +169,7 @@ public class BinaryExpression extends Expression
 	private void compileRight(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
+		// Evaluate RHS; load to second register;
 		regs.removeFirst();
 		right.compile(asm, scope, regs);
 		regs.addFirst();

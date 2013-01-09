@@ -116,35 +116,43 @@ public class AssignmentExpression extends Expression
 		// Allocate second register.
 		regs.allocate(asm);
 
-		// Load LHS address in second register.
-		regs.removeFirst();
-		Lvalue leftVal = left.compileAsLvalue(asm, scope, regs);
-		regs.addFirst();
-
-		// Compile RHS and the assignment operation.
+		// Compile Operator.
 		if (operator.type == Type.SIMPLE)
-			compileSimple(asm, scope, regs, leftVal);
+			compileSimple(asm, scope, regs);
 		else if (operator.type == Type.COMMUTATIVE)
-			compileCommutative(asm, scope, regs, leftVal);
+			compileCommutative(asm, scope, regs);
 		else
-			compileNoncommutative(asm, scope, regs, leftVal);
+			compileNoncommutative(asm, scope, regs);
 
 		// Deallocate second register.
 		regs.deallocate(asm);
 	}
 
-	private void compileSimple(Assembler asm, Scope scope, Registers regs,
-			Lvalue leftVal) throws SyntaxException, IOException
+	public Lvalue compileLeft(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
-		// Load RHS value in first register and store in LHS.
+		regs.removeFirst();
+		Lvalue leftVal = left.compileAsLvalue(asm, scope, regs);
+		regs.addFirst();
+		return leftVal;
+	}
+
+	private void compileSimple(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
+	{
+		// Evaluate RHS and load value to 1st register.
 		right.compile(asm, scope, regs);
+
+		// Evaluate LHS and load address to 2nd register.
+		Lvalue leftVal = compileLeft(asm, scope, regs);
+
 		asm.emit("store", regs.get(0).toString(), leftVal.getReference());
 	}
 
-	private void compileCommutative(Assembler asm, Scope scope, Registers regs,
-			Lvalue leftVal) throws SyntaxException, IOException
+	private void compileCommutative(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
-		// Load RHS in first register.
+		// Evaluate RHS; load value to 1st register.
 		right.compile(asm, scope, regs);
 
 		// If operation is POINTER += INTEGER, we need to scale the integer value.
@@ -153,16 +161,22 @@ public class AssignmentExpression extends Expression
 			asm.emit("mul", regs.get(0).toString(), "=" + incSize);
 		}
 
+		// Evaluate LHS; load address to 2nd register.
+		Lvalue leftVal = compileLeft(asm, scope, regs);
+
 		// Because the operation is symmetric, we can use the left operand
 		// as the right operand in the assembly instruction, saving one register.
 		asm.emit(operator.mnemonic, regs.get(0).toString(), leftVal.getReference());
 		asm.emit("store", regs.get(0).toString(), leftVal.getReference());
 	}
 
-	private void compileNoncommutative(Assembler asm, Scope scope, Registers regs,
-			Lvalue leftVal) throws SyntaxException, IOException
+	private void compileNoncommutative(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
-		// Load RHS in a third register.
+		// Evaluate LHS; load address to 2nd register.
+		Lvalue leftVal = compileLeft(asm, scope, regs);
+
+		// Evaluate RHS; load value to 3rd register.
 		regs.allocate(asm);
 		regs.removeFirst();
 		regs.removeFirst();
@@ -176,7 +190,7 @@ public class AssignmentExpression extends Expression
 			asm.emit("mul", regs.get(2).toString(), "=" + incSize);
 		}
 
-		// Load LHS in the first register and operate on it.
+		// Load LHS value to 1st register and operate on it.
 		asm.emit("load", regs.get(0).toString(), leftVal.getReference());
 		asm.emit(operator.mnemonic, regs.get(0).toString(), regs.get(2).toString());
 
@@ -194,7 +208,7 @@ public class AssignmentExpression extends Expression
 		CType leftDeref = leftType.dereference();
 
 		if (operatorString.equals("=")) {
-			if(right.isAssignableTo(leftType, scope))
+			if (right.isAssignableTo(leftType, scope))
 				return;
 		} else if (operatorString.equals("+=") || operatorString.equals("-=")) {
 			if (leftType.isArithmetic() && rightType.isArithmetic())
