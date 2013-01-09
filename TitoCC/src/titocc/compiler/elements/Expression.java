@@ -3,7 +3,6 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Lvalue;
-import titocc.compiler.Register;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
@@ -148,7 +147,8 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Returns whether the expression can be assigned to the target type.
+	 * Returns whether the expression can be assigned to the target type. Target
+	 * type must be the actual type and not not decayed type.
 	 *
 	 * @param targetType target type of the assignment
 	 * @param scope scope in which the expression is evaluated
@@ -157,7 +157,7 @@ public abstract class Expression extends CodeElement
 	 */
 	protected boolean isAssignableTo(CType targetType, Scope scope) throws SyntaxException
 	{
-		CType sourceType = getType(scope).decay();
+		CType sourceType = getType(scope);
 		CType sourceDeref = sourceType.dereference();
 		CType targetDeref = targetType.dereference();
 

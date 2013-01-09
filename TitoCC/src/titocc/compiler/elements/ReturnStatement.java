@@ -5,6 +5,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -48,16 +49,19 @@ public class ReturnStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		Symbol retVal = scope.find("__Ret");
+
 		// Compile return value.
 		if (expression != null) {
-			Symbol retVal = scope.find("__Ret");
-
 			if (!expression.isAssignableTo(retVal.getType(), scope))
 				throw new SyntaxException("Returned expression doesn't match return value type.", getLine(), getColumn());
 
 			// Load expression to first register and store to the return value.
 			expression.compile(asm, scope, regs);
 			asm.emit("store", regs.get(0).toString(), retVal.getReference());
+		} else {
+			if (!retVal.getType().equals(new VoidType()))
+				throw new SyntaxException("Function must return a value.", getLine(), getColumn());
 		}
 
 		// Jump to function end

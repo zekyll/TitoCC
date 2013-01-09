@@ -257,8 +257,6 @@ public class BinaryExpression extends Expression
 		CType rightDeref = rightType.dereference();
 
 		if (op.type == Type.LOGICAL) {
-			if (leftType.isArithmetic() && rightType.isArithmetic())
-				return new IntType();
 			if (leftType.isScalar() && rightType.isScalar())
 				return new IntType();
 		} else if (op.type == Type.EQUALITY) {

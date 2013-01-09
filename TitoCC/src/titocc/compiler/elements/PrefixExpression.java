@@ -10,7 +10,6 @@ import titocc.compiler.Scope;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.IntType;
-import titocc.compiler.types.InvalidType;
 import titocc.compiler.types.PointerType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -101,6 +100,10 @@ public class PrefixExpression extends Expression
 	private void compileIncDec(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		CType operandType = operand.getType(scope);
+		if (!operandType.isArithmetic() && !(operandType.isPointer() && operandType.dereference().isObject()))
+			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getLine(), getColumn());
+
 		// Get reference or load address in second register.
 		regs.allocate(asm);
 		regs.removeFirst();
@@ -111,7 +114,7 @@ public class PrefixExpression extends Expression
 		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
-		int incSize = getIncrementSize(scope);
+		int incSize = operand.getType(scope).getIncrementSize();
 		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=" + incSize);
 		asm.emit("store", regs.get(0).toString(), val.getReference());
 
@@ -225,14 +228,6 @@ public class PrefixExpression extends Expression
 	public String toString()
 	{
 		return "(PRE_EXPR " + operator + " " + operand + ")";
-	}
-
-	private int getIncrementSize(Scope scope) throws SyntaxException
-	{
-		int incSize = operand.getType(scope).getIncrementSize();
-		if (incSize == 0)
-			throw new SyntaxException("Operator " + operator + " cannot be applied to the type.", getLine(), getColumn());
-		return incSize;
 	}
 
 	/**

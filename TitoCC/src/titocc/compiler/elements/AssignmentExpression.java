@@ -189,10 +189,9 @@ public class AssignmentExpression extends Expression
 
 	private void checkTypes(Scope scope) throws SyntaxException
 	{
-		CType leftType = left.getType(scope).decay();
+		CType leftType = left.getType(scope);
 		CType rightType = right.getType(scope).decay();
 		CType leftDeref = leftType.dereference();
-		CType rightDeref = rightType.dereference();
 
 		if (operatorString.equals("=")) {
 			if(right.isAssignableTo(leftType, scope))
@@ -200,7 +199,7 @@ public class AssignmentExpression extends Expression
 		} else if (operatorString.equals("+=") || operatorString.equals("-=")) {
 			if (leftType.isArithmetic() && rightType.isArithmetic())
 				return;
-			if (leftDeref.isObject() && rightType.isInteger())
+			if (leftType.isPointer() && leftDeref.isObject() && rightType.isInteger())
 				return;
 		} else if (operatorString.equals("&=") || operatorString.equals("|=")
 				|| operatorString.equals("^=")) {

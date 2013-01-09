@@ -63,6 +63,10 @@ public class PostfixExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
+		CType operandType = operand.getType(scope);
+		if (!operandType.isArithmetic() && !(operandType.isPointer() && operandType.dereference().isObject()))
+			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getLine(), getColumn());
+
 		// Get reference or load address in second register.
 		regs.allocate(asm);
 		regs.removeFirst();
@@ -73,7 +77,7 @@ public class PostfixExpression extends Expression
 		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
-		int incSize = getIncrementSize(scope);
+		int incSize = operand.getType(scope).getIncrementSize();
 		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=" + incSize);
 		asm.emit("store", regs.get(0).toString(), val.getReference());
 
@@ -82,14 +86,6 @@ public class PostfixExpression extends Expression
 
 		// Deallocate the second register.
 		regs.deallocate(asm);
-	}
-
-	private int getIncrementSize(Scope scope) throws SyntaxException
-	{
-		int incSize = operand.getType(scope).getIncrementSize();
-		if (incSize == 0)
-			throw new SyntaxException("Operator " + operator + " cannot be applied to the type.", getLine(), getColumn());
-		return incSize;
 	}
 
 	@Override
