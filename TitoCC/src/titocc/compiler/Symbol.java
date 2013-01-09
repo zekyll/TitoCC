@@ -33,5 +33,10 @@ public interface Symbol
 	 */
 	public String getReference();
 
+	/**
+	 * Returns the type of the object corresponding to this symbol.
+	 *
+	 * @return the object type
+	 */
 	public CType getType();
 }

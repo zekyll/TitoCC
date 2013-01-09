@@ -9,7 +9,10 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Identifier that is modified with arbitrary pointer/array declarators.
+ * Identifier that is modified with arbitrary pointer/array declarators. Note
+ * that the declarators are parsed in the reverse order. I.e. the innermost
+ * declarator becomes the outermost modifier to the type: ((*a)[2])[3] is
+ * identifier "a" that is pointer to a 2-sized array of 3-sized arrays.
  *
  * <p> EBNF definition:
  *
@@ -75,7 +78,7 @@ public abstract class Declarator extends CodeElement
 				throw new SyntaxException("Array elements must have object type.", getLine(), getColumn());
 			if (len == null)
 				throw new SyntaxException("Array length must be a compile time constant.", getLine(), getColumn());
-			else if(len <= 0)
+			else if (len <= 0)
 				throw new SyntaxException("Array length must be a positive integer.", getLine(), getColumn());
 			return subDeclarator.getModifiedType(new ArrayType(type, len));
 		}
@@ -116,15 +119,42 @@ public abstract class Declarator extends CodeElement
 		}
 	}
 
-	public Declarator(int line, int column)
+	/**
+	 * Constructs a Declarator.
+	 *
+	 * @param line starting line number of the declarator
+	 * @param column starting column/character of the declarator
+	 */
+	protected Declarator(int line, int column)
 	{
 		super(line, column);
 	}
 
+	/**
+	 * Returns the variable name for this declarator.
+	 *
+	 * @return the variable name
+	 */
 	public abstract String getName();
 
+	/**
+	 * Modifies the type with this declarator and all its sub declarators. For
+	 * example given type "int", two nested 2-sized array declarators would
+	 * return int[2][2].
+	 *
+	 * @param type type to be modified
+	 * @return modified type
+	 * @throws SyntaxException
+	 */
 	public abstract CType getModifiedType(CType type) throws SyntaxException;
 
+	/**
+	 * Attempts to parse a declarator from token stream. If parsing fails the
+	 * stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return Declarator object or null if tokens don't form a valid declarator
+	 */
 	public static Declarator parse(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();
@@ -145,6 +175,10 @@ public abstract class Declarator extends CodeElement
 		return declarator;
 	}
 
+	/**
+	 * Parses direct declarator, which is either variable name or a declarator
+	 * inside () parentheses.
+	 */
 	private static Declarator parseDirectDeclarator(TokenStream tokens)
 	{
 		int line = tokens.getLine(), column = tokens.getColumn();
@@ -167,6 +201,9 @@ public abstract class Declarator extends CodeElement
 		return declarator;
 	}
 
+	/**
+	 * Parses identifier declarator.
+	 */
 	private static Declarator parseIdentifierDeclarator(TokenStream tokens)
 	{
 		Declarator declarator = null;
@@ -180,6 +217,9 @@ public abstract class Declarator extends CodeElement
 		return declarator;
 	}
 
+	/**
+	 * Parses parenthesized declarator.
+	 */
 	private static Declarator parseParenthesizedDeclarator(TokenStream tokens)
 	{
 		Declarator declarator = null;
@@ -195,6 +235,9 @@ public abstract class Declarator extends CodeElement
 		return declarator;
 	}
 
+	/**
+	 * Parses the array length of array declarator.
+	 */
 	private static Expression parseArrayLength(TokenStream tokens)
 	{
 		tokens.pushMark();

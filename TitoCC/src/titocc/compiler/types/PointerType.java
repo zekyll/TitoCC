@@ -1,9 +1,18 @@
 package titocc.compiler.types;
 
+/**
+ * Corresponds to C array type. Is an object and a scalar, but not arithmetic.
+ * Equals only to PointerType that has same pointed type.
+ */
 public class PointerType extends CType
 {
 	private CType pointedType;
 
+	/**
+	 * Constructs a PointerType.
+	 *
+	 * @param elementType type of the pointed object.
+	 */
 	public PointerType(CType pointedType)
 	{
 		this.pointedType = pointedType;
@@ -11,12 +20,6 @@ public class PointerType extends CType
 
 	@Override
 	public boolean isObject()
-	{
-		return true;
-	}
-
-	@Override
-	public boolean isScalar()
 	{
 		return true;
 	}

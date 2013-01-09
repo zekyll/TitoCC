@@ -1,7 +1,18 @@
 package titocc.compiler.types;
 
+/**
+ * Corresponds to C int type. Is an object, scalar, arithmetic and integer type,
+ * but not arithmetic. Equals only to IntType.
+ */
 public class IntType extends CType
 {
+	/**
+	 * Constructs an IntType.
+	 */
+	public IntType()
+	{
+	}
+
 	@Override
 	public boolean isObject()
 	{

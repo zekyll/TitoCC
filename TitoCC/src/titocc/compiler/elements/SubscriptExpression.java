@@ -10,10 +10,27 @@ import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
+/**
+ * Subscript to an array. Takes an array expression and an integer typed
+ * subscript expression. C standard actually requires that their order doesn't
+ * matter. E.g. myArray[2] is the same as 2[myArray].
+ *
+ * <p> EBNF definition:
+ *
+ * <br> SUBSCRIPT_EXPRESSION = POSTFIX_EXPRESSION "[" EXPRESSION "]"
+ */
 public class SubscriptExpression extends Expression
 {
 	private Expression array, subscript;
 
+	/**
+	 * Constructs a SubscriptExpression.
+	 *
+	 * @param array the left side expression ("array")
+	 * @param subscript expression inside square brackets
+	 * @param line starting line number of the subscript expression
+	 * @param column starting column/character of the subscript expression
+	 */
 	public SubscriptExpression(Expression array, Expression subscript, int line, int column)
 	{
 		super(line, column);
@@ -32,6 +49,14 @@ public class SubscriptExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		compile(asm, scope, regs, false);
+	}
+
+	@Override
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
+	{
+		compile(asm, scope, regs, true);
+		return new Lvalue(regs.get(0));
 	}
 
 	private void compile(Assembler asm, Scope scope, Registers regs, boolean lvalue)
@@ -86,19 +111,21 @@ public class SubscriptExpression extends Expression
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
-			throws SyntaxException, IOException
-	{
-		compile(asm, scope, regs, true);
-		return new Lvalue(regs.get(0));
-	}
-
-	@Override
 	public String toString()
 	{
 		return "(SUBSCR_EXPR " + array + " " + subscript + ")";
 	}
 
+	/**
+	 * Attempts to parse a subscript expression from token stream, given the
+	 * first operand of the expression. If parsing fails the stream is reset to
+	 * its initial position.
+	 *
+	 * @param firstOperand preparsed array expression
+	 * @param tokens source token stream
+	 * @return SubscriptExpression object or null if tokens don't form a valid
+	 * subscript expression
+	 */
 	public static SubscriptExpression parse(Expression firstOperand, TokenStream tokens)
 	{
 		tokens.pushMark();

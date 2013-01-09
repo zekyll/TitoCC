@@ -2,11 +2,22 @@ package titocc.compiler.types;
 
 import java.util.List;
 
+/**
+ * Corresponds to C function types. Is not an object, scalar, arithmetic or
+ * integer type. Equals only to FunctionType with the same return type and
+ * parameter types.
+ */
 public class FunctionType extends CType
 {
 	private CType returnType;
 	private List<CType> parameterTypes;
 
+	/**
+	 * Constructs a new FunctionType.
+	 *
+	 * @param returnType return type
+	 * @param parameterTypes types of all the parameters
+	 */
 	public FunctionType(CType returnType, List<CType> parameterTypes)
 	{
 		this.returnType = returnType;

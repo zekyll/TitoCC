@@ -1,12 +1,13 @@
 package titocc.compiler.types;
 
 /**
- * Abstract base class for representing types in C type system.
+ * Abstract base class for representing types in C type system. Allows testing
+ * equality between types and querying their features.
  */
 public abstract class CType
 {
 	/**
-	 * Returns whether the type is an object that (i.e. not a function or void).
+	 * Returns whether the type is an object (i.e. not a function or void).
 	 *
 	 * @return true if object type
 	 */
@@ -26,7 +27,7 @@ public abstract class CType
 	}
 
 	/**
-	 * Returns true if the type is pointer type (including void pointers).
+	 * Returns true if the type is a pointer type (including void pointers).
 	 *
 	 * @return true if pointer type
 	 */
@@ -68,7 +69,7 @@ public abstract class CType
 
 	/**
 	 * Returns the size of the type in chars. Note that in ttk-91 char is the
-	 * same as int (i.e. 4 bytes).
+	 * same as int (i.e. 4 bytes), so sizeof(int) == 1.
 	 *
 	 * @return the size in chars or 0 if not an object type
 	 */

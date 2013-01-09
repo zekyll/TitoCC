@@ -1,10 +1,20 @@
 package titocc.compiler.types;
 
+/**
+ * Corresponds to C array type. Is an object, but not scalar or arithmetic.
+ * Equals only to ArrayType that has same element type and length.
+ */
 public class ArrayType extends CType
 {
 	private CType elementType;
 	private int length;
 
+	/**
+	 * Constructs an ArrayType.
+	 *
+	 * @param elementType type of the elements in the array
+	 * @param length length of the array
+	 */
 	public ArrayType(CType elementType, int length)
 	{
 		this.elementType = elementType;

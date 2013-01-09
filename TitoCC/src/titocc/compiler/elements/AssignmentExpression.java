@@ -128,7 +128,7 @@ public class AssignmentExpression extends Expression
 		regs.deallocate(asm);
 	}
 
-	public Lvalue compileLeft(Assembler asm, Scope scope, Registers regs)
+	private Lvalue compileLeft(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
 		regs.removeFirst();

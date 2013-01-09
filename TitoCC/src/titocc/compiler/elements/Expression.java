@@ -57,18 +57,17 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Evaluates the expression as an lvalue. At the moment the only lvalue
-	 * expressions are IdentifierExpressions that name variables or parameters,
-	 * so this function can just return the assembly reference to that
-	 * variable/parameter. However if generalized lvalues are implemented along
-	 * with pointers and arrays this function will have to be be replaced with
-	 * something like compileAsLvalue() which would return an address in a
-	 * register.
+	 * Generates assembly code for the expression, evaluating it as an lvalue.
+	 * Either the address of the object is returned in the first register or a
+	 * variable reference is returned. The function returns an Lvalue type which
+	 * is an abstraction of both of these situations.
 	 *
+	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @return assembly code reference to an assignable variable/parameter or
-	 * null if expression does not evaluate to an lvalue
+	 * @param regs available registers; must have at least one active register
+	 * @return an Lvalue object
 	 * @throws SyntaxException if expression contains an error
+	 * @throws IOException if assembler throws
 	 */
 	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
@@ -77,9 +76,9 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Attempts to evaluates the expression as a function. As with
-	 * getLvalueReference() this will have to be replaced with something more
-	 * general if function pointers are implemented.
+	 * Attempts to evaluate the expression as a function. At the moment there
+	 * are no function pointers/lvalues, so it can always return a named
+	 * function.
 	 *
 	 * @param scope in which the expression is evaluated
 	 * @return Function object or null if the expression does not name a
