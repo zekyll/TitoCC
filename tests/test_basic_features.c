@@ -34,6 +34,17 @@ int recursiveFactorial(int n)
 		return n * recursiveFactorial(n - 1);
 }
 
+void scope_start_test1(int scope_start_test1)
+{
+	int foobar = foobar;
+}
+
+void scope_start_test2()
+{
+	int scope_start_test2 = scope_start_test2;
+}
+
+
 int main()
 {
 	int a;
