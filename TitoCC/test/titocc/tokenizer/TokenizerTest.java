@@ -75,7 +75,7 @@ public class TokenizerTest
 		assertEquals(";", ";", tokens.get(9).toString());
 
 		assertTrue("<eof>", tokens.get(10) instanceof EofToken);
-		assertEquals("<eof>", "", tokens.get(10).toString());
+		assertEquals("<eof>", "<End of file>", tokens.get(10).toString());
 	}
 
 	@Test

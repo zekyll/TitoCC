@@ -39,4 +39,10 @@ public class EofToken extends Token
 
 		return token;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "<End of file>";
+	}
 }

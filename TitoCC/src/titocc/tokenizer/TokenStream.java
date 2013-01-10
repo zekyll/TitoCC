@@ -10,10 +10,26 @@ import java.util.Stack;
  */
 public class TokenStream
 {
+	/**
+	 * Source tokens.
+	 */
 	private List<Token> tokens;
+	/**
+	 * Saved stream positions.
+	 */
 	private Stack<Integer> marks = new Stack<Integer>();
+	/**
+	 * Current position.
+	 */
 	private ListIterator<Token> position;
+	/**
+	 * Tokens since the last mark.
+	 */
 	private int sinceLastMark;
+	/**
+	 * Read token that has biggest line number/column.
+	 */
+	private Token furthestReadToken;
 
 	/**
 	 * Constructs a TokenStream from a list of tokens.
@@ -62,7 +78,10 @@ public class TokenStream
 	public Token read()
 	{
 		++sinceLastMark;
-		return position.next();
+		Token next = position.next();
+		if (isNewFurthestReadToken(next))
+			furthestReadToken = next;
+		return next;
 	}
 
 	/**
@@ -97,5 +116,31 @@ public class TokenStream
 		Token t = position.next();
 		position.previous();
 		return t.getColumn();
+	}
+
+	/**
+	 * Returns a previously read token that is furthest into the stream. It is
+	 * determined by line number of column. Resetting the stream does not reset
+	 * this.
+	 *
+	 * @return column number
+	 */
+	public Token getFurthestReadToken()
+	{
+		return furthestReadToken;
+	}
+
+	/**
+	 * Checks if the new token is further in the text. It first checks based on
+	 * line number and if they are the same then based on column.
+	 */
+	private boolean isNewFurthestReadToken(Token token)
+	{
+		if (furthestReadToken == null)
+			return true;
+		if (token.getLine() != furthestReadToken.getLine())
+			return token.getLine() > furthestReadToken.getLine();
+		else
+			return token.getColumn() > furthestReadToken.getColumn();
 	}
 }

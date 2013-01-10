@@ -41,7 +41,7 @@ public class EofTokenTest
 		CodeReader cr = new CodeReader(new StringReader(""));
 		EofToken token = EofToken.parse(cr);
 		assertNotNull(token);
-		assertEquals("", token.toString());
+		assertEquals("<End of file>", token.toString());
 	}
 
 	@Test

@@ -26,7 +26,11 @@ public class Parser
 
 		TranslationUnit trUnit = TranslationUnit.parse(tokenStream);
 		if (trUnit == null) {
-			throw new SyntaxException("Parser error.", -1, -1);
+			Token token = tokenStream.getFurthestReadToken();
+			throw new SyntaxException(
+					"Unexpected token \"" + token + "\".",
+					token.getLine(),
+					token.getColumn());
 		}
 		return trUnit;
 	}
