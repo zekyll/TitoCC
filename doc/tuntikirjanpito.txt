@@ -28,20 +28,33 @@ TO 27.12.2012:
 TI 1.1.2013:
 	(4h) Käyttöliittymän parantelu.
 	(1h) Testejä kääntäjälle.
-KE 2.2.2013
+KE 2.1.2013
 	(1h) Testausta, bugien korjausta ym.
-To 3.2.2013
+To 3.1.2013
 	(2h) Javadocceja usealle luokalle.
 	(4h) Manuaalisesti suoritettava testi kääntäjälle ja useita bugikorjauksia.
 	(0.5h) Dokumentaation ja luokkakaavion päivitys.
-LA 5.2.2013
+LA 5.1.2013
 	(5h) Lisää Javadocceja.
-SU 6.2.2013
+SU 6.1.2013
 	(5h) Kääntäjän refaktorointia ja parantelua.
 	(1.5h) Testejä kääntäjän virheilmoituksille.
 	(8h) Aloitettu osoittimien ja taulukkojen toteutus erilliseen branchiin.
-MA 6.2.2013
+MA 7.1.2013
 	(8h) Pointterien/taulukoiden toteutusta, deklaraattorit ja tyyppijärjestelmä.
 	(1h) Refaktorointia.
 	(2h) Sekvenssikaaviot.
 	(1h) Tokenisoijan javadocit.
+TI 8.1.2013
+	(1h) Testien korjaus.
+	(7h) Tyyppitarkastukset ja osoitinaritmetiikka.
+KE 9.1.2013
+	(3h) Lisää testejä käännösvirheille ja uusia testisyötteitä.
+	(1h) Javadocit ajantasalle.
+TO 10.1.2013
+	(0.5h) Tarkemmat virheilmoitukset parseriin.
+PE 11.1.2013
+	(1h) Testausdokumentti ja käyttöohjeet.
+	(1h) Luokkakaaviot päivitetty.
+	(2h) Kattavammat testit parserille.
+	(1h) Viimeistelyä.
