@@ -13,7 +13,8 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Integer literal expression.
+ * Integer literal expression. Consists of digits and suffix. Suffixes are not
+ * currently supported.
  *
  * <p> EBNF definition:
  *
@@ -21,7 +22,14 @@ import titocc.tokenizer.TokenStream;
  */
 public class IntegerLiteralExpression extends Expression
 {
-	private String rawValue, suffix;
+	/**
+	 * Digits as a string.
+	 */
+	private final String rawValue;
+	/**
+	 * Suffix as a string.
+	 */
+	private final String suffix;
 
 	/**
 	 * Constructs an IntegerLiteralExpression.

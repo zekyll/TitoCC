@@ -26,7 +26,13 @@ import titocc.tokenizer.Tokenizer;
  */
 public class SourceFile
 {
-	private PlainDocument document;
+	/**
+	 * Document object that contains the actual text data.
+	 */
+	private final PlainDocument document;
+	/**
+	 * File object associated with this source file.
+	 */
 	private File file;
 
 	/**

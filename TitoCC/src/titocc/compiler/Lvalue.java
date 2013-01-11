@@ -12,8 +12,14 @@ import java.io.IOException;
  */
 public class Lvalue
 {
-	private Register register;
-	private String reference;
+	/**
+	 * Register reserved for this lvalue.
+	 */
+	private final Register register;
+	/**
+	 * Reference to a named object if any.
+	 */
+	private final String reference;
 
 	/**
 	 * Constructs an unnamed lvalue whose address is stored in a register.

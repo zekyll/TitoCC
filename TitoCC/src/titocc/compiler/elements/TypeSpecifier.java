@@ -17,6 +17,9 @@ import titocc.tokenizer.TokenStream;
  */
 public class TypeSpecifier extends CodeElement
 {
+	/**
+	 * Supported fundamental types.
+	 */
 	static final Map<String, CType> typeMap = new HashMap<String, CType>()
 	{
 		{
@@ -24,7 +27,10 @@ public class TypeSpecifier extends CodeElement
 			put("int", new IntType());
 		}
 	};
-	private String name;
+	/**
+	 * Type name for this type specifier.
+	 */
+	private final String name;
 
 	/**
 	 * Constructs a Type.

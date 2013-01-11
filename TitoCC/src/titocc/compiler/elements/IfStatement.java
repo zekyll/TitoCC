@@ -17,8 +17,18 @@ import titocc.tokenizer.TokenStream;
  */
 public class IfStatement extends Statement
 {
-	private Expression test;
-	private Statement trueStatement, elseStatement;
+	/**
+	 * Test expression.
+	 */
+	private final Expression test;
+	/**
+	 * Statement executed when test is true.
+	 */
+	private final Statement trueStatement;
+	/**
+	 * Statement executed when test is false. Null if not used.
+	 */
+	private final Statement elseStatement;
 
 	/**
 	 * Constructs an IfStatement.

@@ -6,8 +6,14 @@ package titocc.compiler.types;
  */
 public class ArrayType extends CType
 {
-	private CType elementType;
-	private int length;
+	/**
+	 * Element type.
+	 */
+	private final CType elementType;
+	/**
+	 * Array length.
+	 */
+	private final int length;
 
 	/**
 	 * Constructs an ArrayType.

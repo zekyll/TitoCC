@@ -21,11 +21,31 @@ import titocc.tokenizer.TokenStream;
  */
 public class VariableDeclaration extends Declaration implements Symbol
 {
-	private boolean isGlobal; // Used in the compilation phase
-	private TypeSpecifier typeSpecifier;
+	/**
+	 * Whether the variable is global. Used in the compilation phase
+	 */
+	private boolean isGlobal;
+	/**
+	 * Type specifier for the declaration. (void or int)
+	 */
+	private final TypeSpecifier typeSpecifier;
+	/**
+	 * Type of the variable. Set when compiling the function.
+	 */
 	private CType type;
-	private Declarator declarator;
-	private Expression initializer;
+	/**
+	 * Declarator which has the variable name and which modifies the type
+	 * specifier.
+	 */
+	private final Declarator declarator;
+	/**
+	 * Optional initializer expression. Null if not used.
+	 */
+	private final Expression initializer;
+	/**
+	 * Globally unique name for the variable symbol. Set when compiling the
+	 * function.
+	 */
 	private String globallyUniqueName;
 
 	/**

@@ -20,7 +20,10 @@ import titocc.tokenizer.TokenStream;
  */
 public class ArgumentList extends CodeElement
 {
-	private List<Expression> arguments;
+	/**
+	 * Argument expressions.
+	 */
+	private final List<Expression> arguments;
 
 	/**
 	 * Constructs a new ArgumentList.

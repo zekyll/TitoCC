@@ -19,7 +19,10 @@ import titocc.tokenizer.TokenStream;
  */
 public class ParameterList extends CodeElement
 {
-	private List<Parameter> parameters;
+	/**
+	 * List of parameters.
+	 */
+	private final List<Parameter> parameters;
 
 	/**
 	 * Construcs a ParameterList.

@@ -64,9 +64,22 @@ public class AssignmentExpression extends Expression
 			put(">>=", new Operator("shr", Type.NONCOMMUTATIVE));
 		}
 	};
-	private Operator operator;
-	private String operatorString;
-	private Expression left, right;
+	/**
+	 * Assignment operator.
+	 */
+	private final Operator operator;
+	/**
+	 * String representation of the operator.
+	 */
+	private final String operatorString;
+	/**
+	 * Left hand side expression.
+	 */
+	private final Expression left;
+	/**
+	 * Right hand side expression.
+	 */
+	private final Expression right;
 
 	/**
 	 * Constructs a new AssignmentExpression

@@ -12,6 +12,9 @@ import titocc.tokenizer.TokenStream;
  */
 public abstract class PrimaryExpression extends Expression
 {
+	/**
+	 * Not used.
+	 */
 	private PrimaryExpression(int line, int column)
 	{
 		super(line, column);

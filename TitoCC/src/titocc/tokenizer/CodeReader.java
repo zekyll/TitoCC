@@ -11,10 +11,23 @@ import java.io.Reader;
  */
 public class CodeReader
 {
+	/**
+	 * Length of the previous line. Needed when unreading line changes.
+	 */
 	private int previousLineLength;
-	private LineNumberReader reader;
+	/**
+	 * LineNumberReader that wraps the given reader object and keeps track of
+	 * the line number.
+	 */
+	private final LineNumberReader reader;
+	/**
+	 * Current column number.
+	 */
 	private int column;
 
+	/**
+	 *
+	 */
 	/**
 	 * Constructs a CodeReader.
 	 *

@@ -6,7 +6,14 @@ package titocc.compiler.elements;
  */
 public abstract class CodeElement
 {
-	private int line, column;
+	/**
+	 * Starting line number.
+	 */
+	private final int line;
+	/**
+	 * Starting column number.
+	 */
+	private final int column;
 
 	/**
 	 * Constructs a code element.

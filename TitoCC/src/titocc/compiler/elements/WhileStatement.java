@@ -16,8 +16,14 @@ import titocc.tokenizer.TokenStream;
  */
 public class WhileStatement extends Statement
 {
-	private Expression test;
-	private Statement statement;
+	/**
+	 * Test expression.
+	 */
+	private final Expression test;
+	/**
+	 * Statement to execute in the loop.
+	 */
+	private final Statement statement;
 
 	/**
 	 * Constructs a WhileStatement.

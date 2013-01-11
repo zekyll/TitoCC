@@ -16,7 +16,10 @@ import titocc.tokenizer.TokenStream;
  */
 public class ExpressionStatement extends Statement
 {
-	private Expression expression;
+	/**
+	 * The expression that the statement evaluates.
+	 */
+	private final Expression expression;
 
 	/**
 	 * Constructs an ExpressionStatement.

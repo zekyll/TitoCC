@@ -12,7 +12,10 @@ import java.util.List;
  */
 public class Tokenizer
 {
-	private CodeReader input;
+	/**
+	 * Input reader.
+	 */
+	private final CodeReader input;
 
 	/**
 	 * Constructs a Tokenizer.

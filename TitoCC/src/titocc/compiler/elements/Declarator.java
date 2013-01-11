@@ -28,7 +28,7 @@ public abstract class Declarator extends CodeElement
 	 */
 	private static class IdentifierDeclarator extends Declarator
 	{
-		private String name;
+		private final String name;
 
 		public IdentifierDeclarator(String name, int line, int column)
 		{
@@ -60,8 +60,8 @@ public abstract class Declarator extends CodeElement
 	 */
 	private static class ArrayDeclarator extends Declarator
 	{
-		private Declarator subDeclarator;
-		private Expression arrayLength;
+		private final Declarator subDeclarator;
+		private final Expression arrayLength;
 
 		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength, int line, int column)
 		{
@@ -101,7 +101,7 @@ public abstract class Declarator extends CodeElement
 	 */
 	private static class PointerDeclarator extends Declarator
 	{
-		private Declarator subDeclarator;
+		private final Declarator subDeclarator;
 
 		public PointerDeclarator(Declarator subDeclarator, int line, int column)
 		{

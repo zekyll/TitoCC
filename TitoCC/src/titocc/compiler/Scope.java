@@ -14,11 +14,27 @@ import java.util.Set;
  */
 public class Scope
 {
-	private Scope parent;
-	private Map<String, Symbol> symbols = new HashMap<String, Symbol>();
-	private List<Scope> subScopes = new ArrayList<Scope>();
-	private Set<String> globallyUniqueNames;
-	private String globalNamePrefix;
+	/**
+	 * Parent scope.
+	 */
+	private final Scope parent;
+	/**
+	 * Map of symbols in this scope.
+	 */
+	private final Map<String, Symbol> symbols = new HashMap<String, Symbol>();
+	/**
+	 * Subscopes of this scope.
+	 */
+	private final List<Scope> subScopes = new ArrayList<Scope>();
+	/**
+	 * All the reserved names in the ttk-91 namespace. This is list is shared by
+	 * all Scope objects.
+	 */
+	private final Set<String> globallyUniqueNames;
+	/**
+	 * Prefix added for this scope when generating globally unique names.
+	 */
+	private final String globalNamePrefix;
 
 	/**
 	 * Constructs a new Scope.

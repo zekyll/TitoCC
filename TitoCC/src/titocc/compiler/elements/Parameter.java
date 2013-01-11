@@ -17,9 +17,23 @@ import titocc.tokenizer.TokenStream;
  */
 public class Parameter extends CodeElement implements Symbol
 {
-	private TypeSpecifier typeSpecifier;
-	private Declarator declarator;
+	/**
+	 * Type specifier (e.g. void/int).
+	 */
+	private final TypeSpecifier typeSpecifier;
+	/**
+	 * Declarator which has the parameter name and which modifies the type
+	 * specifier.
+	 */
+	private final Declarator declarator;
+	/**
+	 * Globally unique name for the parameter symbol. Set when compiling the
+	 * function.
+	 */
 	private String globallyUniqueName;
+	/**
+	 * Parameter type. Set when compiling the function.
+	 */
 	private CType type;
 
 	/**

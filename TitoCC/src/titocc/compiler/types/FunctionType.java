@@ -9,8 +9,14 @@ import java.util.List;
  */
 public class FunctionType extends CType
 {
-	private CType returnType;
-	private List<CType> parameterTypes;
+	/**
+	 * Function return type.
+	 */	
+	private final CType returnType;
+	/**
+	 * List of parameter types.
+	 */
+	private final List<CType> parameterTypes;
 
 	/**
 	 * Constructs a new FunctionType.

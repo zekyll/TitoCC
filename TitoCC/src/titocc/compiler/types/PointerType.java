@@ -6,12 +6,15 @@ package titocc.compiler.types;
  */
 public class PointerType extends CType
 {
-	private CType pointedType;
+	/**
+	 * Type that this pointer type points to.
+	 */
+	private final CType pointedType;
 
 	/**
 	 * Constructs a PointerType.
 	 *
-	 * @param elementType type of the pointed object.
+	 * @param pointedType type of the pointed object.
 	 */
 	public PointerType(CType pointedType)
 	{

@@ -15,11 +15,20 @@ import titocc.tokenizer.Tokenizer;
  */
 public class Compiler
 {
+	/**
+	 * Names reserved by ttk-91.
+	 */
 	static final String[] reservedGlobalNames = {
 		"r0", "r1", "r2", "r3", "r3", "r5", "crt", "kbd", "stdin", "stdout",
 		"halt", "read", "write", "time", "date"
 	};
-	private Reader reader;
+	/**
+	 * Input reader object.
+	 */
+	private final Reader reader;
+	/**
+	 * Input TranslationUnit or null if input reader was used instead.
+	 */
 	private TranslationUnit translationUnit;
 
 	/**

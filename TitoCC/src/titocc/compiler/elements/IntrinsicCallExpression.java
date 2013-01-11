@@ -22,8 +22,17 @@ import titocc.tokenizer.TokenStream;
  */
 public class IntrinsicCallExpression extends Expression
 {
+	/**
+	 * List of instrinsic function names.
+	 */
 	static final String[] intrinsicFunctions = {"in", "out"};
-	private String name;
+	/**
+	 * Name of the intrinsic function to call.
+	 */
+	private final String name;
+	/**
+	 * Argument list for the intrinsic call. 
+	 */
 	private ArgumentList argumentList;
 
 	/**

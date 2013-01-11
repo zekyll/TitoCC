@@ -8,6 +8,9 @@ import javax.swing.JTextArea;
  */
 public class LogArea extends JScrollPane implements MessageLog
 {
+	/**
+	 * The actual text area that this log area uses.
+	 */
 	private JTextArea logTextArea;
 
 	/**

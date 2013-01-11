@@ -18,8 +18,14 @@ import titocc.tokenizer.TokenStream;
  */
 public class FunctionCallExpression extends Expression
 {
-	private Expression function;
-	private ArgumentList argumentList;
+	/**
+	 * Expression used as the function.
+	 */
+	private final Expression function;
+	/**
+	 * Argument list for the function call.
+	 */
+	private final ArgumentList argumentList;
 
 	/**
 	 * Constructs a function call expression.

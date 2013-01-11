@@ -19,7 +19,10 @@ import titocc.tokenizer.TokenStream;
  */
 public class ReturnStatement extends Statement
 {
-	private Expression expression;
+	/**
+	 * Returned value expression. Null if not used.
+	 */
+	private final Expression expression;
 
 	/**
 	 * Constructs a ReturnStatement.

@@ -24,9 +24,18 @@ import titocc.tokenizer.TokenStream;
  */
 public class PrefixExpression extends Expression
 {
+	/**
+	 * List of supported prefix operators.
+	 */
 	static final String[] prefixOperators = {"++", "--", "+", "-", "!", "~", "&", "*"};
-	private String operator;
-	private Expression operand;
+	/**
+	 * Operator for this prefix expression.
+	 */
+	private final String operator;
+	/**
+	 * Operand expression.
+	 */
+	private final Expression operand;
 
 	/**
 	 * Constructs a PrefixExpression

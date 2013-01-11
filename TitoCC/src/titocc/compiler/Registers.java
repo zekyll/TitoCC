@@ -13,10 +13,23 @@ import java.util.LinkedList;
  */
 public class Registers
 {
-	private LinkedList<Register> activeRegisters = new LinkedList<Register>();
-	private LinkedList<Register> freeRegisters = new LinkedList<Register>();
-	private LinkedList<Register> pushedRegisters = new LinkedList<Register>();
-	private LinkedList<Register> reservedRegisters = new LinkedList<Register>();
+	/**
+	 * Active registers that are used for current operation.
+	 */
+	private final LinkedList<Register> activeRegisters = new LinkedList<Register>();
+	/**
+	 * Registers that don't contain important data.
+	 */
+	private final LinkedList<Register> freeRegisters = new LinkedList<Register>();
+	/**
+	 * Registers that have been pushed to the program stack.
+	 */
+	private final LinkedList<Register> pushedRegisters = new LinkedList<Register>();
+	/**
+	 * Registers that are in use, but are inactive. These are available for
+	 * reallocation by storing them to memory.
+	 */
+	private final LinkedList<Register> reservedRegisters = new LinkedList<Register>();
 
 	/**
 	 * Constructs a new register manager that starts with one active register.

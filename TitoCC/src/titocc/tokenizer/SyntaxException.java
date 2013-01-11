@@ -5,7 +5,14 @@ package titocc.tokenizer;
  */
 public class SyntaxException extends Exception
 {
-	private int line, column;
+	/**
+	 * Line number where the compilation error occured. First line is 0.
+	 */
+	private final int line;
+	/**
+	 * Column number where the compilation error occured.
+	 */
+	private final int column;
 
 	/**
 	 * Constructs a SyntaxException.

@@ -8,8 +8,22 @@ import titocc.compiler.types.CType;
  */
 public class InternalSymbol implements Symbol
 {
-	private String name, globallyUniqueName, referenceSuffix;
-	private CType type;
+	/**
+	 * Name of the symbol, including prefix "__".
+	 */
+	private final String name;
+	/**
+	 * Globally unique name.
+	 */
+	private final String globallyUniqueName;
+	/**
+	 * Suffix to add to the reference. (for example "(fp)")
+	 */
+	private final String referenceSuffix;
+	/**
+	 * Type of the symbol.
+	 */
+	private final CType type;
 
 	/**
 	 * Constructs a new internal symbol. The actual name of the symbol is

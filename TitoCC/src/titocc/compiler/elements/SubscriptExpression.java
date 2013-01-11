@@ -21,7 +21,14 @@ import titocc.tokenizer.TokenStream;
  */
 public class SubscriptExpression extends Expression
 {
-	private Expression array, subscript;
+	/**
+	 * Array operand.
+	 */
+	private final Expression array;
+	/**
+	 * Subscript operand.
+	 */
+	private final Expression subscript;
 
 	/**
 	 * Constructs a SubscriptExpression.

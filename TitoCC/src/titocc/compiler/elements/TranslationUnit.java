@@ -22,6 +22,9 @@ import titocc.tokenizer.TokenStream;
  */
 public class TranslationUnit extends CodeElement
 {
+	/**
+	 * List of declarations (Functions or global variables).
+	 */
 	private List<Declaration> declarations;
 
 	/**

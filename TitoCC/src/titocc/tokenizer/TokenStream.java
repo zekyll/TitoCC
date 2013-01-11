@@ -13,15 +13,15 @@ public class TokenStream
 	/**
 	 * Source tokens.
 	 */
-	private List<Token> tokens;
+	private final List<Token> tokens;
 	/**
 	 * Saved stream positions.
 	 */
-	private Stack<Integer> marks = new Stack<Integer>();
+	private final Stack<Integer> marks = new Stack<Integer>();
 	/**
 	 * Current position.
 	 */
-	private ListIterator<Token> position;
+	private final ListIterator<Token> position;
 	/**
 	 * Tokens since the last mark.
 	 */

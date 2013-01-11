@@ -16,7 +16,10 @@ import titocc.tokenizer.TokenStream;
  */
 public class DeclarationStatement extends Statement
 {
-	private VariableDeclaration declaration;
+	/**
+	 * Declaration for for this declaration statement.
+	 */
+	private final VariableDeclaration declaration;
 
 	/**
 	 * Constructs a DeclarationStatement.

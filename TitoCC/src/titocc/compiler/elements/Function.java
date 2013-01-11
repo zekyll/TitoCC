@@ -29,12 +29,39 @@ import titocc.tokenizer.TokenStream;
  */
 public class Function extends Declaration implements Symbol
 {
-	private TypeSpecifier returnType;
-	private String name;
-	private ParameterList parameterList;
-	private BlockStatement body;
+	/**
+	 * Return type specifier. Note that this is just type specifier (void or
+	 * int) because abstract declarators are not supported.
+	 */
+	private final TypeSpecifier returnType;
+	/**
+	 * Function name.
+	 */
+	private final String name;
+	/**
+	 * List of paremeters.
+	 */
+	private final ParameterList parameterList;
+	/**
+	 * Function body.
+	 */
+	private final BlockStatement body;
+	/**
+	 * Globally unique name for the function symbol. Set when compiling the
+	 * function.
+	 */
 	private String globallyUniqueName;
-	private InternalSymbol retValSymbol, endSymbol;
+	/**
+	 * Symbol for return value. Set when compiling the function.
+	 */
+	private InternalSymbol retValSymbol;
+	/**
+	 * Symbol for function end location. Set when compiling the function.
+	 */
+	private InternalSymbol endSymbol;
+	/**
+	 * Type of the function. Set when compiling the function.
+	 */
 	private CType type;
 
 	/**

@@ -12,12 +12,19 @@ import titocc.util.AsciiUtil;
  */
 public class IntegerLiteralToken extends Token
 {
-	private String value, suffix;
+	/**
+	 * Raw string of the digits.
+	 */
+	private final String value;
+	/**
+	 * Suffix string.
+	 */
+	private final String suffix;
 
 	/**
 	 * Constructs an IntegerLiteralToken.
 	 *
-	 * @param string the whole token as a  string
+	 * @param string the whole token as a string
 	 * @param line line number where the token is located
 	 * @param column column number where the token is located
 	 * @param value value part of the token

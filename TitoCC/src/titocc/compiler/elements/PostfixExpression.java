@@ -21,9 +21,18 @@ import titocc.tokenizer.TokenStream;
  */
 public class PostfixExpression extends Expression
 {
+	/**
+	 * List of postfix operators.
+	 */
 	static final String[] postfixOperators = {"++", "--"};
-	private String operator;
-	private Expression operand;
+	/**
+	 * Operator for this postfix expression.
+	 */
+	private final String operator;
+	/**
+	 * Operand expression.
+	 */
+	private final Expression operand;
 
 	/**
 	 * Constructs a PostfixExpression.

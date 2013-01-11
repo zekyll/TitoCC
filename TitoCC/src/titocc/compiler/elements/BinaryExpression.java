@@ -66,7 +66,9 @@ public class BinaryExpression extends Expression
 			this.priority = priority;
 		}
 	}
-	// Binary operators, their main instructions and priorities.
+	/**
+	 * Binary operators, their main instructions and priorities.
+	 */
 	static final Map<String, Operator> binaryOperators = new HashMap<String, Operator>()
 	{
 		{
@@ -90,8 +92,18 @@ public class BinaryExpression extends Expression
 			put("%", new Operator("mod", Type.ARITHMETIC, 11));
 		}
 	};
-	private String operator;
-	private Expression left, right;
+	/**
+	 * Binary operator as a string.
+	 */
+	private final String operator;
+	/**
+	 * Left hand side expression;
+	 */
+	private final Expression left;
+	/**
+	 * Right hand side expression.
+	 */
+	private Expression right;
 
 	/**
 	 * Constructs a BinaryExpression.

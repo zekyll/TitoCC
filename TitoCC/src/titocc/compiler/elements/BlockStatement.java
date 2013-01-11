@@ -18,7 +18,10 @@ import titocc.tokenizer.TokenStream;
  */
 public class BlockStatement extends Statement
 {
-	private List<Statement> statements;
+	/**
+	 * Statements inside the block statement.
+	 */
+	private final List<Statement> statements;
 
 	/**
 	 * Constructs a new block statement.

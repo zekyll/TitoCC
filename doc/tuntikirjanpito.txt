@@ -57,4 +57,5 @@ PE 11.1.2013
 	(1h) Testausdokumentti ja käyttöohjeet.
 	(1h) Luokkakaaviot päivitetty.
 	(2h) Kattavammat testit parserille.
+	(1h) Kattavammat javadocit.
 	(1h) Viimeistelyä.

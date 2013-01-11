@@ -5,8 +5,18 @@ package titocc.tokenizer;
  */
 public abstract class Token
 {
-	private String string;
-	private int line, column;
+	/**
+	 * Token as a string.
+	 */
+	private final String string;
+	/**
+	 * Starting line number of the token. 0 is first line.
+	 */
+	private final int line;
+	/**
+	 * Starting column number of the token. 0 is first line.
+	 */
+	private final int column;
 
 	/**
 	 * Constructs a Token.

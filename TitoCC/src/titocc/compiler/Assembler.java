@@ -10,7 +10,13 @@ import java.io.Writer;
  */
 public class Assembler
 {
-	private Writer writer;
+	/**
+	 * Writer object for outputting the instructions.
+	 */
+	private final Writer writer;
+	/**
+	 * Label to add to the next instruction.
+	 */
 	private String label = "";
 
 	/**
