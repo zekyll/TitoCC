@@ -16,7 +16,7 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> ARGUMENT_LIST = "(" [EXPRESSION "," {EXPRESSION}] ")"
+ * <br> ARGUMENT_LIST = "(" [EXPRESSION {"," EXPRESSION}] ")"
  */
 public class ArgumentList extends CodeElement
 {

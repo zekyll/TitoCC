@@ -16,6 +16,7 @@ public class Parser
 	 * Parses a list of tokens. Produces a code element tree structure where
 	 * TranslationUnit is the root element.
 	 *
+	 * @param tokens input tokens
 	 * @return a TranslationUnit object which is the top level element in the
 	 * code element hierarchy
 	 * @throws SyntaxException if the source code has errors

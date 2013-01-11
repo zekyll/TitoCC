@@ -18,11 +18,14 @@ import titocc.tokenizer.TokenStream;
  *
  * <br> DECLARATOR = "*" DECLARATOR | DIRECT_DECLARATOR
  *
- * <br> DIRECT-DECLARATOR = IDENTIFIER | "(" DECLARATOR ")" | DIRECT_DECLARATOR
+ * <br> DIRECT_DECLARATOR = IDENTIFIER | "(" DECLARATOR ")" | DIRECT_DECLARATOR
  * "[" EXPRESSION "]"
  */
 public abstract class Declarator extends CodeElement
 {
+	/**
+	 * Declarator that is just a simple identifier.
+	 */
 	private static class IdentifierDeclarator extends Declarator
 	{
 		private String name;
@@ -52,6 +55,9 @@ public abstract class Declarator extends CodeElement
 		}
 	}
 
+	/**
+	 * Declarator that declares an array.
+	 */
 	private static class ArrayDeclarator extends Declarator
 	{
 		private Declarator subDeclarator;
@@ -90,6 +96,9 @@ public abstract class Declarator extends CodeElement
 		}
 	}
 
+	/**
+	 * Declarator that declares a pointer.
+	 */
 	private static class PointerDeclarator extends Declarator
 	{
 		private Declarator subDeclarator;

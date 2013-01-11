@@ -16,7 +16,8 @@ import titocc.tokenizer.TokenStream;
  * <p> EBNF definition:
  *
  * <br> POSTFIX_EXPRESSION = POSTFIX_EXPRESSION ("++" | "--") |
- * FUNCTION_CALL_EXPRESSION | INTRINSIC_CALL_EXPRESSION | PRIMARY_EXPRESSION
+ * INTRINSIC_CALL_EXPRESSION | FUNCTION_CALL_EXPRESSION | SUBSCRIPT_EXPRESSION |
+ * PRIMARY_EXPRESSION
  */
 public class PostfixExpression extends Expression
 {

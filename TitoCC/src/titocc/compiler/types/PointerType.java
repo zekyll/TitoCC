@@ -1,7 +1,7 @@
 package titocc.compiler.types;
 
 /**
- * Corresponds to C array type. Is an object and a scalar, but not arithmetic.
+ * Corresponds to C pointer type. Is an object and a scalar, but not arithmetic.
  * Equals only to PointerType that has same pointed type.
  */
 public class PointerType extends CType

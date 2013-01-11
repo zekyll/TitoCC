@@ -317,6 +317,10 @@ public class BinaryExpression extends Expression
 		return parseImpl(tokens, 0);
 	}
 
+	/**
+	 * Recursive implementation of the parsing method. Each call parses one
+	 * priority level of binary operators.
+	 */
 	private static Expression parseImpl(TokenStream tokens, int priority)
 	{
 		if (priority == 12)
