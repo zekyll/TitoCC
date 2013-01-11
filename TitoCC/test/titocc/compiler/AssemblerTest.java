@@ -2,40 +2,18 @@ package titocc.compiler;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AssemblerTest
 {
 	private Assembler asm;
 
-	public AssemblerTest()
-	{
-	}
-
-	@BeforeClass
-	public static void setUpClass()
-	{
-	}
-
-	@AfterClass
-	public static void tearDownClass()
-	{
-	}
-
 	@Before
 	public void setUp()
 	{
 		asm = new Assembler(new StringWriter());
-	}
-
-	@After
-	public void tearDown()
-	{
 	}
 
 	@Test

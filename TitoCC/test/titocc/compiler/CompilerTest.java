@@ -3,40 +3,12 @@ package titocc.compiler;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import titocc.tokenizer.SyntaxException;
 
 public class CompilerTest
 {
-	public CompilerTest()
-	{
-	}
-
-	@BeforeClass
-	public static void setUpClass()
-	{
-	}
-
-	@AfterClass
-	public static void tearDownClass()
-	{
-	}
-
-	@Before
-	public void setUp()
-	{
-	}
-
-	@After
-	public void tearDown()
-	{
-	}
-
 	private String compile(String s) throws IOException, SyntaxException
 	{
 		Compiler c = new Compiler(new StringReader(s));

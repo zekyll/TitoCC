@@ -2,11 +2,7 @@ package titocc.compiler;
 
 import java.io.IOException;
 import java.io.StringReader;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;
@@ -15,30 +11,6 @@ import titocc.tokenizer.Tokenizer;
 public class ParserTest
 {
 	private Tokenizer tokenizer;
-
-	public ParserTest()
-	{
-	}
-
-	@BeforeClass
-	public static void setUpClass()
-	{
-	}
-
-	@AfterClass
-	public static void tearDownClass()
-	{
-	}
-
-	@Before
-	public void setUp()
-	{
-	}
-
-	@After
-	public void tearDown()
-	{
-	}
 
 	private String parse(String code) throws IOException, SyntaxException
 	{
@@ -246,6 +218,239 @@ public class ParserTest
 			fail("SyntaxException not thrown.");
 		} catch (SyntaxException e) {
 		}
+	}
+
+	private void testFailure(String code, String unexpectedToken, int line, int column) throws IOException
+	{
+		try {
+			parse(code);
+			fail("SyntaxException not thrown for following code: " + code);
+		} catch (SyntaxException e) {
+			assertEquals("Unexpected token \"" + unexpectedToken + "\".", e.getMessage());
+			assertEquals(line, e.getLine());
+			assertEquals(column, e.getColumn());
+		}
+	}
+
+	@Test
+	public void failAtArgumentListExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = foo(a,);", ")", 1, 14);
+	}
+
+	@Test
+	public void failAtArgumentListClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = foo(a;", ";", 1, 13);
+	}
+
+	@Test
+	public void failAtAssignmentExprRhs() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { a = ; }", ";", 1, 17);
+	}
+
+	@Test
+	public void failAtBinaryExprRhs() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { a + ; }", ";", 1, 17);
+	}
+
+	@Test
+	public void failAtBlockStatementClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { ; ", "<End of file>", 1, 15);
+	}
+
+	@Test
+	public void failAtArrayDeclaratorExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nint a[];", "]", 1, 6);
+	}
+
+	@Test
+	public void failAtArrayDeclaratorClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nint a[2;", ";", 1, 7);
+	}
+
+	@Test
+	public void failAtPointerDeclaratorRhs() throws IOException, SyntaxException
+	{
+		testFailure("\nint *;", ";", 1, 5);
+	}
+
+	@Test
+	public void failAtParenthesizedDeclaratorContent() throws IOException, SyntaxException
+	{
+		testFailure("\nint ();", ")", 1, 5);
+	}
+
+	@Test
+	public void failAtParenthesizedDeclaratorClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nint (a;", ";", 1, 6);
+	}
+
+	@Test
+	public void failAtExpressionStatementSemicolon() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { 2 }", "}", 1, 15);
+	}
+
+//	@Test
+//	public void failAtFunctionName() throws IOException, SyntaxException
+//	{
+//		testFailure("\nvoid () { }", "(", 1, 5);
+//	}
+	@Test
+	public void failAtFunctionParameterList() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo) { }", ")", 1, 8);
+	}
+
+	@Test
+	public void failAtFunctionBody() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo()", "<End of file>", 1, 10);
+	}
+
+	@Test
+	public void failAtFunctionCallExprArgumentList() throws IOException, SyntaxException
+	{
+		testFailure("\nint a = b c);", "c", 1, 10);
+	}
+
+	@Test
+	public void failAtIntrinsicCallExprArgumentList() throws IOException, SyntaxException
+	{
+		testFailure("\nint a = in c);", "c", 1, 11);
+	}
+
+	@Test
+	public void failAtIfStatementOpeningBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { if a == b) foo(); }", "a", 1, 16);
+	}
+
+	@Test
+	public void failAtIfStatementExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { if () foo(); }", ")", 1, 17);
+	}
+
+	@Test
+	public void failAtIfStatementClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { if (a == b foo(); }", "foo", 1, 24);
+	}
+
+	@Test
+	public void failAtIfStatementTrueStatement() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { if (p) else foo(); }", "else", 1, 20);
+	}
+
+	@Test
+	public void failAtIfStatementElseStatement() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { if (p) ; else }", "}", 1, 27);
+	}
+
+	@Test
+	public void failAtParameterDeclarator() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo(int) { }", ")", 1, 12);
+	}
+
+	@Test
+	public void failAtParameterListParameter() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo(int a,) { }", ")", 1, 15);
+	}
+
+	@Test
+	public void failAtParameterListClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo(int a { }", "{", 1, 15);
+	}
+
+	@Test
+	public void failAtPrefixExprRhs() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = !;", ";", 1, 9);
+	}
+
+	@Test
+	public void failAtParenthesizedExprContents() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = ();", ")", 1, 9);
+	}
+
+	@Test
+	public void failAtParenthesizedExprClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = (a;", ";", 1, 10);
+	}
+
+	@Test
+	public void failAtReturnStatementSemicolon() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { return }", "}", 1, 20);
+	}
+
+	@Test
+	public void failAtReturnStatementSemicolonAfterExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { return 0 }", "}", 1, 22);
+	}
+
+	@Test
+	public void failAtSubscriptExprSubscript() throws IOException, SyntaxException
+	{
+		testFailure("\nint a = b[];", "]", 1, 10);
+	}
+
+	@Test
+	public void failAtSubscriptExprClosingBracket() throws IOException, SyntaxException
+	{
+		testFailure("\nint a = b[c;", ";", 1, 11);
+	}
+
+	@Test
+	public void failAtVariableDeclarationName() throws IOException, SyntaxException
+	{
+		testFailure("\nint ;", ";", 1, 4);
+	}
+
+	@Test
+	public void failAtVariableDeclarationInitializer() throws IOException, SyntaxException
+	{
+		testFailure("\nint a =;", ";", 1, 7);
+	}
+
+	@Test
+	public void failAtWhileStatementOpeningBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { while a == b) foo(); }", "a", 1, 19);
+	}
+
+	@Test
+	public void failAtWhileStatementExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { while () ; }", ")", 1, 20);
+	}
+
+	@Test
+	public void failAtWhileStatementClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { while (a == b foo(); }", "foo", 1, 27);
+	}
+
+	@Test
+	public void failAtWhileStatementBody() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { while (p) }", "}", 1, 23);
 	}
 
 	@Test

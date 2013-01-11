@@ -2,10 +2,7 @@ package titocc.tokenizer;
 
 import java.io.IOException;
 import java.io.StringReader;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -14,29 +11,10 @@ public class CodeReaderTest
 	private CodeReader codeReader;
 	private final String text = "abc\ndef gh \n ijkl";
 
-	public CodeReaderTest()
-	{
-	}
-
-	@BeforeClass
-	public static void setUpClass()
-	{
-	}
-
-	@AfterClass
-	public static void tearDownClass()
-	{
-	}
-
 	@Before
 	public void setUp()
 	{
 		codeReader = new CodeReader(new StringReader(text));
-	}
-
-	@After
-	public void tearDown()
-	{
 	}
 
 	@Test

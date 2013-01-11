@@ -3,11 +3,8 @@ package titocc.compiler;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class RegistersTest
@@ -15,20 +12,6 @@ public class RegistersTest
 	private Registers regs;
 	private Assembler asm;
 	private Writer writer;
-
-	public RegistersTest()
-	{
-	}
-
-	@BeforeClass
-	public static void setUpClass()
-	{
-	}
-
-	@AfterClass
-	public static void tearDownClass()
-	{
-	}
 
 	@Before
 	public void setUp()
@@ -38,11 +21,6 @@ public class RegistersTest
 		{
 		};
 		asm = new Assembler(writer);
-	}
-
-	@After
-	public void tearDown()
-	{
 	}
 
 	@Test
@@ -150,7 +128,7 @@ public class RegistersTest
 			regs.allocate(asm);
 		regs.removeFirst();
 		regs.allocate(asm);
-		
+
 		assertEquals(5, regs.getActiveRegisterCount());
 		assertEquals(Register.R2, regs.get(0));
 		assertEquals(Register.R1, regs.get(4));
@@ -165,13 +143,13 @@ public class RegistersTest
 		regs.removeFirst();
 		regs.allocate(asm);
 		regs.deallocate(asm);
-		
+
 		assertEquals(4, regs.getActiveRegisterCount());
 		assertEquals(Register.R2, regs.get(0));
 		assertEquals(Register.R5, regs.get(3));
 		assertTrue(writer.toString().matches(".*push.*R1.*\n.*pop.*R1.*\n"));
 	}
-	
+
 	@Test
 	public void allocateThrowsWhenTooManyActiveRegisters() throws IOException
 	{
@@ -184,7 +162,7 @@ public class RegistersTest
 		} catch (InternalCompilerException e) {
 		}
 	}
-	
+
 	@Test
 	public void deallocateThrowsIfNoActiveRegisters() throws IOException
 	{
@@ -194,8 +172,8 @@ public class RegistersTest
 			fail("InternalCompilerException not thrown.");
 		} catch (InternalCompilerException e) {
 		}
-	}	
-	
+	}
+
 	@Test
 	public void pushedRegisterCanbeReactivated() throws IOException
 	{
@@ -211,7 +189,7 @@ public class RegistersTest
 		assertEquals(Register.R5, regs.get(4));
 		assertTrue(writer.toString().matches(".*push.*R1.*\n.*pop.*R1.*\n"));
 	}
-	
+
 	@Test
 	public void canPushArbitraryNumberOfRegisters() throws IOException
 	{
@@ -225,5 +203,5 @@ public class RegistersTest
 		}
 		assertEquals(1, regs.getActiveRegisterCount());
 		assertEquals(Register.R1, regs.get(0));
-	}	
+	}
 }

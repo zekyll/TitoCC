@@ -1,10 +1,7 @@
 package titocc.compiler;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import titocc.compiler.types.CType;
 
@@ -46,31 +43,12 @@ public class ScopeTest
 	private Scope globalScope;
 	private Symbol sym1, sym2;
 
-	public ScopeTest()
-	{
-	}
-
-	@BeforeClass
-	public static void setUpClass()
-	{
-	}
-
-	@AfterClass
-	public static void tearDownClass()
-	{
-	}
-
 	@Before
 	public void setUp()
 	{
 		globalScope = new Scope(null, "prefix1_");
 		sym1 = new TestSymbol("aaa");
 		sym2 = new TestSymbol("bbb");
-	}
-
-	@After
-	public void tearDown()
-	{
 	}
 
 	@Test

@@ -11,18 +11,8 @@ import static org.junit.Assert.*;
 
 public class TokenStreamTest
 {
-	TokenStream stream;
-	Token token1, token2, token3;
-
-	@BeforeClass
-	public static void setUpClass()
-	{
-	}
-
-	@AfterClass
-	public static void tearDownClass()
-	{
-	}
+	private TokenStream stream;
+	private Token token1, token2, token3;
 
 	@Before
 	public void setUp()
@@ -35,11 +25,6 @@ public class TokenStreamTest
 		tokenList.add(token2);
 		tokenList.add(token3);
 		stream = new TokenStream(tokenList);
-	}
-
-	@After
-	public void tearDown()
-	{
 	}
 
 	@Test
