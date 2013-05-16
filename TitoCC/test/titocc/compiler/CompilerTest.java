@@ -474,4 +474,10 @@ public class CompilerTest
 	{
 		testErr("\nvoid f() { while(f()); }", "Scalar expression required.", 1, 17);
 	}
+
+	@Test
+	public void errorWhenIllegalTestExpressionInFor() throws IOException
+	{
+		testErr("\nvoid f() { for(;f();); }", "For loop control expression must have scalar type.", 1, 16);
+	}
 }

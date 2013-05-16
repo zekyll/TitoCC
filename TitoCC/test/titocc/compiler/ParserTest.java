@@ -199,15 +199,34 @@ public class ParserTest
 	@Test
 	public void matchIfElseStatement() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (IF" + " (ID_EXPR a) (EXPR_ST (PRE_EXPR ++ (ID_EXPR a))) (BLK_ST)))))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (IF"
+				+ " (ID_EXPR a) (EXPR_ST (PRE_EXPR ++ (ID_EXPR a))) (BLK_ST)))))",
 				parse("void f() { if(a) ++a; else ; }"));
 	}
 
 	@Test
 	public void matchWhileStatement() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (WHILE" + " (BIN_EXPR == (ID_EXPR y) (INT_EXPR 2)) (BLK_ST)))))",
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (WHILE"
+				+ " (BIN_EXPR == (ID_EXPR y) (INT_EXPR 2)) (BLK_ST)))))",
 				parse("void f() { while(y == 2) {} }"));
+	}
+
+	@Test
+	public void matchEmptyForStatement() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (FOR (BLK_ST) null null (BLK_ST)))))",
+				parse("void f() { for(;;) {} }"));
+	}
+
+	@Test
+	public void matchForStatement() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (FOR"
+				+ " (DECL_ST (VAR_DECL (TYPE int) (DCLTOR i) (INT_EXPR 0)))"
+				+ " (BIN_EXPR < (ID_EXPR i) (ID_EXPR n)) (PRE_EXPR ++"
+				+ " (ID_EXPR i)) (BLK_ST)))))",
+				parse("void f() { for(int i = 0; i < n; ++i) {} }"));
 	}
 
 	@Test
@@ -451,6 +470,57 @@ public class ParserTest
 	public void failAtWhileStatementBody() throws IOException, SyntaxException
 	{
 		testFailure("\nvoid foo() { while (p) }", "}", 1, 23);
+	}
+
+	@Test
+	public void failAtForStatementOpeningBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for a == b) foo(); }", "a", 1, 17);
+	}
+
+	@Test
+	public void failAtForStatementInitStatement() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for ({}a;) ; }", "{", 1, 18);
+		testFailure("\nvoid foo() { for (break;;) ; }", "break", 1, 18);
+	}
+
+	@Test
+	public void failAtForStatementSemicolon1() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for (int i = 0 a;) ; }", "a", 1, 28);
+	}
+
+	@Test
+	public void failAtForStatementTestExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for (;int x;) ; }", "int", 1, 19);
+		testFailure("\nvoid foo() { for (;return;) ; }", "return", 1, 19);
+	}
+
+	@Test
+	public void failAtForStatementSemicolon2() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for (;a b) ; }", "b", 1, 21);
+	}
+
+	@Test
+	public void failAtForStatementIncrExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for (;;int x) ; }", "int", 1, 20);
+		testFailure("\nvoid foo() { for (;;continue) ; }", "continue", 1, 20);
+	}
+
+	@Test
+	public void failAtForStatementClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for (;;a foo(); }", "foo", 1, 22);
+	}
+
+	@Test
+	public void failAtForStatementBody() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { for (;;) }", "}", 1, 22);
 	}
 
 	@Test

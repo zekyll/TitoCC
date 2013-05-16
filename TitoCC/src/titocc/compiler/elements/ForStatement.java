@@ -134,7 +134,7 @@ public class ForStatement extends Statement
 	 * the stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return ForStatement object or null if tokens don't form a valid while
+	 * @return ForStatement object or null if tokens don't form a valid for
 	 * statement
 	 */
 	public static ForStatement parse(TokenStream tokens)

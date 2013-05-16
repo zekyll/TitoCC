@@ -17,9 +17,9 @@ public class KeywordToken extends WordToken
 		"return",
 		"int",
 		"void",
+		"for",
 		// Reserved:
 		"do",
-		"for",
 		"break",
 		"continue",
 		"goto",
