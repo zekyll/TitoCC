@@ -1,0 +1,197 @@
+package titocc.compiler.elements;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import titocc.compiler.Assembler;
+import titocc.compiler.Registers;
+import titocc.compiler.Scope;
+import titocc.tokenizer.SyntaxException;
+import titocc.tokenizer.TokenStream;
+
+/**
+ * For statement. Iteration statement that consists of four parts:
+ * <br> 1) Initialization statement which can be either an expression
+ * statement, object declaration statement or an empty statement.
+ * <br> 2) Control expression (Optional). Must have scalar type.
+ * <br> 3) Expression (Optional, typically used for loop variable increment).
+ * <br> 4) Loop body statement.
+ *
+ * <br> EBNF definition:
+ *
+ * <br> FOR_STATEMENT = "for" "(" (EXPRESSION_STATEMENT | DECLARATION_STATEMENT
+ * | EMPTY_STATEMENT) [EXPRESSION] ; [EXPRESSION] ")" STATEMENT
+ */
+public class ForStatement extends Statement
+{
+	/**
+	 * Initialization statement.
+	 */
+	private final Statement initStatement;
+
+	/**
+	 * Control expression (optional).
+	 */
+	private final Expression controlExpression;
+
+	/**
+	 * Increment expression (optional).
+	 */
+	private final Expression incrementExpression;
+
+	/**
+	 * Statement to execute in the loop.
+	 */
+	private final Statement body;
+
+	/**
+	 * Constructs a ForStatement that uses a declaration as the first
+	 * part.
+	 *
+	 * @param initStatement Initialization statement.
+	 * @param controlExpression Control expression (can be null).
+	 * @param incrementExpression Increment expression (can be null).
+	 * @param body Loop body statement.
+	 * @param line starting line number of the for statement
+	 * @param column starting column/character of the for statement
+	 */
+	public ForStatement(Statement initStatement, Expression controlExpression,
+			Expression incrementExpression, Statement body, int line,
+			int column)
+	{
+		super(line, column);
+		this.initStatement = initStatement;
+		this.controlExpression = controlExpression;
+		this.incrementExpression = incrementExpression;
+		this.body = body;
+	}
+
+	@Override
+	public void compile(Assembler asm, Scope scope, Registers regs)
+			throws IOException, SyntaxException
+	{
+		// The whole for statement creates a new scope.
+		Scope subScope = new Scope(scope, "");
+		scope.addSubScope(subScope);
+
+		// Reserve labels.
+		String loopStartLabel = subScope.makeGloballyUniqueName("lbl");
+		//String loopIncrLabel = subScope.makeGloballyUniqueName("lbl");
+		String loopTestLabel = subScope.makeGloballyUniqueName("lbl");
+		//String loopEndLabel = subScope.makeGloballyUniqueName("lbl");
+
+		// Initialization.
+		initStatement.compile(asm, subScope, regs);
+
+		// Loop start; jump to the test.
+		asm.emit("jump", loopTestLabel);
+		asm.addLabel(loopStartLabel);
+
+		// Body.
+		body.compile(asm, subScope, regs);
+		//TODO implement block-item-list so body can't be a single declaration
+
+		// Evaluate the increment expression and ignore return value.
+		//asm.addLabel(loopIncrLabel);
+		if (incrementExpression != null)
+			incrementExpression.compile(asm, subScope, regs);
+
+		// Loop test code is after the body so that we only need one
+		// jump instruction per iteration.
+		compileControlExpression(asm, subScope, regs, loopStartLabel,
+				loopTestLabel);
+	}
+
+	private void compileControlExpression(Assembler asm, Scope scope,
+			Registers regs, String loopStartLabel, String loopTestLabel)
+			throws IOException, SyntaxException
+	{
+		if (controlExpression != null
+				&& !controlExpression.getType(scope).decay().isScalar())
+			throw new SyntaxException("For loop control expression must have"
+					+ " scalar type.", controlExpression.getLine(),
+					controlExpression.getColumn());
+
+		asm.addLabel(loopTestLabel);
+
+		// Jump to loop start if not 0. If there is no control expression then
+		// make unconditional jump.
+		if (controlExpression != null) {
+			controlExpression.compile(asm, scope, regs);
+			asm.emit("jnzer", regs.get(0).toString(), loopStartLabel);
+		} else
+			asm.emit("jump", loopStartLabel);
+	}
+
+	@Override
+	public String toString()
+	{
+		return "(FOR " + initStatement + " " + controlExpression + " "
+				+ incrementExpression + " " + body + ")";
+	}
+
+	/**
+	 * Attempts to parse a for statement from token stream. If parsing fails
+	 * the stream is reset to its initial position.
+	 *
+	 * @param tokens source token stream
+	 * @return ForStatement object or null if tokens don't form a valid while
+	 * statement
+	 */
+	public static ForStatement parse(TokenStream tokens)
+	{
+		int line = tokens.getLine(), column = tokens.getColumn();
+		tokens.pushMark();
+		ForStatement forStatement = null;
+
+		try {
+			if (!tokens.read().toString().equals("for"))
+				return null;
+
+			if (!tokens.read().toString().equals("("))
+				return null;
+
+			Statement initStatement = parseInitStatement(tokens);
+			if (initStatement == null)
+				return null;
+
+			Expression controlExpression = Expression.parse(tokens);
+
+			if (!tokens.read().toString().equals(";"))
+				return null;
+
+			Expression incrementExpression = Expression.parse(tokens);
+
+			if (!tokens.read().toString().equals(")"))
+				return null;
+
+			Statement body = Statement.parse(tokens);
+			if (body == null)
+				return null;
+
+			forStatement = new ForStatement(initStatement, controlExpression,
+					incrementExpression, body, line, column);
+		} finally {
+			tokens.popMark(forStatement == null);
+		}
+
+		return forStatement;
+	}
+
+	public static Statement parseInitStatement(TokenStream tokens)
+	{
+		int line = tokens.getLine(), column = tokens.getColumn();
+		tokens.pushMark();
+
+		Statement statement = ExpressionStatement.parse(tokens);
+
+		if (statement == null)
+			statement = DeclarationStatement.parse(tokens);
+
+		// Empty statement.
+		if (statement == null && tokens.read().toString().equals(";"))
+			statement = new BlockStatement(new LinkedList<Statement>(), line, column);
+
+		tokens.popMark(statement == null);
+		return statement;
+	}
+}

@@ -8,7 +8,7 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
 /**
- * While statement. Consists of a test expression and a statement.
+ * While statement. Consists of a scalar test expression and a body statement.
  *
  * <p> EBNF definition:
  *
@@ -104,8 +104,6 @@ public class WhileStatement extends Statement
 		int line = tokens.getLine(), column = tokens.getColumn();
 		tokens.pushMark();
 		WhileStatement whileStatement = null;
-
-		TypeSpecifier retType = TypeSpecifier.parse(tokens);
 
 		if (tokens.read().toString().equals("while")) {
 			if (tokens.read().toString().equals("(")) {

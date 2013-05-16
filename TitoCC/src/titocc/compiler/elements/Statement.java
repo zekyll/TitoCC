@@ -14,7 +14,7 @@ import titocc.tokenizer.TokenStream;
  * <p> EBNF definition:
  *
  * <br> STATEMENT = EXPRESSION_STATEMENT | DECLARATION_STATEMENT | IF_STATEMENT
- * | WHILE_STATEMENT | BLOCK_STATEMENT | RETURN_STATEMENT | ";"
+ * | WHILE_STATEMENT | FOR_STATEMENT | BLOCK_STATEMENT | RETURN_STATEMENT | ";"
  */
 public abstract class Statement extends CodeElement
 {
@@ -63,6 +63,9 @@ public abstract class Statement extends CodeElement
 
 		if (statement == null)
 			statement = WhileStatement.parse(tokens);
+
+		if (statement == null)
+			statement = ForStatement.parse(tokens);
 
 		if (statement == null)
 			statement = BlockStatement.parse(tokens);

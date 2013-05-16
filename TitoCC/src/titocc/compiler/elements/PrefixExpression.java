@@ -19,7 +19,7 @@ import titocc.tokenizer.TokenStream;
  *
  * <p> EBNF definition:
  *
- * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~", "&", "*")
+ * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~"| "&"| "*")
  * PREFIX_EXPRESSION | POSTFIX_EXPRESSION
  */
 public class PrefixExpression extends Expression
