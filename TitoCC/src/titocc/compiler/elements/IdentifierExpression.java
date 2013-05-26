@@ -13,6 +13,7 @@ import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Expression that evaluates a named variable, parameter or function.
@@ -29,12 +30,11 @@ public class IdentifierExpression extends Expression
 	 * Construcs an IdentifierExpression.
 	 *
 	 * @param identifier name of the object or function
-	 * @param line starting line number of the identifier expression
-	 * @param column starting column/character of the identifier expression
+	 * @param position starting position of the identifier expression
 	 */
-	public IdentifierExpression(String identifier, int line, int column)
+	public IdentifierExpression(String identifier, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.identifier = identifier;
 	}
 
@@ -54,7 +54,7 @@ public class IdentifierExpression extends Expression
 	{
 		Symbol symbol = findSymbol(scope);
 		if (!symbol.getType().isObject())
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getLine(), getColumn());
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getPosition());
 
 		// Load value to first register (or address if we have an array).
 		if (symbol.getType() instanceof ArrayType)
@@ -69,7 +69,7 @@ public class IdentifierExpression extends Expression
 	{
 		Symbol symbol = findSymbol(scope);
 		if (!symbol.getType().isObject())
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getLine(), getColumn());
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getPosition());
 
 		return new Lvalue(regs.get(0), symbol.getReference());
 	}
@@ -79,7 +79,7 @@ public class IdentifierExpression extends Expression
 	{
 		Symbol symbol = findSymbol(scope);
 		if (!(symbol.getType() instanceof FunctionType))
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.", getLine(), getColumn());
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.", getPosition());
 
 		return (Function) symbol;
 	}
@@ -100,7 +100,7 @@ public class IdentifierExpression extends Expression
 	{
 		Symbol symbol = scope.find(identifier);
 		if (symbol == null)
-			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getLine(), getColumn());
+			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getPosition());
 		return symbol;
 	}
 
@@ -113,13 +113,13 @@ public class IdentifierExpression extends Expression
 	 */
 	public static IdentifierExpression parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		IdentifierExpression idExpr = null;
 
 		Token token = tokens.read();
 		if (token instanceof IdentifierToken)
-			idExpr = new IdentifierExpression(token.toString(), line, column);
+			idExpr = new IdentifierExpression(token.toString(), pos);
 
 		tokens.popMark(idExpr == null);
 		return idExpr;

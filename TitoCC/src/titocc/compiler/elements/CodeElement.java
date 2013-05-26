@@ -1,5 +1,7 @@
 package titocc.compiler.elements;
 
+import titocc.util.Position;
+
 /**
  * Abstract base for all the code elements. Stores the position of the element
  * within the source file so that it can be used by compiler messages.
@@ -7,44 +9,28 @@ package titocc.compiler.elements;
 public abstract class CodeElement
 {
 	/**
-	 * Starting line number.
+	 * Starting position.
 	 */
-	private final int line;
-	/**
-	 * Starting column number.
-	 */
-	private final int column;
+	private final Position position;
 
 	/**
 	 * Constructs a code element.
 	 *
-	 * @param line starting line number of the element
-	 * @param column starting column/character of the element
+	 * @param position starting position of the element
 	 */
-	public CodeElement(int line, int column)
+	public CodeElement(Position position)
 	{
-		this.line = line;
-		this.column = column;
+		this.position = position;
 	}
 
 	/**
-	 * Returns the line number where the code element starts.
+	 * Returns the starting position of the code element in the source file.
 	 *
-	 * @return line number
+	 * @return position
 	 */
-	public int getLine()
+	public Position getPosition()
 	{
-		return line;
-	}
-
-	/**
-	 * Returns the column/character where the code element starts.
-	 *
-	 * @return column
-	 */
-	public int getColumn()
-	{
-		return column;
+		return position;
 	}
 
 	/**

@@ -30,8 +30,7 @@ public class Parser
 			Token token = tokenStream.getFurthestReadToken();
 			throw new SyntaxException(
 					"Unexpected token \"" + token + "\".",
-					token.getLine(),
-					token.getColumn());
+					token.getPosition());
 		}
 		return trUnit;
 	}

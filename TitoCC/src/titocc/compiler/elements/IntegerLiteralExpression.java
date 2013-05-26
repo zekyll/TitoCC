@@ -11,6 +11,7 @@ import titocc.tokenizer.IntegerLiteralToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Integer literal expression. Consists of digits and suffix. Suffixes are not
@@ -36,12 +37,11 @@ public class IntegerLiteralExpression extends Expression
 	 *
 	 * @param rawValue integer digits as a string
 	 * @param suffix suffix
-	 * @param line starting line number of the integer literal expression
-	 * @param column starting column/character of the integer literal expression
+	 * @param position starting position of the integer literal expression
 	 */
-	public IntegerLiteralExpression(String rawValue, String suffix, int line, int column)
+	public IntegerLiteralExpression(String rawValue, String suffix, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.rawValue = rawValue;
 		this.suffix = suffix;
 	}
@@ -83,7 +83,7 @@ public class IntegerLiteralExpression extends Expression
 	public Integer getCompileTimeValue() throws SyntaxException
 	{
 		if (!suffix.isEmpty())
-			throw new SyntaxException("Suffixes on literals are not supported.", getLine(), getColumn());
+			throw new SyntaxException("Suffixes on literals are not supported.", getPosition());
 
 		// If the literal is too big, only take the least significant 32 bits.
 		// BigInteger.intValue() automatically does this.
@@ -105,14 +105,14 @@ public class IntegerLiteralExpression extends Expression
 	 */
 	public static IntegerLiteralExpression parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		IntegerLiteralExpression intExpr = null;
 
 		Token token = tokens.read();
 		if (token instanceof IntegerLiteralToken) {
 			IntegerLiteralToken intToken = (IntegerLiteralToken) token;
-			intExpr = new IntegerLiteralExpression(intToken.getValue(), intToken.getSuffix(), line, column);
+			intExpr = new IntegerLiteralExpression(intToken.getValue(), intToken.getSuffix(), pos);
 		}
 
 		tokens.popMark(intExpr == null);

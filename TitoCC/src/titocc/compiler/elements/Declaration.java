@@ -6,6 +6,7 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Abstract base for all declarations.
@@ -19,12 +20,11 @@ public abstract class Declaration extends CodeElement
 	/**
 	 * Constructs a new Declaration.
 	 *
-	 * @param line starting line number of the declaration
-	 * @param column starting column/character of the declaration
+	 * @param position starting position of the declaration
 	 */
-	public Declaration(int line, int column)
+	public Declaration(Position position)
 	{
-		super(line, column);
+		super(position);
 	}
 
 	/**
@@ -48,7 +48,7 @@ public abstract class Declaration extends CodeElement
 	 */
 	public static Declaration parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 
 		Declaration declaration = VariableDeclaration.parse(tokens);

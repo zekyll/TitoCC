@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import titocc.util.Position;
 
 /**
  * Operator or other punctuator.
@@ -64,12 +65,11 @@ public class PunctuatorToken extends Token
 	 * Constructs a PunctuatorToken.
 	 *
 	 * @param string punctuator string
-	 * @param line line number where the token is located
-	 * @param column column number where the token is located
+	 * @param position starting position of the token
 	 */	
-	public PunctuatorToken(String string, int line, int column)
+	public PunctuatorToken(String string, Position position)
 	{
-		super(string, line, column);
+		super(string, position);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class PunctuatorToken extends Token
 	public static PunctuatorToken parse(CodeReader reader) throws IOException
 	{
 		PunctuatorToken token = null;
-		int line = reader.getLineNumber(), column = reader.getColumn();
+		Position pos = reader.getPosition();
 
 		StringBuilder tokenString = new StringBuilder();
 
@@ -95,7 +95,7 @@ public class PunctuatorToken extends Token
 		}
 
 		if (tokenString.length() > 0)
-			token = new PunctuatorToken(tokenString.toString(), line, column);
+			token = new PunctuatorToken(tokenString.toString(), pos);
 
 		if (c != '\0')
 			reader.unread();

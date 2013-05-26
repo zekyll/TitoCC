@@ -9,6 +9,7 @@ import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Expression formed by an operand followed by a postfix operator.
@@ -39,12 +40,11 @@ public class PostfixExpression extends Expression
 	 *
 	 * @param operator postfix operator as a string
 	 * @param operand operand expression
-	 * @param line starting line number of the postfix expression
-	 * @param column starting column/character of the postfix expression
+	 * @param position starting position of the postfix expression
 	 */
-	public PostfixExpression(String operator, Expression operand, int line, int column)
+	public PostfixExpression(String operator, Expression operand, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.operator = operator;
 		this.operand = operand;
 	}
@@ -75,7 +75,7 @@ public class PostfixExpression extends Expression
 	{
 		CType operandType = operand.getType(scope);
 		if (!operandType.isArithmetic() && !(operandType.isPointer() && operandType.dereference().isObject()))
-			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getLine(), getColumn());
+			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getPosition());
 
 		// Evaluate operand; load address to 2nd register.
 		regs.allocate(asm);
@@ -119,7 +119,7 @@ public class PostfixExpression extends Expression
 	 */
 	public static Expression parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 
 		Expression expr = PrimaryExpression.parse(tokens);
@@ -132,7 +132,7 @@ public class PostfixExpression extends Expression
 				tokens.pushMark();
 				String op = tokens.read().toString();
 				if (Arrays.asList(postfixOperators).contains(op))
-					postfixExpr = new PostfixExpression(op, expr, line, column);
+					postfixExpr = new PostfixExpression(op, expr, pos);
 				tokens.popMark(postfixExpr == null);
 
 				if (postfixExpr == null)

@@ -1,50 +1,36 @@
 package titocc.tokenizer;
 
+import titocc.util.Position;
+
 /**
  * An exception caused by errors in source code.
  */
 public class SyntaxException extends Exception
 {
 	/**
-	 * Line number where the compilation error occured. First line is 0.
+	 * Position within source file where the compilation error occured.
 	 */
-	private final int line;
-	/**
-	 * Column number where the compilation error occured.
-	 */
-	private final int column;
+	private final Position position;
 
 	/**
 	 * Constructs a SyntaxException.
 	 *
 	 * @param message error message
-	 * @param line line number where the error occured
-	 * @param column column number where the error occured
+	 * @param position position where the error occured
 	 */
-	public SyntaxException(String message, int line, int column)
+	public SyntaxException(String message, Position position)
 	{
 		super(message);
-		this.line = line;
-		this.column = column;
+		this.position = position;
 	}
 
 	/**
-	 * Returns the line number of the error.
+	 * Returns the position of the error.
 	 *
-	 * @return the line number
+	 * @return position
 	 */
-	public int getLine()
+	public Position getPosition()
 	{
-		return line;
-	}
-
-	/**
-	 * Returns the column number of the error.
-	 *
-	 * @return the column number
-	 */
-	public int getColumn()
-	{
-		return column;
+		return position;
 	}
 }

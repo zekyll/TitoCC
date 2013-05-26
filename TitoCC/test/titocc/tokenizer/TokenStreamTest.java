@@ -2,12 +2,10 @@ package titocc.tokenizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import titocc.util.Position;
 
 public class TokenStreamTest
 {
@@ -17,9 +15,9 @@ public class TokenStreamTest
 	@Before
 	public void setUp()
 	{
-		token1 = new IdentifierToken("a", 10, 30);
-		token2 = new IdentifierToken("b", 11, 31);
-		token3 = new IdentifierToken("c", 12, 32);
+		token1 = new IdentifierToken("a", new Position(10, 30));
+		token2 = new IdentifierToken("b", new Position(11, 31));
+		token3 = new IdentifierToken("c", new Position(12, 32));
 		List<Token> tokenList = new ArrayList<Token>();
 		tokenList.add(token1);
 		tokenList.add(token2);
@@ -95,8 +93,7 @@ public class TokenStreamTest
 	public void lineAndColumnAreCorrect()
 	{
 		stream.read();
-		assertEquals(token2.getColumn(), stream.getColumn());
-		assertEquals(token2.getLine(), stream.getLine());
+		assertEquals(token2.getPosition(), stream.getPosition());
 		assertSame(token2, stream.read());
 	}
 }

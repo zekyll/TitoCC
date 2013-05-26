@@ -9,6 +9,7 @@ import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * List of parameters in a function declaration/definition.
@@ -28,12 +29,11 @@ public class ParameterList extends CodeElement
 	 * Construcs a ParameterList.
 	 *
 	 * @param parameters list of parameters
-	 * @param line starting line number of the parameter list
-	 * @param column starting column/character of the parameter list
+	 * @param position starting position of the parameter list
 	 */
-	public ParameterList(List<Parameter> parameters, int line, int column)
+	public ParameterList(List<Parameter> parameters, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.parameters = parameters;
 	}
 
@@ -89,7 +89,7 @@ public class ParameterList extends CodeElement
 	 */
 	public static ParameterList parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		ParameterList paramList = null;
 
@@ -106,7 +106,7 @@ public class ParameterList extends CodeElement
 			}
 
 			if (tokens.read().toString().equals(")"))
-				paramList = new ParameterList(params, line, column);
+				paramList = new ParameterList(params, pos);
 		}
 
 		tokens.popMark(paramList == null);

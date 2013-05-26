@@ -3,6 +3,7 @@ package titocc.tokenizer;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
+import titocc.util.Position;
 
 /**
  * Stream of tokens that allows marking positions in the stream and returning
@@ -14,18 +15,22 @@ public class TokenStream
 	 * Source tokens.
 	 */
 	private final List<Token> tokens;
+
 	/**
 	 * Saved stream positions.
 	 */
 	private final Stack<Integer> marks = new Stack<Integer>();
+
 	/**
 	 * Current position.
 	 */
 	private final ListIterator<Token> position;
+
 	/**
 	 * Tokens since the last mark.
 	 */
 	private int sinceLastMark;
+
 	/**
 	 * Read token that has biggest line number/column.
 	 */
@@ -95,27 +100,15 @@ public class TokenStream
 	}
 
 	/**
-	 * Returns the line number of the next token.
+	 * Returns the position of the next token.
 	 *
-	 * @return line number
+	 * @return position
 	 */
-	public int getLine()
+	public Position getPosition()
 	{
 		Token t = position.next();
 		position.previous();
-		return t.getLine();
-	}
-
-	/**
-	 * Returns the column number of the next token.
-	 *
-	 * @return column number
-	 */
-	public int getColumn()
-	{
-		Token t = position.next();
-		position.previous();
-		return t.getColumn();
+		return t.getPosition();
 	}
 
 	/**
@@ -138,9 +131,8 @@ public class TokenStream
 	{
 		if (furthestReadToken == null)
 			return true;
-		if (token.getLine() != furthestReadToken.getLine())
-			return token.getLine() > furthestReadToken.getLine();
-		else
-			return token.getColumn() > furthestReadToken.getColumn();
+		Position furthestPos = furthestReadToken.getPosition();
+		Position newPos = token.getPosition();
+		return newPos.compareTo(furthestPos) > 0;
 	}
 }

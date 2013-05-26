@@ -9,6 +9,7 @@ import titocc.compiler.Symbol;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * While statement. Consists of a scalar control expression and a body
@@ -35,13 +36,12 @@ public class WhileStatement extends Statement
 	 *
 	 * @param controlExpression
 	 * @param body
-	 * @param line starting line number of the while statement
-	 * @param column starting column/character of the while statement
+	 * @param position starting position of the while statement
 	 */
 	public WhileStatement(Expression controlExpression, Statement body,
-			int line, int column)
+			Position position)
 	{
-		super(line, column);
+		super(position);
 		this.controlExpression = controlExpression;
 		this.body = body;
 	}
@@ -103,8 +103,7 @@ public class WhileStatement extends Statement
 	{
 		if (!controlExpression.getType(scope).decay().isScalar())
 			throw new SyntaxException("While loop control expression must have"
-					+ " scalar type.", controlExpression.getLine(),
-					controlExpression.getColumn());
+					+ " scalar type.", controlExpression.getPosition());
 
 		asm.addLabel(loopTestLabel);
 		controlExpression.compile(asm, scope, regs);
@@ -127,7 +126,7 @@ public class WhileStatement extends Statement
 	 */
 	public static WhileStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		WhileStatement whileStatement = null;
 
@@ -138,7 +137,7 @@ public class WhileStatement extends Statement
 					if (tokens.read().toString().equals(")")) {
 						Statement statement = Statement.parse(tokens);
 						if (statement != null)
-							whileStatement = new WhileStatement(test, statement, line, column);
+							whileStatement = new WhileStatement(test, statement, pos);
 					}
 				}
 			}

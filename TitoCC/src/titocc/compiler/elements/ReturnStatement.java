@@ -8,6 +8,7 @@ import titocc.compiler.Symbol;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Statement that exits the from the current function, optionally setting the
@@ -29,12 +30,11 @@ public class ReturnStatement extends Statement
 	 *
 	 * @param expression expression for the returned value, or null if there is
 	 * none
-	 * @param line starting line number of the return statement
-	 * @param column starting column/character of the return statement
+	 * @param position starting position of the return statement
 	 */
-	public ReturnStatement(Expression expression, int line, int column)
+	public ReturnStatement(Expression expression, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.expression = expression;
 	}
 
@@ -57,14 +57,14 @@ public class ReturnStatement extends Statement
 		// Compile return value.
 		if (expression != null) {
 			if (!expression.isAssignableTo(retVal.getType(), scope))
-				throw new SyntaxException("Returned expression doesn't match return value type.", getLine(), getColumn());
+				throw new SyntaxException("Returned expression doesn't match return value type.", getPosition());
 
 			// Load expression to first register and store to the return value.
 			expression.compile(asm, scope, regs);
 			asm.emit("store", regs.get(0).toString(), retVal.getReference());
 		} else {
 			if (!retVal.getType().equals(new VoidType()))
-				throw new SyntaxException("Function must return a value.", getLine(), getColumn());
+				throw new SyntaxException("Function must return a value.", getPosition());
 		}
 
 		// Jump to function end
@@ -88,14 +88,14 @@ public class ReturnStatement extends Statement
 	 */
 	public static ReturnStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		ReturnStatement returnStatement = null;
 
 		if (tokens.read().toString().equals("return")) {
 			Expression expr = Expression.parse(tokens);
 			if (tokens.read().toString().equals(";"))
-				returnStatement = new ReturnStatement(expr, line, column);
+				returnStatement = new ReturnStatement(expr, pos);
 		}
 
 		tokens.popMark(returnStatement == null);

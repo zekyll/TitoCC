@@ -7,6 +7,7 @@ import titocc.compiler.types.IntType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Specifies a type. Currently only "void" and "int" are supported.
@@ -36,12 +37,11 @@ public class TypeSpecifier extends CodeElement
 	 * Constructs a Type.
 	 *
 	 * @param name name of the type
-	 * @param line starting line number of the type
-	 * @param column starting column/character of the type
+	 * @param position starting position of the type
 	 */
-	public TypeSpecifier(String name, int line, int column)
+	public TypeSpecifier(String name, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.name = name;
 	}
 
@@ -80,13 +80,13 @@ public class TypeSpecifier extends CodeElement
 	 */
 	public static TypeSpecifier parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		TypeSpecifier type = null;
 
 		Token token = tokens.read();
 		if (typeMap.containsKey(token.toString()))
-			type = new TypeSpecifier(token.toString(), line, column);
+			type = new TypeSpecifier(token.toString(), pos);
 
 		tokens.popMark(type == null);
 		return type;

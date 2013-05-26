@@ -6,6 +6,7 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Statement that evaluates an expression, ignoring the return value.
@@ -25,12 +26,11 @@ public class ExpressionStatement extends Statement
 	 * Constructs an ExpressionStatement.
 	 *
 	 * @param expression an expression
-	 * @param line starting line number of the expression statement
-	 * @param column starting column/character of the expression statement
+	 * @param position starting position of the expression statement
 	 */
-	public ExpressionStatement(Expression expression, int line, int column)
+	public ExpressionStatement(Expression expression, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.expression = expression;
 	}
 
@@ -67,14 +67,14 @@ public class ExpressionStatement extends Statement
 	 */
 	public static ExpressionStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		ExpressionStatement exprStatement = null;
 
 		Expression expr = Expression.parse(tokens);
 		if (expr != null)
 			if (tokens.read().toString().equals(";"))
-				exprStatement = new ExpressionStatement(expr, line, column);
+				exprStatement = new ExpressionStatement(expr, pos);
 
 		tokens.popMark(exprStatement == null);
 		return exprStatement;

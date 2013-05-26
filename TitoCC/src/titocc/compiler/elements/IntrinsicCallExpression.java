@@ -10,6 +10,7 @@ import titocc.compiler.types.IntType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Similar to function call expression but calls an intrinsic function.
@@ -40,13 +41,12 @@ public class IntrinsicCallExpression extends Expression
 	 *
 	 * @param name name of the intrinsic call
 	 * @param argumentList arguments given to the intrinsic call
-	 * @param line starting line number of the intrinsic call expression
-	 * @param column starting column/character of the intrinsic call expression
+	 * @param position starting position of the intrinsic call expression
 	 */
 	public IntrinsicCallExpression(String name, ArgumentList argumentList,
-			int line, int column)
+			Position position)
 	{
-		super(line, column);
+		super(position);
 		this.name = name;
 		this.argumentList = argumentList;
 	}
@@ -85,7 +85,7 @@ public class IntrinsicCallExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		if (!argumentList.getArguments().isEmpty())
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getPosition());
 
 		asm.emit("in", regs.get(0).toString(), "=kbd");
 	}
@@ -94,7 +94,7 @@ public class IntrinsicCallExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		if (argumentList.getArguments().size() != 1)
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getPosition());
 
 		argumentList.getArguments().get(0).compile(asm, scope, regs);
 		asm.emit("out", regs.get(0).toString(), "=crt");
@@ -136,7 +136,7 @@ public class IntrinsicCallExpression extends Expression
 				ArgumentList argList = ArgumentList.parse(tokens);
 				if (argList != null) {
 					expr = new IntrinsicCallExpression(id.getIdentifier(), argList,
-							firstOperand.getLine(), firstOperand.getColumn());
+							firstOperand.getPosition());
 				}
 			}
 		}

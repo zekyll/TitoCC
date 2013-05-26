@@ -7,6 +7,7 @@ import org.junit.Test;
 import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Tokenizer;
+import titocc.util.Position;
 
 public class ParserTest
 {
@@ -246,8 +247,7 @@ public class ParserTest
 			fail("SyntaxException not thrown for following code: " + code);
 		} catch (SyntaxException e) {
 			assertEquals("Unexpected token \"" + unexpectedToken + "\".", e.getMessage());
-			assertEquals(line, e.getLine());
-			assertEquals(column, e.getColumn());
+			assertEquals(new Position(line, column), e.getPosition());
 		}
 	}
 

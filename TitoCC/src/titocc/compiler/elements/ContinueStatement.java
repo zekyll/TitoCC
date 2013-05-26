@@ -7,6 +7,7 @@ import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Statement that jumps to the next iteration of a loop. Can only appear in
@@ -21,12 +22,11 @@ public class ContinueStatement extends Statement
 	/**
 	 * Constructs a ContinueStatement.
 	 *
-	 * @param line starting line number of the continue statement
-	 * @param column starting column/character of the continue statement
+	 * @param position starting position of the continue statement
 	 */
-	public ContinueStatement(int line, int column)
+	public ContinueStatement(Position position)
 	{
-		super(line, column);
+		super(position);
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public class ContinueStatement extends Statement
 
 		if (jumpPosition == null)
 			throw new SyntaxException("Continue used outside of loop.",
-					getLine(), getColumn());
+					getPosition());
 
 		// Jump to next iteration.
 		asm.emit("jump", "sp", jumpPosition.getReference());
@@ -59,13 +59,13 @@ public class ContinueStatement extends Statement
 	 */
 	public static ContinueStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		ContinueStatement continueStatement = null;
 
 		if (tokens.read().toString().equals("continue")) {
 			if (tokens.read().toString().equals(";"))
-				continueStatement = new ContinueStatement(line, column);
+				continueStatement = new ContinueStatement(pos);
 		}
 
 		tokens.popMark(continueStatement == null);

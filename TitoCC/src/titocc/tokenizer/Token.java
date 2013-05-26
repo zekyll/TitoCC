@@ -1,5 +1,7 @@
 package titocc.tokenizer;
 
+import titocc.util.Position;
+
 /**
  * Abstract base for all token types.
  */
@@ -9,48 +11,33 @@ public abstract class Token
 	 * Token as a string.
 	 */
 	private final String string;
+
 	/**
-	 * Starting line number of the token. 0 is first line.
+	 * Position of the token within a text file.
 	 */
-	private final int line;
-	/**
-	 * Starting column number of the token. 0 is first line.
-	 */
-	private final int column;
+	private final Position position;
 
 	/**
 	 * Constructs a Token.
 	 *
 	 * @param string string representation of the token as it appears in the
 	 * source text
-	 * @param line starting line number of the token
-	 * @param column starting column/character of the token
+	 * @param position starting position of the token
 	 */
-	protected Token(String string, int line, int column)
+	protected Token(String string, Position position)
 	{
 		this.string = string;
-		this.line = line;
-		this.column = column;
+		this.position = position;
 	}
 
 	/**
-	 * Returns the line number of the token.
+	 * Returns the position of the token.
 	 *
-	 * @return the line number
+	 * @return the position
 	 */
-	public int getLine()
+	public Position getPosition()
 	{
-		return line;
-	}
-
-	/**
-	 * Returns the column of the token.
-	 *
-	 * @return the column
-	 */
-	public int getColumn()
-	{
-		return column;
+		return position;
 	}
 
 	/**

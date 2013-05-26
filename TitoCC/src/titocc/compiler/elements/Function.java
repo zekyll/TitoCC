@@ -16,6 +16,7 @@ import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Function declaration and definition. Forward declarations are not currently
@@ -71,13 +72,12 @@ public class Function extends Declaration implements Symbol
 	 * @param name function name
 	 * @param parameterList parameter list
 	 * @param body body of the function
-	 * @param line starting line number of the function
-	 * @param column starting column/character of the function
+	 * @param position starting position of the function
 	 */
 	public Function(TypeSpecifier returnType, String name, ParameterList parameterList,
-			BlockStatement body, int line, int column)
+			BlockStatement body, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.returnType = returnType;
 		this.name = name;
 		this.parameterList = parameterList;
@@ -139,7 +139,7 @@ public class Function extends Declaration implements Symbol
 			throws IOException, SyntaxException
 	{
 		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + name + "\".", getLine(), getColumn());
+			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
 		globallyUniqueName = scope.makeGloballyUniqueName(name);
 
 		asm.addEmptyLines(1);
@@ -291,7 +291,7 @@ public class Function extends Declaration implements Symbol
 	 */
 	public static Function parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Function function = null;
 
@@ -305,7 +305,7 @@ public class Function extends Declaration implements Symbol
 					BlockStatement body = BlockStatement.parse(tokens);
 					if (body != null) {
 						function = new Function(retType, id.toString(), paramList,
-								body, line, column);
+								body, pos);
 					}
 				}
 			}

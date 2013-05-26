@@ -7,6 +7,7 @@ import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Identifier that is modified with arbitrary pointer/array declarators. Note
@@ -30,9 +31,9 @@ public abstract class Declarator extends CodeElement
 	{
 		private final String name;
 
-		public IdentifierDeclarator(String name, int line, int column)
+		public IdentifierDeclarator(String name, Position position)
 		{
-			super(line, column);
+			super(position);
 			this.name = name;
 		}
 
@@ -63,9 +64,9 @@ public abstract class Declarator extends CodeElement
 		private final Declarator subDeclarator;
 		private final Expression arrayLength;
 
-		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength, int line, int column)
+		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength, Position position)
 		{
-			super(line, column);
+			super(position);
 			this.subDeclarator = subDeclarator;
 			this.arrayLength = arrayLength;
 		}
@@ -81,11 +82,11 @@ public abstract class Declarator extends CodeElement
 		{
 			Integer len = arrayLength.getCompileTimeValue();
 			if (!type.isObject())
-				throw new SyntaxException("Array elements must have object type.", getLine(), getColumn());
+				throw new SyntaxException("Array elements must have object type.", getPosition());
 			if (len == null)
-				throw new SyntaxException("Array length must be a compile time constant.", getLine(), getColumn());
+				throw new SyntaxException("Array length must be a compile time constant.", getPosition());
 			else if (len <= 0)
-				throw new SyntaxException("Array length must be a positive integer.", getLine(), getColumn());
+				throw new SyntaxException("Array length must be a positive integer.", getPosition());
 			return subDeclarator.getModifiedType(new ArrayType(type, len));
 		}
 
@@ -103,9 +104,9 @@ public abstract class Declarator extends CodeElement
 	{
 		private final Declarator subDeclarator;
 
-		public PointerDeclarator(Declarator subDeclarator, int line, int column)
+		public PointerDeclarator(Declarator subDeclarator, Position position)
 		{
-			super(line, column);
+			super(position);
 			this.subDeclarator = subDeclarator;
 		}
 
@@ -131,12 +132,11 @@ public abstract class Declarator extends CodeElement
 	/**
 	 * Constructs a Declarator.
 	 *
-	 * @param line starting line number of the declarator
-	 * @param column starting column/character of the declarator
+	 * @param position starting position of the declarator
 	 */
-	protected Declarator(int line, int column)
+	protected Declarator(Position position)
 	{
-		super(line, column);
+		super(position);
 	}
 
 	/**
@@ -166,14 +166,14 @@ public abstract class Declarator extends CodeElement
 	 */
 	public static Declarator parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Declarator declarator = null;
 
 		if (tokens.read().toString().equals("*")) {
 			declarator = Declarator.parse(tokens);
 			if (declarator != null)
-				declarator = new PointerDeclarator(declarator, line, column);
+				declarator = new PointerDeclarator(declarator, pos);
 		}
 
 		tokens.popMark(declarator == null);
@@ -190,7 +190,7 @@ public abstract class Declarator extends CodeElement
 	 */
 	private static Declarator parseDirectDeclarator(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 
 		Declarator declarator = parseIdentifierDeclarator(tokens);
 
@@ -202,7 +202,7 @@ public abstract class Declarator extends CodeElement
 			while (true) {
 				Expression arrayLength = parseArrayLength(tokens);
 				if (arrayLength != null)
-					declarator = new ArrayDeclarator(declarator, arrayLength, line, column);
+					declarator = new ArrayDeclarator(declarator, arrayLength, pos);
 				else
 					break;
 			}
@@ -220,7 +220,7 @@ public abstract class Declarator extends CodeElement
 
 		Token id = tokens.read();
 		if (id instanceof IdentifierToken)
-			declarator = new IdentifierDeclarator(id.toString(), id.getLine(), id.getColumn());
+			declarator = new IdentifierDeclarator(id.toString(), id.getPosition());
 
 		tokens.popMark(declarator == null);
 		return declarator;

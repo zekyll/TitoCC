@@ -10,6 +10,7 @@ import titocc.compiler.Symbol;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * For statement. Iteration statement that consists of four parts:
@@ -54,14 +55,12 @@ public class ForStatement extends Statement
 	 * @param controlExpression Control expression (can be null).
 	 * @param incrementExpression Increment expression (can be null).
 	 * @param body Loop body statement.
-	 * @param line starting line number of the for statement
-	 * @param column starting column/character of the for statement
+	 * @param position starting position of the for statement
 	 */
 	public ForStatement(Statement initStatement, Expression controlExpression,
-			Expression incrementExpression, Statement body, int line,
-			int column)
+			Expression incrementExpression, Statement body, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.initStatement = initStatement;
 		this.controlExpression = controlExpression;
 		this.incrementExpression = incrementExpression;
@@ -118,8 +117,7 @@ public class ForStatement extends Statement
 		if (controlExpression != null
 				&& !controlExpression.getType(scope).decay().isScalar())
 			throw new SyntaxException("For loop control expression must have"
-					+ " scalar type.", controlExpression.getLine(),
-					controlExpression.getColumn());
+					+ " scalar type.", controlExpression.getPosition());
 
 		asm.addLabel(loopTestLabel);
 
@@ -149,7 +147,7 @@ public class ForStatement extends Statement
 	 */
 	public static ForStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		ForStatement forStatement = null;
 
@@ -179,7 +177,7 @@ public class ForStatement extends Statement
 				return null;
 
 			forStatement = new ForStatement(initStatement, controlExpression,
-					incrementExpression, body, line, column);
+					incrementExpression, body, pos);
 		} finally {
 			tokens.popMark(forStatement == null);
 		}
@@ -189,7 +187,7 @@ public class ForStatement extends Statement
 
 	public static Statement parseInitStatement(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 
 		Statement statement = ExpressionStatement.parse(tokens);
@@ -199,7 +197,7 @@ public class ForStatement extends Statement
 
 		// Empty statement.
 		if (statement == null && tokens.read().toString().equals(";"))
-			statement = new BlockStatement(new LinkedList<Statement>(), line, column);
+			statement = new BlockStatement(new LinkedList<Statement>(), pos);
 
 		tokens.popMark(statement == null);
 		return statement;

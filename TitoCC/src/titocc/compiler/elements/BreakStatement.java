@@ -7,6 +7,7 @@ import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Statement that breaks the execution of a loop (for/do-while/for) or switch
@@ -22,12 +23,11 @@ public class BreakStatement extends Statement
 	/**
 	 * Constructs a BreakStatement.
 	 *
-	 * @param line starting line number of the break statement
-	 * @param column starting column/character of the break statement
+	 * @param position starting position of the break statement
 	 */
-	public BreakStatement(int line, int column)
+	public BreakStatement(Position position)
 	{
-		super(line, column);
+		super(position);
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class BreakStatement extends Statement
 
 		if (jumpPosition == null)
 			throw new SyntaxException("Break used outside loop or switch.",
-					getLine(), getColumn());
+					getPosition());
 
 		// Jump to end of the loop/switch
 		asm.emit("jump", "sp", jumpPosition.getReference());
@@ -60,13 +60,13 @@ public class BreakStatement extends Statement
 	 */
 	public static BreakStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		BreakStatement breakStatement = null;
 
 		if (tokens.read().toString().equals("break")) {
 			if (tokens.read().toString().equals(";"))
-				breakStatement = new BreakStatement(line, column);
+				breakStatement = new BreakStatement(pos);
 		}
 
 		tokens.popMark(breakStatement == null);

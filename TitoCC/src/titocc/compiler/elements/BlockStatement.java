@@ -8,6 +8,7 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * A compound statement that executes a list of statements.
@@ -27,12 +28,11 @@ public class BlockStatement extends Statement
 	 * Constructs a new block statement.
 	 *
 	 * @param statements list of statements in the block
-	 * @param line starting line number of the block statement
-	 * @param column starting column/character of the block statement
+	 * @param position starting position of the block statement
 	 */
-	public BlockStatement(List<Statement> statements, int line, int column)
+	public BlockStatement(List<Statement> statements, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.statements = statements;
 	}
 
@@ -78,7 +78,7 @@ public class BlockStatement extends Statement
 	 */
 	public static BlockStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		BlockStatement blockStatement = null;
 
@@ -92,7 +92,7 @@ public class BlockStatement extends Statement
 			}
 
 			if (tokens.read().toString().equals("}"))
-				blockStatement = new BlockStatement(statements, line, column);
+				blockStatement = new BlockStatement(statements, pos);
 		}
 
 		tokens.popMark(blockStatement == null);

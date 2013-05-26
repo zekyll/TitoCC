@@ -8,10 +8,9 @@ import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
-import titocc.compiler.types.IntType;
-import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Expression formed by any of the assignment operators and two operands.
@@ -29,6 +28,7 @@ public class AssignmentExpression extends Expression
 	private enum Type
 	{
 		SIMPLE, COMMUTATIVE, NONCOMMUTATIVE
+
 	};
 
 	/**
@@ -37,6 +37,7 @@ public class AssignmentExpression extends Expression
 	private static class Operator
 	{
 		public String mnemonic;
+
 		public Type type;
 
 		public Operator(String mnemonic, Type type)
@@ -64,18 +65,22 @@ public class AssignmentExpression extends Expression
 			put(">>=", new Operator("shr", Type.NONCOMMUTATIVE));
 		}
 	};
+
 	/**
 	 * Assignment operator.
 	 */
 	private final Operator operator;
+
 	/**
 	 * String representation of the operator.
 	 */
 	private final String operatorString;
+
 	/**
 	 * Left hand side expression.
 	 */
 	private final Expression left;
+
 	/**
 	 * Right hand side expression.
 	 */
@@ -87,13 +92,11 @@ public class AssignmentExpression extends Expression
 	 * @param operator string representation of the operator
 	 * @param left left operand
 	 * @param right right operand
-	 * @param line starting line number of the assignment expression
-	 * @param column starting column/character of the assignment expression
 	 */
 	public AssignmentExpression(String operator, Expression left,
-			Expression right, int line, int column)
+			Expression right, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.operatorString = operator;
 		this.operator = assignmentOperators.get(operator);
 		this.left = left;
@@ -240,7 +243,7 @@ public class AssignmentExpression extends Expression
 				return;
 		}
 
-		throw new SyntaxException("Incompatible operands for operator " + operatorString + ".", getLine(), getColumn());
+		throw new SyntaxException("Incompatible operands for operator " + operatorString + ".", getPosition());
 	}
 
 	@Override
@@ -264,7 +267,7 @@ public class AssignmentExpression extends Expression
 	 */
 	public static Expression parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Expression expr = BinaryExpression.parse(tokens);
 
@@ -277,7 +280,7 @@ public class AssignmentExpression extends Expression
 
 			tokens.popMark(right == null);
 			if (right != null)
-				expr = new AssignmentExpression(op, expr, right, line, column);
+				expr = new AssignmentExpression(op, expr, right, pos);
 		}
 
 		tokens.popMark(expr == null);

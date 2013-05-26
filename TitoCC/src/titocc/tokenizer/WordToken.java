@@ -2,6 +2,7 @@ package titocc.tokenizer;
 
 import java.io.IOException;
 import titocc.util.AsciiUtil;
+import titocc.util.Position;
 
 /**
  * Common base class for identifiers and keywords. Allowed characters in word
@@ -15,12 +16,11 @@ public abstract class WordToken extends Token
 	 * Constructs a WordToken.
 	 *
 	 * @param string word string
-	 * @param line line number where the token is located
-	 * @param column column number where the token is located
+	 * @param position starting position of the token
 	 */
-	protected WordToken(String string, int line, int column)
+	protected WordToken(String string, Position position)
 	{
-		super(string, line, column);
+		super(string, position);
 	}
 
 	/**
@@ -35,7 +35,7 @@ public abstract class WordToken extends Token
 	public static WordToken parse(CodeReader reader) throws IOException
 	{
 		WordToken token = null;
-		int line = reader.getLineNumber(), column = reader.getColumn();
+		Position pos = reader.getPosition();
 
 		char c = reader.read();
 
@@ -47,9 +47,9 @@ public abstract class WordToken extends Token
 			} while (AsciiUtil.isIdentifierCharacter(c));
 
 			if (KeywordToken.isKeyword(tokenString.toString()))
-				token = new KeywordToken(tokenString.toString(), line, column);
+				token = new KeywordToken(tokenString.toString(), pos);
 			else
-				token = new IdentifierToken(tokenString.toString(), line, column);
+				token = new IdentifierToken(tokenString.toString(), pos);
 		}
 
 		if (c != '\0')

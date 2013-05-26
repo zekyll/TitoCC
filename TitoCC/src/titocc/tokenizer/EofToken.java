@@ -1,6 +1,7 @@
 package titocc.tokenizer;
 
 import java.io.IOException;
+import titocc.util.Position;
 
 /**
  * End of file token. Matches null character returned by the code reader.
@@ -10,12 +11,11 @@ public class EofToken extends Token
 	/**
 	 * Constructs an EofToken.
 	 *
-	 * @param line line number where the token is located
-	 * @param column column number where the token is located
+	 * @param position starting position of the token
 	 */
-	public EofToken(int line, int column)
+	public EofToken(Position position)
 	{
-		super("", line, column);
+		super("", position);
 	}
 
 	/**
@@ -30,10 +30,10 @@ public class EofToken extends Token
 	public static EofToken parse(CodeReader reader) throws IOException
 	{
 		EofToken token = null;
-		int line = reader.getLineNumber(), column = reader.getColumn();
+		Position pos = reader.getPosition();
 
 		if (reader.read() == '\0')
-			token = new EofToken(line, column);
+			token = new EofToken(pos);
 		else
 			reader.unread();
 

@@ -118,8 +118,8 @@ public class SourceFile
 			log.logMessage("Compilation completed successfully.");
 			writer.write(assemblyCode.toString());
 		} catch (SyntaxException e) {
-			int line = e.getLine() + 1;
-			int character = e.getColumn() + 1;
+			int line = e.getPosition().line + 1;
+			int character = e.getPosition().column + 1;
 			log.logMessage("Compiler error (line " + line + ", ch " + character + "): " + e.getMessage());
 		} catch (Exception e) {
 			log.logMessage("Compilation failed: " + e.getMessage());

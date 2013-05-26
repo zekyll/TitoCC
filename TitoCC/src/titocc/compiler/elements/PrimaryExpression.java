@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Abstract placeholder class for parsing primary expressions.
@@ -15,9 +16,9 @@ public abstract class PrimaryExpression extends Expression
 	/**
 	 * Not used.
 	 */
-	private PrimaryExpression(int line, int column)
+	private PrimaryExpression(Position position)
 	{
-		super(line, column);
+		super(position);
 	}
 
 	/**
@@ -29,7 +30,7 @@ public abstract class PrimaryExpression extends Expression
 	 */
 	public static Expression parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 
 		Expression expr = IdentifierExpression.parse(tokens);

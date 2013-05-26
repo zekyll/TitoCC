@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 public class CodeReaderTest
 {
 	private CodeReader codeReader;
+
 	private final String text = "abc\ndef gh \n ijkl";
 
 	@Before

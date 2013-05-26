@@ -3,6 +3,7 @@ package titocc.tokenizer;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import titocc.util.Position;
 
 /**
  * Wrapper for Reader interface that reads characters one at a time and keeps
@@ -15,19 +16,18 @@ public class CodeReader
 	 * Length of the previous line. Needed when unreading line changes.
 	 */
 	private int previousLineLength;
+
 	/**
 	 * LineNumberReader that wraps the given reader object and keeps track of
 	 * the line number.
 	 */
 	private final LineNumberReader reader;
+
 	/**
 	 * Current column number.
 	 */
 	private int column;
 
-	/**
-	 *
-	 */
 	/**
 	 * Constructs a CodeReader.
 	 *
@@ -95,6 +95,16 @@ public class CodeReader
 	public int getColumn()
 	{
 		return column;
+	}
+
+	/**
+	 * Returns current position.
+	 *
+	 * @return current position
+	 */
+	public Position getPosition()
+	{
+		return new Position(reader.getLineNumber(), column);
 	}
 
 	/**

@@ -6,6 +6,7 @@ import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Sngle parameter in a function parameter list. Cosists of a type and a name.
@@ -41,12 +42,11 @@ public class Parameter extends CodeElement implements Symbol
 	 *
 	 * @param typeSpecifier type specifier
 	 * @param declarator declarator
-	 * @param line starting line number of the parameter
-	 * @param column starting column/character of the parameter
+	 * @param position starting position of the parameter
 	 */
-	public Parameter(TypeSpecifier typeSpecifier, Declarator declarator, int line, int column)
+	public Parameter(TypeSpecifier typeSpecifier, Declarator declarator, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.typeSpecifier = typeSpecifier;
 		this.declarator = declarator;
 	}
@@ -80,12 +80,12 @@ public class Parameter extends CodeElement implements Symbol
 		// Compile the type and check that it is valid.
 		type = declarator.getModifiedType(typeSpecifier.getType());
 		if (!type.isObject())
-			throw new SyntaxException("Parameter must have object type.", getLine(), getColumn());
+			throw new SyntaxException("Parameter must have object type.", getPosition());
 		if (type instanceof ArrayType)
-			throw new SyntaxException("Array parameters are not supported.", getLine(), getColumn());
+			throw new SyntaxException("Array parameters are not supported.", getPosition());
 
 		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getLine(), getColumn());
+			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getPosition());
 		globallyUniqueName = scope.makeGloballyUniqueName(getName());
 		scope.add(this);
 
@@ -119,7 +119,7 @@ public class Parameter extends CodeElement implements Symbol
 	 */
 	public static Parameter parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Parameter param = null;
 
@@ -128,7 +128,7 @@ public class Parameter extends CodeElement implements Symbol
 		if (typeSpecifier != null) {
 			Declarator declarator = Declarator.parse(tokens);
 			if (declarator != null)
-				param = new Parameter(typeSpecifier, declarator, line, column);
+				param = new Parameter(typeSpecifier, declarator, pos);
 		}
 
 		tokens.popMark(param == null);

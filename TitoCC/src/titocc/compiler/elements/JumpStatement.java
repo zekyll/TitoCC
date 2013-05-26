@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Abstract placeholder class for parsing jump statements.
@@ -22,7 +23,7 @@ public class JumpStatement
 	 */
 	public static Statement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 
 		Statement statement = null;

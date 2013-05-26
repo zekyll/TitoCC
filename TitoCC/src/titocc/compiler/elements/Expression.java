@@ -9,6 +9,7 @@ import titocc.compiler.types.CType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Abstract base for all expressions.
@@ -22,12 +23,11 @@ public abstract class Expression extends CodeElement
 	/**
 	 * Constructs an Expression.
 	 *
-	 * @param line starting line number of the expression
-	 * @param column starting column/character of the expression
+	 * @param position starting position of the expression
 	 */
-	public Expression(int line, int column)
+	public Expression(Position position)
 	{
-		super(line, column);
+		super(position);
 	}
 
 	/**
@@ -72,7 +72,7 @@ public abstract class Expression extends CodeElement
 	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		throw new SyntaxException("Operation requires an lvalue.", getLine(), getColumn());
+		throw new SyntaxException("Operation requires an lvalue.", getPosition());
 	}
 
 	/**

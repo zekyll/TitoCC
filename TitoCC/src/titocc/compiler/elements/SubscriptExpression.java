@@ -9,6 +9,7 @@ import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Subscript to an array. Takes an array expression and an integer typed
@@ -35,12 +36,11 @@ public class SubscriptExpression extends Expression
 	 *
 	 * @param array the left side expression ("array")
 	 * @param subscript expression inside square brackets
-	 * @param line starting line number of the subscript expression
-	 * @param column starting column/character of the subscript expression
+	 * @param position starting position of the subscript expression
 	 */
-	public SubscriptExpression(Expression array, Expression subscript, int line, int column)
+	public SubscriptExpression(Expression array, Expression subscript, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.array = array;
 		this.subscript = subscript;
 	}
@@ -104,7 +104,7 @@ public class SubscriptExpression extends Expression
 		else if (subscript.getType(scope).dereference().isObject())
 			return subscript;
 		else
-			throw new SyntaxException("Operator [] requires an object pointer or an array.", getLine(), getColumn());
+			throw new SyntaxException("Operator [] requires an object pointer or an array.", getPosition());
 	}
 
 	private Expression getActualSubscriptOperand(Scope scope) throws SyntaxException
@@ -114,7 +114,7 @@ public class SubscriptExpression extends Expression
 		else if (array.getType(scope).isInteger())
 			return array;
 		else
-			throw new SyntaxException("Operator [] requires an integer operand.", getLine(), getColumn());
+			throw new SyntaxException("Operator [] requires an integer operand.", getPosition());
 	}
 
 	@Override
@@ -142,7 +142,7 @@ public class SubscriptExpression extends Expression
 			Expression subscript = Expression.parse(tokens);
 			if (subscript != null && tokens.read().toString().equals("]"))
 				expr = new SubscriptExpression(firstOperand, subscript,
-						firstOperand.getLine(), firstOperand.getColumn());
+						firstOperand.getPosition());
 		}
 
 		tokens.popMark(expr == null);

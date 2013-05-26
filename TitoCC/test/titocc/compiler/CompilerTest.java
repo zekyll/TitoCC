@@ -5,7 +5,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import titocc.compiler.Compiler;
 import titocc.tokenizer.SyntaxException;
+import titocc.util.Position;
 
 public class CompilerTest
 {
@@ -23,8 +25,7 @@ public class CompilerTest
 			compile(src);
 		} catch (SyntaxException e) {
 			assertEquals(msg, e.getMessage());
-			assertEquals(line, e.getLine());
-			assertEquals(column, e.getColumn());
+			assertEquals(new Position(line, column), e.getPosition());
 		}
 	}
 
@@ -96,7 +97,7 @@ public class CompilerTest
 		testErr("\nvoid f() { !f(); }", "Operator ! requires a scalar type.", 1, 11);
 		testErr("\nvoid f() { int x; x = f(); }", "Incompatible operands for operator =.", 1, 18);
 		testErr("\nvoid f() { if(f()); }", "Scalar expression required.", 1, 14);
-		testErr("\nvoid f() { while(f()); }", "Scalar expression required.", 1, 17);
+		testErr("\nvoid f() { while(f()); }", "While loop control expression must have scalar type.", 1, 17);
 		testErr("\nvoid f() { int x = f(); }", "Initializer type doesn't match variable type.", 1, 11);
 		testErr("\nvoid f(int a) { f(out()); }", "Argument type doesn't match type of the parameter.", 1, 18);
 	}
@@ -472,7 +473,7 @@ public class CompilerTest
 	@Test
 	public void errorWhenIllegalTestExpressionForWhile() throws IOException
 	{
-		testErr("\nvoid f() { while(f()); }", "Scalar expression required.", 1, 17);
+		testErr("\nvoid f() { while(f()); }", "While loop control expression must have scalar type.", 1, 17);
 	}
 
 	@Test

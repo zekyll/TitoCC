@@ -2,6 +2,7 @@ package titocc.tokenizer;
 
 import java.io.IOException;
 import titocc.util.AsciiUtil;
+import titocc.util.Position;
 
 /**
  * Integer literals consist of sequence of digits 0-9, followed by an optional
@@ -16,6 +17,7 @@ public class IntegerLiteralToken extends Token
 	 * Raw string of the digits.
 	 */
 	private final String value;
+
 	/**
 	 * Suffix string.
 	 */
@@ -25,15 +27,14 @@ public class IntegerLiteralToken extends Token
 	 * Constructs an IntegerLiteralToken.
 	 *
 	 * @param string the whole token as a string
-	 * @param line line number where the token is located
-	 * @param column column number where the token is located
+	 * @param position starting position of the token
 	 * @param value value part of the token
 	 * @param suffix suffix part of the token
 	 */
-	public IntegerLiteralToken(String string, int line, int column,
+	public IntegerLiteralToken(String string, Position position,
 			String value, String suffix)
 	{
-		super(string, line, column);
+		super(string, position);
 		this.value = value;
 		this.suffix = suffix;
 	}
@@ -71,7 +72,7 @@ public class IntegerLiteralToken extends Token
 	public static IntegerLiteralToken parse(CodeReader reader) throws IOException
 	{
 		IntegerLiteralToken token = null;
-		int line = reader.getLineNumber(), column = reader.getColumn();
+		Position pos = reader.getPosition();
 
 		StringBuilder digits = new StringBuilder();
 
@@ -90,8 +91,8 @@ public class IntegerLiteralToken extends Token
 			}
 
 			String tokenString = digitStr + suffix.toString();
-			token = new IntegerLiteralToken(tokenString,
-					line, column, digitStr, suffix.toString());
+			token = new IntegerLiteralToken(tokenString, pos, digitStr,
+					suffix.toString());
 		}
 
 		if (c != '\0')

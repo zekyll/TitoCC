@@ -7,6 +7,7 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Abstract base for all statements.
@@ -21,12 +22,11 @@ public abstract class Statement extends CodeElement
 	/**
 	 * Constructs a Statement.
 	 *
-	 * @param line starting line number of the statement
-	 * @param column starting column/character of the statement
+	 * @param position starting position of the statement
 	 */
-	public Statement(int line, int column)
+	public Statement(Position position)
 	{
-		super(line, column);
+		super(position);
 	}
 
 	/**
@@ -50,7 +50,7 @@ public abstract class Statement extends CodeElement
 	 */
 	public static Statement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 
 		Statement statement = ExpressionStatement.parse(tokens);
@@ -75,7 +75,7 @@ public abstract class Statement extends CodeElement
 
 		// Empty statement.
 		if (statement == null && tokens.read().toString().equals(";"))
-			statement = new BlockStatement(new LinkedList<Statement>(), line, column);
+			statement = new BlockStatement(new LinkedList<Statement>(), pos);
 
 		tokens.popMark(statement == null);
 		return statement;

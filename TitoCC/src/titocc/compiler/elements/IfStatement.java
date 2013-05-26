@@ -6,6 +6,7 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * If statement. Consists of test expression, a "true statement" and optional
@@ -37,13 +38,12 @@ public class IfStatement extends Statement
 	 * @param trueStatement statement evaluated when test is not 0
 	 * @param elseStatement statement evaluated when test is 0; this parameter
 	 * can be null if there is no else statement
-	 * @param line starting line number of the if statement
-	 * @param column starting column/character of the if statement
+	 * @param position starting position of the if statement
 	 */
 	public IfStatement(Expression test, Statement trueStatement,
-			Statement elseStatement, int line, int column)
+			Statement elseStatement, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.test = test;
 		this.trueStatement = trueStatement;
 		this.elseStatement = elseStatement;
@@ -84,7 +84,7 @@ public class IfStatement extends Statement
 			throws IOException, SyntaxException
 	{
 		if (!test.getType(scope).decay().isScalar())
-			throw new SyntaxException("Scalar expression required.", test.getLine(), test.getColumn());
+			throw new SyntaxException("Scalar expression required.", test.getPosition());
 
 		// Evaluates and loads the test expression in the first register.
 		test.compile(asm, scope, regs);
@@ -131,7 +131,7 @@ public class IfStatement extends Statement
 	 */
 	public static IfStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		IfStatement ifStatement = null;
 
@@ -145,7 +145,7 @@ public class IfStatement extends Statement
 						Statement trueStatement = Statement.parse(tokens);
 						if (trueStatement != null) {
 							Statement elseStatement = parseElseStatement(tokens);
-							ifStatement = new IfStatement(test, trueStatement, elseStatement, line, column);
+							ifStatement = new IfStatement(test, trueStatement, elseStatement, pos);
 						}
 					}
 				}
@@ -158,7 +158,7 @@ public class IfStatement extends Statement
 
 	private static Statement parseElseStatement(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Statement elseStatement = null;
 

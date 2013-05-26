@@ -9,6 +9,7 @@ import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Declares and defines global or local variable. Consists of a type, a name and
@@ -55,13 +56,12 @@ public class VariableDeclaration extends Declaration implements Symbol
 	 * @param declarator declarator of the variable
 	 * @param initializer initializer expression or null if the variable is left
 	 * uninitialized
-	 * @param line starting line number of the variable declaration
-	 * @param column starting column/character of the variable declaration
+	 * @param position starting position of the variable declaration
 	 */
 	public VariableDeclaration(TypeSpecifier typeSpecifier, Declarator declarator,
-			Expression initializer, int line, int column)
+			Expression initializer, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.typeSpecifier = typeSpecifier;
 		this.declarator = declarator;
 		this.initializer = initializer;
@@ -98,17 +98,17 @@ public class VariableDeclaration extends Declaration implements Symbol
 	{
 		type = declarator.getModifiedType(typeSpecifier.getType());
 		if (!type.isObject())
-			throw new SyntaxException("Variable must have object type.", getLine(), getColumn());
+			throw new SyntaxException("Variable must have object type.", getPosition());
 
 		if (type instanceof ArrayType && initializer != null)
-			throw new SyntaxException("Array initializers are not supported.", getLine(), getColumn());
+			throw new SyntaxException("Array initializers are not supported.", getPosition());
 
 		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getLine(), getColumn());
+			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getPosition());
 		globallyUniqueName = scope.makeGloballyUniqueName(getName());
 
 		if (initializer != null && !initializer.isAssignableTo(type, scope))
-			throw new SyntaxException("Initializer type doesn't match variable type.", getLine(), getColumn());
+			throw new SyntaxException("Initializer type doesn't match variable type.", getPosition());
 
 		isGlobal = scope.isGlobal();
 		if (isGlobal)
@@ -142,7 +142,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		if (initializer != null) {
 			initValue = initializer.getCompileTimeValue();
 			if (initValue == null)
-				throw new SyntaxException("Global variable must be initialized with a compile time constant.", getLine(), getColumn());
+				throw new SyntaxException("Global variable must be initialized with a compile time constant.", getPosition());
 		}
 
 		asm.addLabel(globallyUniqueName);
@@ -171,7 +171,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 	 */
 	public static VariableDeclaration parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		VariableDeclaration varDeclaration = null;
 
@@ -182,7 +182,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 			if (declarator != null) {
 				Expression init = parseInitializer(tokens);
 				if (tokens.read().toString().equals(";"))
-					varDeclaration = new VariableDeclaration(type, declarator, init, line, column);
+					varDeclaration = new VariableDeclaration(type, declarator, init, pos);
 			}
 		}
 

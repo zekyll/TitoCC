@@ -11,6 +11,7 @@ import titocc.compiler.types.IntType;
 import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Top level code element that represents a single translation unit. Formed by a
@@ -31,12 +32,11 @@ public class TranslationUnit extends CodeElement
 	 * Constructs a TranslationUnit.
 	 *
 	 * @param declarations list of declarations in the translation unit
-	 * @param line starting line number of the translation unit
-	 * @param column starting column/character of the translation unit
+	 * @param position starting position number of the translation unit
 	 */
-	public TranslationUnit(List<Declaration> declarations, int line, int column)
+	public TranslationUnit(List<Declaration> declarations, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.declarations = declarations;
 	}
 
@@ -71,9 +71,9 @@ public class TranslationUnit extends CodeElement
 
 		for (Declaration decl : declarations)
 			decl.compile(asm, scope, regs);
-		
+
 		if (!mainFunctionExists(scope))
-			throw new SyntaxException("Function \"int main()\" was not found.", getLine(), getColumn());
+			throw new SyntaxException("Function \"int main()\" was not found.", getPosition());
 	}
 
 	/**
@@ -86,7 +86,6 @@ public class TranslationUnit extends CodeElement
 	 */
 	public static TranslationUnit parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
 		tokens.pushMark();
 		TranslationUnit translUnit = null;
 
@@ -98,8 +97,12 @@ public class TranslationUnit extends CodeElement
 			d = Declaration.parse(tokens);
 		}
 
+		// Set the position manually to (0, 0) instead of using
+		// tokens.getPosition() because first token might not be in file begin.
+		Position pos = new Position(0, 0);
+
 		if (tokens.read() instanceof EofToken)
-			translUnit = new TranslationUnit(declarations, 0, 0);
+			translUnit = new TranslationUnit(declarations, pos);
 
 		tokens.popMark(translUnit == null);
 		return translUnit;

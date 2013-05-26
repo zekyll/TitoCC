@@ -10,6 +10,7 @@ import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * List of arguments in a function call.
@@ -29,12 +30,11 @@ public class ArgumentList extends CodeElement
 	 * Constructs a new ArgumentList.
 	 *
 	 * @param arguments list of expressions used as arguments
-	 * @param line starting line number of the argument list
-	 * @param column starting column/character of the argument list
+	 * @param position starting position of the argument list
 	 */
-	public ArgumentList(List<Expression> arguments, int line, int column)
+	public ArgumentList(List<Expression> arguments, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.arguments = arguments;
 	}
 
@@ -63,13 +63,13 @@ public class ArgumentList extends CodeElement
 			throws SyntaxException, IOException
 	{
 		if (paramTypes.size() != arguments.size())
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getLine(), getColumn());
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getPosition());
 
 		Iterator<CType> paramIterator = paramTypes.iterator();
 		for (Expression arg : arguments) {
 			CType paramType = paramIterator.next();
 			if (!arg.isAssignableTo(paramType, scope))
-				throw new SyntaxException("Argument type doesn't match type of the parameter.", arg.getLine(), arg.getColumn());
+				throw new SyntaxException("Argument type doesn't match type of the parameter.", arg.getPosition());
 
 			arg.compile(asm, scope, regs);
 			asm.emit("push", "sp", regs.get(0).toString());
@@ -95,7 +95,7 @@ public class ArgumentList extends CodeElement
 	 */
 	public static ArgumentList parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		ArgumentList argList = null;
 
@@ -112,7 +112,7 @@ public class ArgumentList extends CodeElement
 			}
 
 			if (tokens.read().toString().equals(")"))
-				argList = new ArgumentList(args, line, column);
+				argList = new ArgumentList(args, pos);
 		}
 
 		tokens.popMark(argList == null);

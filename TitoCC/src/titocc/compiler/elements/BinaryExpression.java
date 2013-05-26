@@ -11,6 +11,7 @@ import titocc.compiler.types.IntType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Expression formed by a binary operator and two operands.
@@ -111,13 +112,12 @@ public class BinaryExpression extends Expression
 	 * @param operator operator as string
 	 * @param left left operand
 	 * @param right right operand
-	 * @param line starting line number of the binary expression
-	 * @param column starting column/character of the binary expression
+	 * @param position starting position of the binary expression
 	 */
 	public BinaryExpression(String operator, Expression left, Expression right,
-			int line, int column)
+			Position position)
 	{
-		super(line, column);
+		super(position);
 		this.operator = operator;
 		this.left = left;
 		this.right = right;
@@ -314,7 +314,7 @@ public class BinaryExpression extends Expression
 				return new IntType();
 		}
 
-		throw new SyntaxException("Incompatible operands for operator " + operator + ".", getLine(), getColumn());
+		throw new SyntaxException("Incompatible operands for operator " + operator + ".", getPosition());
 	}
 
 	/**
@@ -338,7 +338,7 @@ public class BinaryExpression extends Expression
 		if (priority == 12)
 			return PrefixExpression.parse(tokens);
 
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Expression expr = parseImpl(tokens, priority + 1);
 
@@ -352,7 +352,7 @@ public class BinaryExpression extends Expression
 
 				tokens.popMark(right == null);
 				if (right != null)
-					expr = new BinaryExpression(op, expr, right, line, column);
+					expr = new BinaryExpression(op, expr, right, pos);
 				else
 					break;
 			}

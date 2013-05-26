@@ -3,6 +3,7 @@ package titocc.tokenizer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import titocc.util.Position;
 
 /**
  * Word token that is found in the list of keywords.
@@ -58,12 +59,11 @@ public class KeywordToken extends WordToken
 	 * Constructs a KeywordToken.
 	 *
 	 * @param string keyword string
-	 * @param line line number where the token is located
-	 * @param column column number where the token is located
+	 * @param position starting position of the token
 	 */
-	public KeywordToken(String string, int line, int column)
+	public KeywordToken(String string, Position position)
 	{
-		super(string, line, column);
+		super(string, position);
 	}
 
 	/**

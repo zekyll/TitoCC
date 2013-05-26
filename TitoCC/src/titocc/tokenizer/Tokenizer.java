@@ -73,7 +73,6 @@ public class Tokenizer
 		if (token != null)
 			return token;
 
-		throw new SyntaxException("Unrecognized token.", input.getLineNumber(),
-				input.getColumn());
+		throw new SyntaxException("Unrecognized token.", input.getPosition());
 	}
 }

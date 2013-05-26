@@ -13,6 +13,7 @@ import titocc.compiler.types.IntType;
 import titocc.compiler.types.PointerType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Expression formed by a prefix operator followed by an operand.
@@ -42,12 +43,11 @@ public class PrefixExpression extends Expression
 	 *
 	 * @param operator prefix operator as a string
 	 * @param operand operand expression
-	 * @param line starting line number of the prefix expression
-	 * @param column starting column/character of the prefix expression
+	 * @param position starting position of the prefix expression
 	 */
-	public PrefixExpression(String operator, Expression operand, int line, int column)
+	public PrefixExpression(String operator, Expression operand, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.operator = operator;
 		this.operand = operand;
 	}
@@ -98,7 +98,7 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		if (!operator.equals("*"))
-			throw new SyntaxException("Operation requires an lvalue.", getLine(), getColumn());
+			throw new SyntaxException("Operation requires an lvalue.", getPosition());
 
 		// Operand for * must be a pointer so we just load its value.
 		operand.compile(asm, scope, regs);
@@ -111,7 +111,7 @@ public class PrefixExpression extends Expression
 	{
 		CType operandType = operand.getType(scope);
 		if (!operandType.isArithmetic() && !(operandType.isPointer() && operandType.dereference().isObject()))
-			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getLine(), getColumn());
+			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getPosition());
 
 		// Evaluate operand; load address to 2nd register.
 		regs.allocate(asm);
@@ -135,7 +135,7 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		if (!operand.getType(scope).isArithmetic())
-			throw new SyntaxException("Operator " + operator + " requires an arithmetic type.", getLine(), getColumn());
+			throw new SyntaxException("Operator " + operator + " requires an arithmetic type.", getPosition());
 
 		operand.compile(asm, scope, regs);
 		operand.compile(asm, scope, regs);
@@ -151,7 +151,7 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		if (!operand.getType(scope).decay().isScalar())
-			throw new SyntaxException("Operator " + operator + " requires a scalar type.", getLine(), getColumn());
+			throw new SyntaxException("Operator " + operator + " requires a scalar type.", getPosition());
 
 		operand.compile(asm, scope, regs);
 
@@ -169,7 +169,7 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		if (!operand.getType(scope).isInteger())
-			throw new SyntaxException("Operator " + operator + " requires an integer type.", getLine(), getColumn());
+			throw new SyntaxException("Operator " + operator + " requires an integer type.", getPosition());
 
 		operand.compile(asm, scope, regs);
 
@@ -190,7 +190,7 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		if (!operand.getType(scope).dereference().isValid())
-			throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
+			throw new SyntaxException("Operator * requires a pointer or array type.", getPosition());
 
 		// Operand must be a pointer; load the address.
 		operand.compile(asm, scope, regs);
@@ -207,7 +207,7 @@ public class PrefixExpression extends Expression
 			return new PointerType(operand.getType(scope));
 		} else if (operator.equals("*")) {
 			if (!operand.getType(scope).dereference().isValid())
-				throw new SyntaxException("Operator * requires a pointer or array type.", getLine(), getColumn());
+				throw new SyntaxException("Operator * requires a pointer or array type.", getPosition());
 			return operand.getType(scope).dereference();
 		} else if (operator.equals("!") || operator.equals("~")) {
 			return new IntType();
@@ -248,7 +248,7 @@ public class PrefixExpression extends Expression
 	 */
 	public static Expression parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Expression expr = null;
 
@@ -256,7 +256,7 @@ public class PrefixExpression extends Expression
 		if (Arrays.asList(prefixOperators).contains(op)) {
 			Expression operand = PrefixExpression.parse(tokens);
 			if (operand != null)
-				expr = new PrefixExpression(op, operand, line, column);
+				expr = new PrefixExpression(op, operand, pos);
 		}
 
 		tokens.popMark(expr == null);

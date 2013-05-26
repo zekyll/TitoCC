@@ -8,6 +8,7 @@ import titocc.compiler.types.CType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * Function call expression.
@@ -32,13 +33,12 @@ public class FunctionCallExpression extends Expression
 	 *
 	 * @param function expression that will be evaluated as the function
 	 * @param argumentList list of arguments passed to the function
-	 * @param line starting line number of the function call expression
-	 * @param column starting column/character of the function call expression
+	 * @param position starting position of the function call expression
 	 */
 	public FunctionCallExpression(Expression function, ArgumentList argumentList,
-			int line, int column)
+			Position position)
 	{
-		super(line, column);
+		super(position);
 		this.function = function;
 		this.argumentList = argumentList;
 	}
@@ -87,7 +87,7 @@ public class FunctionCallExpression extends Expression
 	{
 		Function func = function.getFunction(scope);
 		if (func == null)
-			throw new SyntaxException("Expression is not a function.", getLine(), getColumn());
+			throw new SyntaxException("Expression is not a function.", getPosition());
 		return func;
 	}
 
@@ -121,7 +121,7 @@ public class FunctionCallExpression extends Expression
 		ArgumentList argList = ArgumentList.parse(tokens);
 		if (argList != null) {
 			expr = new FunctionCallExpression(firstOperand, argList,
-					firstOperand.getLine(), firstOperand.getColumn());
+					firstOperand.getPosition());
 		}
 
 		return expr;

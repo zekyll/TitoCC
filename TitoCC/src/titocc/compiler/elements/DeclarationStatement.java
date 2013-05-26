@@ -6,6 +6,7 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
+import titocc.util.Position;
 
 /**
  * A statement that declares a local variable.
@@ -25,12 +26,11 @@ public class DeclarationStatement extends Statement
 	 * Constructs a DeclarationStatement.
 	 *
 	 * @param declaration variable declaration
-	 * @param line starting line number of the declaration statement
-	 * @param column starting column/character of the declaration statement
+	 * @param position starting position of the declaration statement
 	 */
-	public DeclarationStatement(VariableDeclaration declaration, int line, int column)
+	public DeclarationStatement(VariableDeclaration declaration, Position position)
 	{
-		super(line, column);
+		super(position);
 		this.declaration = declaration;
 	}
 
@@ -67,12 +67,12 @@ public class DeclarationStatement extends Statement
 	 */
 	public static DeclarationStatement parse(TokenStream tokens)
 	{
-		int line = tokens.getLine(), column = tokens.getColumn();
+		Position pos = tokens.getPosition();
 		DeclarationStatement declStatement = null;
 
 		VariableDeclaration varDecl = VariableDeclaration.parse(tokens);
 		if (varDecl != null)
-			declStatement = new DeclarationStatement(varDecl, line, column);
+			declStatement = new DeclarationStatement(varDecl, pos);
 
 		return declStatement;
 	}
