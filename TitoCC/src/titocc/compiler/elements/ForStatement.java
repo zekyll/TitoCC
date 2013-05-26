@@ -3,8 +3,11 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import titocc.compiler.Assembler;
+import titocc.compiler.InternalSymbol;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 
@@ -70,35 +73,42 @@ public class ForStatement extends Statement
 			throws IOException, SyntaxException
 	{
 		// The whole for statement creates a new scope.
-		Scope subScope = new Scope(scope, "");
-		scope.addSubScope(subScope);
+		Scope loopScope = new Scope(scope, "");
+		scope.addSubScope(loopScope);
+
+		// Symbols for break/continue.
+		Symbol breakSymbol = new InternalSymbol("Brk", loopScope, "", new VoidType()); //__Brk
+		loopScope.add(breakSymbol);
+		Symbol continueSymbol = new InternalSymbol("Cont", loopScope, "", new VoidType()); //__Cont
+		loopScope.add(continueSymbol);
 
 		// Reserve labels.
-		String loopStartLabel = subScope.makeGloballyUniqueName("lbl");
-		//String loopIncrLabel = subScope.makeGloballyUniqueName("lbl");
-		String loopTestLabel = subScope.makeGloballyUniqueName("lbl");
-		//String loopEndLabel = subScope.makeGloballyUniqueName("lbl");
+		String loopStartLabel = loopScope.makeGloballyUniqueName("lbl");
+		String loopTestLabel = loopScope.makeGloballyUniqueName("lbl");
 
-		// Initialization.
-		initStatement.compile(asm, subScope, regs);
+		// Loop initialization code.
+		initStatement.compile(asm, loopScope, regs);
 
 		// Loop start; jump to the test.
 		asm.emit("jump", loopTestLabel);
 		asm.addLabel(loopStartLabel);
 
 		// Body.
-		body.compile(asm, subScope, regs);
+		body.compile(asm, loopScope, regs);
 		//TODO implement block-item-list so body can't be a single declaration
 
 		// Evaluate the increment expression and ignore return value.
-		//asm.addLabel(loopIncrLabel);
+		asm.addLabel(continueSymbol.getReference());
 		if (incrementExpression != null)
-			incrementExpression.compile(asm, subScope, regs);
+			incrementExpression.compile(asm, loopScope, regs);
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
-		compileControlExpression(asm, subScope, regs, loopStartLabel,
+		compileControlExpression(asm, loopScope, regs, loopStartLabel,
 				loopTestLabel);
+
+		// Insert label to be used by break statements.
+		asm.addLabel(breakSymbol.getReference());
 	}
 
 	private void compileControlExpression(Assembler asm, Scope scope,
