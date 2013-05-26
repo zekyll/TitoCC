@@ -28,6 +28,9 @@ public class JumpStatement
 		Statement statement = null;
 
 		if (statement == null)
+			statement = ContinueStatement.parse(tokens);
+
+		if (statement == null)
 			statement = BreakStatement.parse(tokens);
 
 		if (statement == null)
