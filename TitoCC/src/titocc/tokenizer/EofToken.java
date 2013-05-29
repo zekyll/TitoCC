@@ -32,10 +32,10 @@ public class EofToken extends Token
 		EofToken token = null;
 		Position pos = reader.getPosition();
 
-		if (reader.read() == '\0')
+		if (reader.peek() == '\0') {
 			token = new EofToken(pos);
-		else
-			reader.unread();
+			reader.read();
+		}
 
 		return token;
 	}

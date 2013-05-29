@@ -22,7 +22,7 @@ public class Tokenizer
 	 *
 	 * @param input Reader for the source text
 	 */
-	public Tokenizer(Reader input)
+	public Tokenizer(Reader input) throws IOException
 	{
 		this.input = new CodeReader(input);
 	}

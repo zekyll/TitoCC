@@ -13,7 +13,7 @@ public class CodeReaderTest
 	private final String text = "abc\ndef gh \n ijkl";
 
 	@Before
-	public void setUp()
+	public void setUp() throws IOException
 	{
 		codeReader = new CodeReader(new StringReader(text));
 	}
@@ -43,12 +43,37 @@ public class CodeReaderTest
 	}
 
 	@Test
-	public void readsSameCharacterAfterUnread() throws IOException
+	public void peekReturnsNextChar() throws IOException
 	{
+		codeReader.read();
+		assertEquals('b', codeReader.peek());
+	}
+
+	@Test
+	public void peek2ndReturnsCharacterAfterNext() throws IOException
+	{
+		codeReader.read();
+		assertEquals('c', codeReader.peek2nd());
+	}
+
+	@Test
+	public void peekDoesNotRemoveCharacters() throws IOException
+	{
+		codeReader.read();
+		codeReader.peek();
+		codeReader.peek();
 		char c = codeReader.read();
-		codeReader.unread();
-		char c2 = codeReader.read();
-		assertEquals(c, c2);
+		assertEquals('b', c);
+	}
+
+	@Test
+	public void peek2ndDoesNotRemoveCharacters() throws IOException
+	{
+		codeReader.read();
+		codeReader.peek2nd();
+		codeReader.peek2nd();
+		char c = codeReader.read();
+		assertEquals('b', c);
 	}
 
 	@Test
@@ -61,13 +86,25 @@ public class CodeReaderTest
 	}
 
 	@Test
-	public void lineNumberAndColumnAreCorrectAfterUnreadingNewline() throws IOException
+	public void lineNumberChangesAfterNewline() throws IOException
 	{
-		for (int i = 0; i < text.indexOf('\n') + 1; ++i)
+		int lineLen = text.indexOf('\n');
+		for (int i = 0; i < lineLen; ++i)
 			codeReader.read();
-		codeReader.unread();
 		assertEquals(0, codeReader.getLineNumber());
-		assertEquals(text.indexOf('\n'), codeReader.getColumn());
+		codeReader.read();
+		assertEquals(1, codeReader.getLineNumber());
+	}
+
+	@Test
+	public void columnResetAfterNewline() throws IOException
+	{
+		int lineLen = text.indexOf('\n');
+		for (int i = 0; i < lineLen; ++i)
+			codeReader.read();
+		assertEquals(lineLen, codeReader.getColumn());
+		codeReader.read();
+		assertEquals(0, codeReader.getColumn());
 	}
 
 	@Test

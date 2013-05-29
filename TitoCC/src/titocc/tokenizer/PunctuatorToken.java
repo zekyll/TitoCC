@@ -11,10 +11,12 @@ import titocc.util.Position;
  */
 public class PunctuatorToken extends Token
 {
-	// List of all punctuators. An important fact is that all multi-character
-	// punctuators start with some other punctuator (e.g. "<<=" contains "<<"
-	// which contains "<"). This means that when an unmatching character is
-	// encountered only that character needs to be unread back into the reader.
+	/**
+	 * List of all punctuators. An important fact is that all multi-character
+	 * punctuators start with some other punctuator (e.g. ">>=" contains ">>"
+	 * which contains ">"). This means that only one character needs to be
+	 * looked ahead.
+	 */
 	private static final String[] punctuatorList = {
 		"+",
 		"++",
@@ -59,6 +61,7 @@ public class PunctuatorToken extends Token
 		";",
 		","
 	};
+
 	private static Set<String> punctuators = new HashSet<String>(Arrays.asList(punctuatorList));
 
 	/**
@@ -66,7 +69,7 @@ public class PunctuatorToken extends Token
 	 *
 	 * @param string punctuator string
 	 * @param position starting position of the token
-	 */	
+	 */
 	public PunctuatorToken(String string, Position position)
 	{
 		super(string, position);
@@ -88,17 +91,11 @@ public class PunctuatorToken extends Token
 
 		StringBuilder tokenString = new StringBuilder();
 
-		char c = reader.read();
-		while (punctuators.contains(tokenString.toString() + c)) {
-			tokenString.append(c);
-			c = reader.read();
-		}
+		while (punctuators.contains(tokenString.toString() + reader.peek()))
+			tokenString.append(reader.read());
 
 		if (tokenString.length() > 0)
 			token = new PunctuatorToken(tokenString.toString(), pos);
-
-		if (c != '\0')
-			reader.unread();
 
 		return token;
 	}

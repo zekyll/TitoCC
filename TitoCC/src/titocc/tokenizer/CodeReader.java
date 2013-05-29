@@ -7,21 +7,30 @@ import titocc.util.Position;
 
 /**
  * Wrapper for Reader interface that reads characters one at a time and keeps
- * track of lines and columns. Also supports unreading single character back
- * into the input stream.
+ * track of lines and columns. Also supports peeking the next and character
+ * after that without removing them from the input stream.
  */
 public class CodeReader
 {
 	/**
-	 * Length of the previous line. Needed when unreading line changes.
+	 * Next character to read. Returned by peek().
 	 */
-	private int previousLineLength;
+	private char nextChar;
 
 	/**
-	 * LineNumberReader that wraps the given reader object and keeps track of
-	 * the line number.
+	 * The character to read after next char. Returned by peek2nd().
 	 */
-	private final LineNumberReader reader;
+	private char nextChar2;
+
+	/**
+	 * The wrapped reader object.
+	 */
+	private final Reader reader;
+
+	/**
+	 * Current line number.
+	 */
+	private int line;
 
 	/**
 	 * Current column number.
@@ -31,50 +40,59 @@ public class CodeReader
 	/**
 	 * Constructs a CodeReader.
 	 *
-	 * @param reader
+	 * @param reader reader used for input
 	 */
-	public CodeReader(Reader reader)
+	public CodeReader(Reader reader) throws IOException
 	{
 		this.reader = new LineNumberReader(reader);
+		nextChar = readFromInternalReader();
+		nextChar2 = readFromInternalReader();
+		line = 0;
+		column = 0;
 	}
 
 	/**
-	 * Reads a single character.
+	 * Reads a single character, removing it from the stream.
 	 *
 	 * @return next character or null character if end of the stream
 	 * @throws IOException if the underlying reader throws
 	 */
 	public char read() throws IOException
 	{
-		reader.mark(1);
-		int c = reader.read();
+		char c = nextChar;
+		nextChar = nextChar2;
+		nextChar2 = readFromInternalReader();
 
-		if (c == -1)
-			return '\0';
+		++column;
 
-		// Store previous line length so we can unread newline
 		if (c == '\n') {
-			previousLineLength = column;
+			++line;
 			column = 0;
-		} else
-			++column;
+		}
 
 		return (char) c;
 	}
 
 	/**
-	 * Puts the previously read character back into the stream. This cannot be
-	 * called more than once between two read() calls.
+	 * Return the next character that will be returned by read(), but does not
+	 * remove the character from the stream.
 	 *
-	 * @throws IOException if reader.reset() throws
+	 * @return next character
 	 */
-	public void unread() throws IOException
+	public char peek()
 	{
-		if (column == 0)
-			column = previousLineLength;
-		else
-			--column;
-		reader.reset();
+		return nextChar;
+	}
+
+	/**
+	 * Return the character that will be returned by second call to read(), but
+	 * does not remove any characters from the stream.
+	 *
+	 * @return the character after next character
+	 */
+	public char peek2nd()
+	{
+		return nextChar2;
 	}
 
 	/**
@@ -84,7 +102,7 @@ public class CodeReader
 	 */
 	public int getLineNumber()
 	{
-		return reader.getLineNumber();
+		return line;
 	}
 
 	/**
@@ -104,7 +122,7 @@ public class CodeReader
 	 */
 	public Position getPosition()
 	{
-		return new Position(reader.getLineNumber(), column);
+		return new Position(line, column);
 	}
 
 	/**
@@ -115,12 +133,20 @@ public class CodeReader
 	 */
 	public void skipWhiteSpace() throws IOException
 	{
-		char c;
-		do {
-			c = read();
-		} while (Character.isWhitespace(c));
+		while (Character.isWhitespace(peek()))
+			read();
+	}
 
-		if (c != '\0')
-			unread();
+	/**
+	 * Reads one character from the internal reader. Convert the int value to
+	 * char so that EOF (-1) is repsesented by null character.
+	 *
+	 * @param c character to convert
+	 * @return result of the conversion
+	 */
+	private char readFromInternalReader() throws IOException
+	{
+		int c = reader.read();
+		return c == -1 ? '\0' : (char) c;
 	}
 }

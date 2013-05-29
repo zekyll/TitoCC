@@ -31,29 +31,23 @@ public abstract class WordToken extends Token
 	 * @param reader code reader from which charactes are read
 	 * @return WordToken object or null if no valid word was found
 	 * @throws IOException if code reader throws
-	 */	
+	 */
 	public static WordToken parse(CodeReader reader) throws IOException
 	{
 		WordToken token = null;
 		Position pos = reader.getPosition();
 
-		char c = reader.read();
-
-		if (AsciiUtil.isIdentifierStart(c)) {
+		if (AsciiUtil.isIdentifierStart(reader.peek())) {
 			StringBuilder tokenString = new StringBuilder();
 			do {
-				tokenString.append((char) c);
-				c = reader.read();
-			} while (AsciiUtil.isIdentifierCharacter(c));
+				tokenString.append(reader.read());
+			} while (AsciiUtil.isIdentifierCharacter(reader.peek()));
 
 			if (KeywordToken.isKeyword(tokenString.toString()))
 				token = new KeywordToken(tokenString.toString(), pos);
 			else
 				token = new IdentifierToken(tokenString.toString(), pos);
 		}
-
-		if (c != '\0')
-			reader.unread();
 
 		return token;
 	}

@@ -76,27 +76,19 @@ public class IntegerLiteralToken extends Token
 
 		StringBuilder digits = new StringBuilder();
 
-		char c = reader.read();
-		while (Character.isDigit(c)) {
-			digits.append(c);
-			c = reader.read();
-		}
+		while (Character.isDigit(reader.peek()))
+			digits.append(reader.read());
 
 		String digitStr = digits.toString();
 		if (digitStr.length() > 0) {
 			StringBuilder suffix = new StringBuilder();
-			while (AsciiUtil.isIdentifierCharacter(c)) {
-				suffix.append(c);
-				c = reader.read();
-			}
+			while (AsciiUtil.isIdentifierCharacter(reader.peek()))
+				suffix.append(reader.read());
 
 			String tokenString = digitStr + suffix.toString();
 			token = new IntegerLiteralToken(tokenString, pos, digitStr,
 					suffix.toString());
 		}
-
-		if (c != '\0')
-			reader.unread();
 
 		return token;
 	}
