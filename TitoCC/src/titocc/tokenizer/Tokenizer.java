@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
+import titocc.util.AsciiUtil;
+import titocc.util.Position;
 
 /**
  * Main tokenizer class. Converts input text into a list of tokens. There are
@@ -40,10 +42,18 @@ public class Tokenizer
 
 		Token token;
 		do {
+			boolean commentFound;
+			do {
+				input.skipWhiteSpace();
+				commentFound = skipComments();
+			} while (commentFound);
+
 			input.skipWhiteSpace();
 			token = getNextToken();
 			tokens.add(token);
 		} while (!(token instanceof EofToken));
+
+		//TODO check that non-empty source file ends in	newline
 
 		return tokens;
 	}
@@ -74,5 +84,40 @@ public class Tokenizer
 			return token;
 
 		throw new SyntaxException("Unrecognized token.", input.getPosition());
+	}
+
+	/**
+	 * Checks if the next character starts a comment and skips the comment.
+	 *
+	 * @return true if comment was found, false otherwise
+	 * @throws IOException if reader throws
+	 * @throws SyntaxException if EOF is found inside a comment block
+	 */
+	private boolean skipComments() throws IOException, SyntaxException
+	{
+		if (input.peek() == '/' && input.peek2nd() == '/') {
+			char c;
+			do {
+				c = input.read();
+			} while (!(c == '\n' || c == '\0'));
+
+			return true;
+		} else if (input.peek() == '/' && input.peek2nd() == '*') {
+			Position pos = input.getPosition();
+			input.read();
+			input.read();
+
+			char c = '\0', prevc;
+			do {
+				prevc = c;
+				c = input.read();
+				if (c == '\0')
+					throw new SyntaxException("Unterminated comment.", pos);
+			} while (!(prevc == '*' && c == '/'));
+
+			return true;
+		}
+
+		return false;
 	}
 }

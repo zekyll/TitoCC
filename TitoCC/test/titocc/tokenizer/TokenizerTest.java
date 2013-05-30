@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import titocc.util.Position;
 
 public class TokenizerTest
 {
@@ -58,6 +59,86 @@ public class TokenizerTest
 			t.tokenize();
 			fail("SyntaxException not thrown.");
 		} catch (SyntaxException e) {
+			assertEquals(new Position(0, 7), e.getPosition());
+			assertEquals("Unrecognized token.", e.getMessage());
+		}
+	}
+
+	@Test
+	public void singleLineComment() throws IOException, SyntaxException
+	{
+		Tokenizer t = new Tokenizer(new StringReader(
+				"a//b /* c \n"
+				+ "\te"));
+		List<Token> tokens = t.tokenize();
+		assertEquals("a", tokens.get(0).toString());
+		assertEquals("e", tokens.get(1).toString());
+	}
+
+	@Test
+	public void singleLineCommentInFileEnd() throws IOException, SyntaxException
+	{
+		Tokenizer t = new Tokenizer(new StringReader(
+				"a//b"));
+		List<Token> tokens = t.tokenize();
+		assertEquals("a", tokens.get(0).toString());
+		assertTrue("<eof>", tokens.get(1) instanceof EofToken);
+	}
+
+	@Test
+	public void multiLineComment() throws IOException, SyntaxException
+	{
+		Tokenizer t = new Tokenizer(new StringReader(
+				"a/*/b // c \n"
+				+ "d /* e \n"
+				+ "f */ g"));
+		List<Token> tokens = t.tokenize();
+		assertEquals("a", tokens.get(0).toString());
+		assertEquals("g", tokens.get(1).toString());
+	}
+
+	@Test
+	public void multipleConsequtiveComments() throws IOException, SyntaxException
+	{
+		Tokenizer t = new Tokenizer(new StringReader(
+				"a //b \n"
+				+ "\t/* */ //c d\n"
+				+ " d\n"));
+		List<Token> tokens = t.tokenize();
+		assertEquals("a", tokens.get(0).toString());
+		assertEquals("d", tokens.get(1).toString());
+	}
+
+	@Test
+	public void commentBlockFollowedBySlash() throws IOException, SyntaxException
+	{
+		Tokenizer t = new Tokenizer(new StringReader("a/**//\n"));
+		List<Token> tokens = t.tokenize();
+		assertEquals("a", tokens.get(0).toString());
+		assertEquals("/", tokens.get(1).toString());
+	}
+
+	@Test
+	public void commentWithoutSurroundingSpaces() throws IOException, SyntaxException
+	{
+		// Tests that tokens are not combined.
+		Tokenizer t = new Tokenizer(new StringReader("a/**/b\n"));
+		List<Token> tokens = t.tokenize();
+		assertEquals("a", tokens.get(0).toString());
+		assertEquals("b", tokens.get(1).toString());
+	}
+
+	@Test
+	public void throwsWhenUnterminatedComment() throws IOException, SyntaxException
+	{
+		try {
+			Tokenizer t = new Tokenizer(new StringReader(
+					"a b/*c d e "));
+			t.tokenize();
+			fail("SyntaxException not thrown.");
+		} catch (SyntaxException e) {
+			assertEquals(new Position(0, 3), e.getPosition());
+			assertEquals("Unterminated comment.", e.getMessage());
 		}
 	}
 }
