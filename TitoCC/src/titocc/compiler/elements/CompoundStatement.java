@@ -11,26 +11,27 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * A compound statement that executes a list of statements.
+ * A list of statements surrounded by {}. The compound statement creates a new
+ * block.
  *
  * <p> EBNF Definition:
  *
- * <br> BLOCK_STATEMENT = "{" {STATEMENT} "}"
+ * <br> COMPOUND_STATEMENT = "{" {STATEMENT} "}"
  */
-public class BlockStatement extends Statement
+public class CompoundStatement extends Statement
 {
 	/**
-	 * Statements inside the block statement.
+	 * Statements inside the compound statement.
 	 */
 	private final List<Statement> statements;
 
 	/**
-	 * Constructs a new block statement.
+	 * Constructs a CompoundStatement.
 	 *
-	 * @param statements list of statements in the block
-	 * @param position starting position of the block statement
+	 * @param statements list of statements in the compound
+	 * @param position starting position of the compound statement
 	 */
-	public BlockStatement(List<Statement> statements, Position position)
+	public CompoundStatement(List<Statement> statements, Position position)
 	{
 		super(position);
 		this.statements = statements;
@@ -69,18 +70,18 @@ public class BlockStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a block statement from token stream. If parsing fails
+	 * Attempts to parse a compound statement from token stream. If parsing fails
 	 * the stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return BlockStatement object or null if tokens don't form a valid
-	 * block statement
+	 * @return CompoundStatement object or null if tokens don't form a valid
+	 * compound statement
 	 */
-	public static BlockStatement parse(TokenStream tokens)
+	public static CompoundStatement parse(TokenStream tokens)
 	{
 		Position pos = tokens.getPosition();
 		tokens.pushMark();
-		BlockStatement blockStatement = null;
+		CompoundStatement compoundStatement = null;
 
 		if (tokens.read().toString().equals("{")) {
 			List<Statement> statements = new LinkedList<Statement>();
@@ -92,10 +93,10 @@ public class BlockStatement extends Statement
 			}
 
 			if (tokens.read().toString().equals("}"))
-				blockStatement = new BlockStatement(statements, pos);
+				compoundStatement = new CompoundStatement(statements, pos);
 		}
 
-		tokens.popMark(blockStatement == null);
-		return blockStatement;
+		tokens.popMark(compoundStatement == null);
+		return compoundStatement;
 	}
 }

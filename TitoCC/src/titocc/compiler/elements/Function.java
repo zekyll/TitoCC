@@ -21,12 +21,12 @@ import titocc.util.Position;
 /**
  * Function declaration and definition. Forward declarations are not currently
  * supported so this is always both declaration and definition. Functions
- * consist of return type, function name, parameter list and a BlockStatement
+ * consist of return type, function name, parameter list and a CompoundStatement
  * body.
  *
  * <p> EBNF definition:
  *
- * <br> FUNCTION = TYPE_SPECIFIER IDENTIFIER PARAMETER_LIST BLOCK_STATEMENT
+ * <br> FUNCTION = TYPE_SPECIFIER IDENTIFIER PARAMETER_LIST COMPOUND_STATEMENT
  */
 public class Function extends Declaration implements Symbol
 {
@@ -46,7 +46,7 @@ public class Function extends Declaration implements Symbol
 	/**
 	 * Function body.
 	 */
-	private final BlockStatement body;
+	private final CompoundStatement body;
 	/**
 	 * Globally unique name for the function symbol. Set when compiling the
 	 * function.
@@ -75,7 +75,7 @@ public class Function extends Declaration implements Symbol
 	 * @param position starting position of the function
 	 */
 	public Function(TypeSpecifier returnType, String name, ParameterList parameterList,
-			BlockStatement body, Position position)
+			CompoundStatement body, Position position)
 	{
 		super(position);
 		this.returnType = returnType;
@@ -119,7 +119,7 @@ public class Function extends Declaration implements Symbol
 	 *
 	 * @return the function body
 	 */
-	public BlockStatement getBody()
+	public CompoundStatement getBody()
 	{
 		return body;
 	}
@@ -210,7 +210,7 @@ public class Function extends Declaration implements Symbol
 	private void compileBody(Assembler asm, Scope scope, Registers registers)
 			throws IOException, SyntaxException
 	{
-		// Compile statements directly, so that BlockStatement doesn't create
+		// Compile statements directly, so that CompoundStatement doesn't create
 		// new scope, and the statements are in the same scope as parameters.
 		for (Statement st : body.getStatements())
 			st.compile(asm, scope, registers);
@@ -302,7 +302,7 @@ public class Function extends Declaration implements Symbol
 			if (id instanceof IdentifierToken) {
 				ParameterList paramList = ParameterList.parse(tokens);
 				if (paramList != null) {
-					BlockStatement body = BlockStatement.parse(tokens);
+					CompoundStatement body = CompoundStatement.parse(tokens);
 					if (body != null) {
 						function = new Function(retType, id.toString(), paramList,
 								body, pos);

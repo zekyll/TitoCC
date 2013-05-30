@@ -160,7 +160,7 @@ public class ParserTest
 	}
 
 	@Test
-	public void matchBlockStatement() throws IOException, SyntaxException
+	public void matchCompoundStatement() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (FUNC (TYPE void) f (PRM_LIST) (BLK_ST (BLK_ST"
 				+ " (DECL_ST (VAR_DECL (TYPE int) (DCLTOR x) null))))))",
@@ -276,7 +276,7 @@ public class ParserTest
 	}
 
 	@Test
-	public void failAtBlockStatementClosingBrace() throws IOException, SyntaxException
+	public void failAtCompoundStatementClosingBrace() throws IOException, SyntaxException
 	{
 		testFailure("\nvoid foo() { ; ", "<End of file>", 1, 15);
 	}

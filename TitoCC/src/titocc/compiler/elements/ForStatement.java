@@ -197,7 +197,7 @@ public class ForStatement extends Statement
 
 		// Empty statement.
 		if (statement == null && tokens.read().toString().equals(";"))
-			statement = new BlockStatement(new LinkedList<Statement>(), pos);
+			statement = new CompoundStatement(new LinkedList<Statement>(), pos);
 
 		tokens.popMark(statement == null);
 		return statement;

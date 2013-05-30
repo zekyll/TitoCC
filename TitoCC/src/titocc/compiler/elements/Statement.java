@@ -15,7 +15,7 @@ import titocc.util.Position;
  * <p> EBNF definition:
  *
  * <br> STATEMENT = EXPRESSION_STATEMENT | DECLARATION_STATEMENT | IF_STATEMENT
- * | WHILE_STATEMENT | FOR_STATEMENT | BLOCK_STATEMENT | JUMP_STATEMENT | ";"
+ * | WHILE_STATEMENT | FOR_STATEMENT | COMPOUND_STATEMENT | JUMP_STATEMENT | ";"
  */
 public abstract class Statement extends CodeElement
 {
@@ -71,14 +71,14 @@ public abstract class Statement extends CodeElement
 			statement = ForStatement.parse(tokens);
 
 		if (statement == null)
-			statement = BlockStatement.parse(tokens);
+			statement = CompoundStatement.parse(tokens);
 
 		if (statement == null)
 			statement = JumpStatement.parse(tokens);
 
 		// Empty statement.
 		if (statement == null && tokens.read().toString().equals(";"))
-			statement = new BlockStatement(new LinkedList<Statement>(), pos);
+			statement = new CompoundStatement(new LinkedList<Statement>(), pos);
 
 		tokens.popMark(statement == null);
 		return statement;
