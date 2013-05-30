@@ -65,6 +65,9 @@ public abstract class Statement extends CodeElement
 			statement = WhileStatement.parse(tokens);
 
 		if (statement == null)
+			statement = DoStatement.parse(tokens);
+
+		if (statement == null)
 			statement = ForStatement.parse(tokens);
 
 		if (statement == null)
