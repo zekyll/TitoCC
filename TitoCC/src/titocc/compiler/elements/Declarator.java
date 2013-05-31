@@ -1,7 +1,11 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
+import java.util.List;
+import titocc.compiler.Scope;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.FunctionType;
 import titocc.compiler.types.PointerType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
@@ -10,17 +14,18 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Identifier that is modified with arbitrary pointer/array declarators. Note
- * that the declarators are parsed in the reverse order. I.e. the innermost
- * declarator becomes the outermost modifier to the type: ((*a)[2])[3] is
- * identifier "a" that is pointer to a 2-sized array of 3-sized arrays.
+ * Identifier that is modified with arbitrary pointer/array/function
+ * declarators. Note that the declarators are parsed in the reverse order. I.e.
+ * the innermost declarator becomes the outermost modifier to the type:
+ * ((*a)[2])[3] is identifier "a" that is pointer to a 2-sized array of 3-sized
+ * arrays.
  *
  * <p> EBNF definition:
  *
  * <br> DECLARATOR = "*" DECLARATOR | DIRECT_DECLARATOR
  *
  * <br> DIRECT_DECLARATOR = IDENTIFIER | "(" DECLARATOR ")" | DIRECT_DECLARATOR
- * "[" EXPRESSION "]"
+ * "[" EXPRESSION "]" | DIRECT_DECLARATOR PARAMETER_LIST
  */
 public abstract class Declarator extends CodeElement
 {
@@ -44,7 +49,7 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType getModifiedType(CType type)
+		public CType getModifiedType(CType type, Scope scope)
 		{
 			return type;
 		}
@@ -62,9 +67,11 @@ public abstract class Declarator extends CodeElement
 	private static class ArrayDeclarator extends Declarator
 	{
 		private final Declarator subDeclarator;
+
 		private final Expression arrayLength;
 
-		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength, Position position)
+		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength,
+				Position position)
 		{
 			super(position);
 			this.subDeclarator = subDeclarator;
@@ -78,7 +85,8 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType getModifiedType(CType type) throws SyntaxException
+		public CType getModifiedType(CType type, Scope scope)
+				throws SyntaxException, IOException
 		{
 			Integer len = arrayLength.getCompileTimeValue();
 			if (!type.isObject())
@@ -87,7 +95,7 @@ public abstract class Declarator extends CodeElement
 				throw new SyntaxException("Array length must be a compile time constant.", getPosition());
 			else if (len <= 0)
 				throw new SyntaxException("Array length must be a positive integer.", getPosition());
-			return subDeclarator.getModifiedType(new ArrayType(type, len));
+			return subDeclarator.getModifiedType(new ArrayType(type, len), scope);
 		}
 
 		@Override
@@ -117,15 +125,54 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType getModifiedType(CType type) throws SyntaxException
+		public CType getModifiedType(CType type, Scope scope)
+				throws SyntaxException, IOException
 		{
-			return subDeclarator.getModifiedType(new PointerType(type));
+			return subDeclarator.getModifiedType(new PointerType(type), scope);
 		}
 
 		@Override
 		public String toString()
 		{
 			return "(DCLTOR " + subDeclarator + ")";
+		}
+	}
+
+	/**
+	 * Declarator that declares a function.
+	 */
+	private static class FunctionDeclarator extends Declarator
+	{
+		private final Declarator subDeclarator;
+
+		private final ParameterList paramList;
+
+		public FunctionDeclarator(Declarator subDeclarator,
+				ParameterList paramList, Position position)
+		{
+			super(position);
+			this.subDeclarator = subDeclarator;
+			this.paramList = paramList;
+		}
+
+		@Override
+		public String getName()
+		{
+			return subDeclarator.getName();
+		}
+
+		@Override
+		public CType getModifiedType(CType type, Scope scope)
+				throws SyntaxException, IOException
+		{
+			List<CType> paramTypes = paramList.compile(null, scope);
+			return subDeclarator.getModifiedType(new FunctionType(type, paramTypes), scope);
+		}
+
+		@Override
+		public String toString()
+		{
+			return "(DCLTOR " + subDeclarator + " " + paramList + ")";
 		}
 	}
 
@@ -152,10 +199,12 @@ public abstract class Declarator extends CodeElement
 	 * return int[2][2].
 	 *
 	 * @param type type to be modified
+	 * @param scope scope in which the declarator is compiled
 	 * @return modified type
 	 * @throws SyntaxException
 	 */
-	public abstract CType getModifiedType(CType type) throws SyntaxException;
+	public abstract CType getModifiedType(CType type, Scope scope)
+			throws SyntaxException, IOException;
 
 	/**
 	 * Attempts to parse a declarator from token stream. If parsing fails the
@@ -185,33 +234,47 @@ public abstract class Declarator extends CodeElement
 	}
 
 	/**
-	 * Parses direct declarator, which is either variable name or a declarator
-	 * inside () parentheses.
+	 * Parses a direct declarator. It is either a variable name, declarator
+	 * inside () parentheses, an array declarator or a function declarator.
+	 * declarator inside () parentheses.
 	 */
 	private static Declarator parseDirectDeclarator(TokenStream tokens)
 	{
 		Position pos = tokens.getPosition();
 
+		// Identifier declarator
 		Declarator declarator = parseIdentifierDeclarator(tokens);
 
+		// Parenthesized declarator
 		if (declarator == null)
 			declarator = parseParenthesizedDeclarator(tokens);
 
-
-		if (declarator != null)
+		// Parse array/function declarators in loop to avoid left recursion.
+		if (declarator != null) {
 			while (true) {
+				// Array declarator
 				Expression arrayLength = parseArrayLength(tokens);
-				if (arrayLength != null)
+				if (arrayLength != null) {
 					declarator = new ArrayDeclarator(declarator, arrayLength, pos);
-				else
-					break;
+					continue;
+				}
+
+				// Function declarator
+				ParameterList paramList = ParameterList.parse(tokens);
+				if (paramList != null) {
+					declarator = new FunctionDeclarator(declarator, paramList, pos);
+					continue;
+				}
+
+				break;
 			}
+		}
 
 		return declarator;
 	}
 
 	/**
-	 * Parses identifier declarator.
+	 * Parses an identifier declarator.
 	 */
 	private static Declarator parseIdentifierDeclarator(TokenStream tokens)
 	{
@@ -227,7 +290,7 @@ public abstract class Declarator extends CodeElement
 	}
 
 	/**
-	 * Parses parenthesized declarator.
+	 * Parses a parenthesized declarator.
 	 */
 	private static Declarator parseParenthesizedDeclarator(TokenStream tokens)
 	{
@@ -245,7 +308,7 @@ public abstract class Declarator extends CodeElement
 	}
 
 	/**
-	 * Parses the array length of array declarator.
+	 * Parses the array length of an array declarator.
 	 */
 	private static Expression parseArrayLength(TokenStream tokens)
 	{

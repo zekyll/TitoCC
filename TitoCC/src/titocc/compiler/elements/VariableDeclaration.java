@@ -94,9 +94,10 @@ public class VariableDeclaration extends Declaration implements Symbol
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs) throws SyntaxException, IOException
+	public void compile(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
-		type = declarator.getModifiedType(typeSpecifier.getType());
+		type = declarator.getModifiedType(typeSpecifier.getType(), scope);
 		if (!type.isObject())
 			throw new SyntaxException("Variable must have object type.", getPosition());
 

@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.io.IOException;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.ArrayType;
@@ -22,16 +23,19 @@ public class Parameter extends CodeElement implements Symbol
 	 * Type specifier (e.g. void/int).
 	 */
 	private final TypeSpecifier typeSpecifier;
+
 	/**
 	 * Declarator which has the parameter name and which modifies the type
 	 * specifier.
 	 */
 	private final Declarator declarator;
+
 	/**
 	 * Globally unique name for the parameter symbol. Set when compiling the
 	 * function.
 	 */
 	private String globallyUniqueName;
+
 	/**
 	 * Parameter type. Set when compiling the function.
 	 */
@@ -68,28 +72,38 @@ public class Parameter extends CodeElement implements Symbol
 	}
 
 	/**
-	 * Checks the parameter type and defines the symbol for the parameter.
+	 * Checks the parameter type and optionally defines the symbol for the
+	 * parameter.
 	 *
 	 * @param scope scope in which the parameter is evaluated
+	 * @param declareSymbol declares a symbol for the parameter in given scope
 	 * @return type of the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was
 	 * redefined
+	 * @throws IOException
 	 */
-	public CType compile(Scope scope) throws SyntaxException
+	public CType compile(Scope scope, boolean declareSymbol)
+			throws SyntaxException, IOException
 	{
 		// Compile the type and check that it is valid.
-		type = declarator.getModifiedType(typeSpecifier.getType());
+		type = declarator.getModifiedType(typeSpecifier.getType(), scope);
 		if (!type.isObject())
 			throw new SyntaxException("Parameter must have object type.", getPosition());
 		if (type instanceof ArrayType)
 			throw new SyntaxException("Array parameters are not supported.", getPosition());
 
+		if (declareSymbol)
+			addSymbol(scope);
+
+		return type;
+	}
+
+	private void addSymbol(Scope scope) throws SyntaxException
+	{
 		if (!scope.add(this))
 			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getPosition());
 		globallyUniqueName = scope.makeGloballyUniqueName(getName());
 		scope.add(this);
-
-		return type;
 	}
 
 	@Override

@@ -51,20 +51,24 @@ public class ParameterList extends CodeElement
 	 * Generates the constants for accessing the parameters, declares their
 	 * symbols and deduces parameter types.
 	 *
-	 * @param asm assembler used for generating the code
+	 * @param asm assembler used for generating the code; if null then no code
+	 * or symbols are generated and only parameter types are deduced
 	 * @param scope scope in which the parameter list is evaluated
 	 * @return list of parameter types
 	 * @throws SyntaxException if the parameters contain errors
 	 * @throws IOException if assembler throws
 	 */
-	public List<CType> compile(Assembler asm, Scope scope) throws SyntaxException, IOException
+	public List<CType> compile(Assembler asm, Scope scope)
+			throws SyntaxException, IOException
 	{
 		List<CType> paramTypes = new ArrayList<CType>();
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
-			paramTypes.add(p.compile(scope));
-			asm.addLabel(p.getGlobalName());
-			asm.emit("equ", "" + paramOffset);
+			paramTypes.add(p.compile(scope, asm != null));
+			if (asm != null) {
+				asm.addLabel(p.getGlobalName());
+				asm.emit("equ", "" + paramOffset);
+			}
 			++paramOffset;
 		}
 		return paramTypes;
