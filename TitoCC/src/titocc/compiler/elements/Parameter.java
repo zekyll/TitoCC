@@ -10,12 +10,13 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Sngle parameter in a function parameter list. Cosists of a type and a name.
- * Unnamed parameters are not yet supported.
+ * Single parameter in a function parameter list. Consists of a type and a name.
+ * Parameters in function definitions must have names, elsewhere unnamed
+ * parameters can be used.
  *
  * <p> EBNF definition:
  *
- * <br> PARAMETER = TYPE_SPECIFIER DECLARATOR
+ * <br> PARAMETER = TYPE_SPECIFIER [DECLARATOR]
  */
 public class Parameter extends CodeElement implements Symbol
 {
@@ -45,10 +46,11 @@ public class Parameter extends CodeElement implements Symbol
 	 * Constructs a Parameter.
 	 *
 	 * @param typeSpecifier type specifier
-	 * @param declarator declarator
+	 * @param declarator declarator, or null if parameter is unnamed
 	 * @param position starting position of the parameter
 	 */
-	public Parameter(TypeSpecifier typeSpecifier, Declarator declarator, Position position)
+	public Parameter(TypeSpecifier typeSpecifier, Declarator declarator,
+			Position position)
 	{
 		super(position);
 		this.typeSpecifier = typeSpecifier;
@@ -85,12 +87,7 @@ public class Parameter extends CodeElement implements Symbol
 	public CType compile(Scope scope, boolean declareSymbol)
 			throws SyntaxException, IOException
 	{
-		// Compile the type and check that it is valid.
-		type = declarator.getModifiedType(typeSpecifier.getType(), scope);
-		if (!type.isObject())
-			throw new SyntaxException("Parameter must have object type.", getPosition());
-		if (type instanceof ArrayType)
-			throw new SyntaxException("Array parameters are not supported.", getPosition());
+		compileType(scope);
 
 		if (declareSymbol)
 			addSymbol(scope);
@@ -98,8 +95,25 @@ public class Parameter extends CodeElement implements Symbol
 		return type;
 	}
 
+	/**
+	 * Deduce parameter type and check that it is valid.
+	 */
+	private void compileType(Scope scope) throws SyntaxException, IOException
+	{
+		type = typeSpecifier.getType();
+		if (declarator != null)
+			type = declarator.getModifiedType(type, scope);
+
+		if (!type.isObject())
+			throw new SyntaxException("Parameter must have object type.", getPosition());
+		if (type instanceof ArrayType)
+			throw new SyntaxException("Array parameters are not supported.", getPosition());
+	}
+
 	private void addSymbol(Scope scope) throws SyntaxException
 	{
+		if (declarator == null)
+			throw new SyntaxException("Unnamed parameter in function definition.", getPosition());
 		if (!scope.add(this))
 			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getPosition());
 		globallyUniqueName = scope.makeGloballyUniqueName(getName());
@@ -141,8 +155,7 @@ public class Parameter extends CodeElement implements Symbol
 
 		if (typeSpecifier != null) {
 			Declarator declarator = Declarator.parse(tokens);
-			if (declarator != null)
-				param = new Parameter(typeSpecifier, declarator, pos);
+			param = new Parameter(typeSpecifier, declarator, pos);
 		}
 
 		tokens.popMark(param == null);

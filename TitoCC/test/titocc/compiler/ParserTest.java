@@ -379,7 +379,7 @@ public class ParserTest
 	@Test
 	public void failAtParameterDeclarator() throws IOException, SyntaxException
 	{
-		testFailure("\nvoid foo(int) { }", ")", 1, 12);
+		testFailure("\nvoid foo(int { }", "{", 1, 13);
 	}
 
 	@Test
