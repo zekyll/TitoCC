@@ -12,7 +12,10 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * List of parameters in a function declaration/definition.
+ * List of parameters for a function type. A parameter list can occur in two
+ * different contexts: in function definitions, where parameter names are
+ * required, and in function declarations or other type declarators where
+ * unnamed parameters are allowed.
  *
  * <p> EBNF definition:
  *
@@ -51,8 +54,9 @@ public class ParameterList extends CodeElement
 	 * Generates the constants for accessing the parameters, declares their
 	 * symbols and deduces parameter types.
 	 *
-	 * @param asm assembler used for generating the code; if null then no code
-	 * or symbols are generated and only parameter types are deduced
+	 * @param asm assembler used for generating the code; if null then the
+	 * parameter list is not part of a function definition and no code is
+	 * generated and only parameter types are deduced
 	 * @param scope scope in which the parameter list is evaluated
 	 * @return list of parameter types
 	 * @throws SyntaxException if the parameters contain errors
@@ -61,10 +65,12 @@ public class ParameterList extends CodeElement
 	public List<CType> compile(Assembler asm, Scope scope)
 			throws SyntaxException, IOException
 	{
+		boolean isFunctionDefinition = asm != null;
+
 		// For function definitions use the given function scope, otherwise
 		// create a temporary subscope for checking duplicate parameter names.
 		Scope paramScope = scope;
-		if (asm == null) {
+		if (!isFunctionDefinition) {
 			paramScope = new Scope(scope, "");
 			scope.addSubScope(paramScope);
 		}
@@ -72,7 +78,7 @@ public class ParameterList extends CodeElement
 		List<CType> paramTypes = new ArrayList<CType>();
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
-			paramTypes.add(p.compile(paramScope));
+			paramTypes.add(p.compile(paramScope, !isFunctionDefinition));
 			if (asm != null) {
 				asm.addLabel(p.getGlobalName());
 				asm.emit("equ", "" + paramOffset);

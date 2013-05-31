@@ -77,15 +77,18 @@ public class Parameter extends CodeElement implements Symbol
 	 * Checks the parameter type and declares a symbol for the parameter.
 	 *
 	 * @param scope scope in which the parameter is compiled
+	 * @param allowUnnamed true if an unnamed parameter is allowed; i.e. the
+	 * parameter is not part of a function definition
 	 * @return type of the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was
 	 * redefined
 	 * @throws IOException
 	 */
-	public CType compile(Scope scope) throws SyntaxException, IOException
+	public CType compile(Scope scope, boolean allowUnnamed)
+			throws SyntaxException, IOException
 	{
 		compileType(scope);
-		addSymbol(scope);
+		addSymbol(scope, allowUnnamed);
 		return type;
 	}
 
@@ -94,9 +97,7 @@ public class Parameter extends CodeElement implements Symbol
 	 */
 	private void compileType(Scope scope) throws SyntaxException, IOException
 	{
-		type = typeSpecifier.getType();
-		if (declarator != null)
-			type = declarator.getModifiedType(type, scope);
+		type = declarator.getModifiedType(typeSpecifier.getType(), scope);
 
 		if (!type.isObject())
 			throw new SyntaxException("Parameter must have object type.", getPosition());
@@ -104,9 +105,10 @@ public class Parameter extends CodeElement implements Symbol
 			throw new SyntaxException("Array parameters are not supported.", getPosition());
 	}
 
-	private void addSymbol(Scope scope) throws SyntaxException
+	private void addSymbol(Scope scope, boolean allowUnnamed)
+			throws SyntaxException
 	{
-		if (declarator == null)
+		if (declarator.getName() == null && !allowUnnamed)
 			throw new SyntaxException("Unnamed parameter in function definition.", getPosition());
 		if (!scope.add(this))
 			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getPosition());
@@ -148,8 +150,9 @@ public class Parameter extends CodeElement implements Symbol
 		TypeSpecifier typeSpecifier = TypeSpecifier.parse(tokens);
 
 		if (typeSpecifier != null) {
-			Declarator declarator = Declarator.parse(tokens);
-			param = new Parameter(typeSpecifier, declarator, pos);
+			Declarator declarator = Declarator.parse(tokens, true);
+			if (declarator != null)
+				param = new Parameter(typeSpecifier, declarator, pos);
 		}
 
 		tokens.popMark(param == null);

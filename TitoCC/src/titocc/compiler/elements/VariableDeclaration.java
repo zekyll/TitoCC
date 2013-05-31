@@ -179,7 +179,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		TypeSpecifier type = TypeSpecifier.parse(tokens);
 
 		if (type != null) {
-			Declarator declarator = Declarator.parse(tokens);
+			Declarator declarator = Declarator.parse(tokens, false);
 			if (declarator != null) {
 				Expression init = parseInitializer(tokens);
 				if (tokens.read().toString().equals(";"))

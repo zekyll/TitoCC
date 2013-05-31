@@ -15,20 +15,60 @@ import titocc.util.Position;
 
 /**
  * Identifier that is modified with arbitrary pointer/array/function
- * declarators. Note that the declarators are parsed in the reverse order. I.e.
- * the innermost declarator becomes the outermost modifier to the type:
- * ((*a)[2])[3] is identifier "a" that is pointer to a 2-sized array of 3-sized
- * arrays.
+ * declarators. Note that the declarators are parsed in reverse order. I.e. the
+ * innermost declarator becomes the outermost modifier to the type:
+ * ((*a)[2])[3] is identifier "a" that is a pointer to a 2-sized array of
+ * 3-sized arrays.
  *
- * <p> EBNF definition:
+ * <br> A declarator can be abstract, in which case it doesn't necessarily
+ * specify a name. Unlike in standard's terminology the parser for abstract
+ * declarator also matches an empty declarator (for consistency).
+ *
+ * <br> EBNF definition:
  *
  * <br> DECLARATOR = "*" DECLARATOR | DIRECT_DECLARATOR
  *
  * <br> DIRECT_DECLARATOR = IDENTIFIER | "(" DECLARATOR ")" | DIRECT_DECLARATOR
  * "[" EXPRESSION "]" | DIRECT_DECLARATOR PARAMETER_LIST
+ *
+ * <br> ABSTRACT_DECLARATOR = "*" ABSTRACT_DECLARATOR |
+ * DIRECT_ABSTRACT_DECLARATOR
+ *
+ * <br> DIRECT_ABSTRACT_DECLARATOR = [IDENTIFIER] | "(" ABSTRACT_DECLARATOR ")"
+ * | * [DIRECT_ABSTRACT_DECLARATOR] "[" EXPRESSION "]"
+ * | * [DIRECT_ABSTRACT_DECLARATOR] PARAMETER_LIST
  */
 public abstract class Declarator extends CodeElement
 {
+	/**
+	 * Declarator without identifier. Used in abstract declarators.
+	 */
+	private static class EmptyDeclarator extends Declarator
+	{
+		public EmptyDeclarator(Position position)
+		{
+			super(position);
+		}
+
+		@Override
+		public String getName()
+		{
+			return null;
+		}
+
+		@Override
+		public CType getModifiedType(CType type, Scope scope)
+		{
+			return type;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "(DCLTOR)";
+		}
+	}
+
 	/**
 	 * Declarator that is just a simple identifier.
 	 */
@@ -211,16 +251,18 @@ public abstract class Declarator extends CodeElement
 	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
+	 * @param allowAbstract allows the declarator to be abstract, i.e. without
+	 * name
 	 * @return Declarator object or null if tokens don't form a valid declarator
 	 */
-	public static Declarator parse(TokenStream tokens)
+	public static Declarator parse(TokenStream tokens, boolean allowAbstract)
 	{
 		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Declarator declarator = null;
 
 		if (tokens.read().toString().equals("*")) {
-			declarator = Declarator.parse(tokens);
+			declarator = Declarator.parse(tokens, allowAbstract);
 			if (declarator != null)
 				declarator = new PointerDeclarator(declarator, pos);
 		}
@@ -228,7 +270,7 @@ public abstract class Declarator extends CodeElement
 		tokens.popMark(declarator == null);
 
 		if (declarator == null)
-			declarator = parseDirectDeclarator(tokens);
+			declarator = parseDirectDeclarator(tokens, allowAbstract);
 
 		return declarator;
 	}
@@ -238,28 +280,33 @@ public abstract class Declarator extends CodeElement
 	 * inside () parentheses, an array declarator or a function declarator.
 	 * declarator inside () parentheses.
 	 */
-	private static Declarator parseDirectDeclarator(TokenStream tokens)
+	private static Declarator parseDirectDeclarator(TokenStream tokens,
+			boolean allowAbstract)
 	{
 		Position pos = tokens.getPosition();
 
-		// Identifier declarator
+		// Identifier declarator.
 		Declarator declarator = parseIdentifierDeclarator(tokens);
 
-		// Parenthesized declarator
+		// Parenthesized declarator.
 		if (declarator == null)
-			declarator = parseParenthesizedDeclarator(tokens);
+			declarator = parseParenthesizedDeclarator(tokens, allowAbstract);
+
+		// Null/abstract declarator.
+		if (declarator == null && allowAbstract)
+			declarator = new EmptyDeclarator(pos);
 
 		// Parse array/function declarators in loop to avoid left recursion.
 		if (declarator != null) {
 			while (true) {
-				// Array declarator
+				// Array declarator.
 				Expression arrayLength = parseArrayLength(tokens);
 				if (arrayLength != null) {
 					declarator = new ArrayDeclarator(declarator, arrayLength, pos);
 					continue;
 				}
 
-				// Function declarator
+				// Function declarator.
 				ParameterList paramList = ParameterList.parse(tokens);
 				if (paramList != null) {
 					declarator = new FunctionDeclarator(declarator, paramList, pos);
@@ -292,13 +339,14 @@ public abstract class Declarator extends CodeElement
 	/**
 	 * Parses a parenthesized declarator.
 	 */
-	private static Declarator parseParenthesizedDeclarator(TokenStream tokens)
+	private static Declarator parseParenthesizedDeclarator(TokenStream tokens,
+			boolean allowAbstract)
 	{
 		Declarator declarator = null;
 		tokens.pushMark();
 
 		if (tokens.read().toString().equals("(")) {
-			declarator = Declarator.parse(tokens);
+			declarator = Declarator.parse(tokens, allowAbstract);
 			if (declarator != null && !tokens.read().toString().equals(")"))
 				declarator = null;
 		}
