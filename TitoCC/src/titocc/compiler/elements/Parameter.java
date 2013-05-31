@@ -74,24 +74,18 @@ public class Parameter extends CodeElement implements Symbol
 	}
 
 	/**
-	 * Checks the parameter type and optionally defines the symbol for the
-	 * parameter.
+	 * Checks the parameter type and declares a symbol for the parameter.
 	 *
-	 * @param scope scope in which the parameter is evaluated
-	 * @param declareSymbol declares a symbol for the parameter in given scope
+	 * @param scope scope in which the parameter is compiled
 	 * @return type of the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was
 	 * redefined
 	 * @throws IOException
 	 */
-	public CType compile(Scope scope, boolean declareSymbol)
-			throws SyntaxException, IOException
+	public CType compile(Scope scope) throws SyntaxException, IOException
 	{
 		compileType(scope);
-
-		if (declareSymbol)
-			addSymbol(scope);
-
+		addSymbol(scope);
 		return type;
 	}
 

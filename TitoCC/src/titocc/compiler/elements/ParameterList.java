@@ -61,10 +61,18 @@ public class ParameterList extends CodeElement
 	public List<CType> compile(Assembler asm, Scope scope)
 			throws SyntaxException, IOException
 	{
+		// For function definitions use the given function scope, otherwise
+		// create a temporary subscope for checking duplicate parameter names.
+		Scope paramScope = scope;
+		if (asm == null) {
+			paramScope = new Scope(scope, "");
+			scope.addSubScope(paramScope);
+		}
+
 		List<CType> paramTypes = new ArrayList<CType>();
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
-			paramTypes.add(p.compile(scope, asm != null));
+			paramTypes.add(p.compile(paramScope));
 			if (asm != null) {
 				asm.addLabel(p.getGlobalName());
 				asm.emit("equ", "" + paramOffset);
