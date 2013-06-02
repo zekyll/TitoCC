@@ -1,3 +1,6 @@
 /TitoCC/nbproject/private/
 /TitoCC/build/
 /TitoCC/dist/
+/tests/*.k91
+/tests/*.b91
+/tests/test.c
