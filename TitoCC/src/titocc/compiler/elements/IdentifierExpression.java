@@ -75,13 +75,13 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public Function getFunction(Scope scope) throws SyntaxException
+	public Symbol getFunction(Scope scope) throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
 		if (!(symbol.getType() instanceof FunctionType))
 			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.", getPosition());
 
-		return (Function) symbol;
+		return symbol;
 	}
 
 	@Override

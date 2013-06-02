@@ -20,34 +20,23 @@ import titocc.util.Position;
  *
  * <br> VARIABLE_DECLARATION = TYPE_SPECIFIER DECLARATOR ["=" EXPRESSION] ";"
  */
-public class VariableDeclaration extends Declaration implements Symbol
+public class VariableDeclaration extends Declaration
 {
-	/**
-	 * Whether the variable is global. Used in the compilation phase
-	 */
-	private boolean isGlobal;
 	/**
 	 * Type specifier for the declaration. (void or int)
 	 */
 	private final TypeSpecifier typeSpecifier;
-	/**
-	 * Type of the variable. Set when compiling the function.
-	 */
-	private CType type;
+
 	/**
 	 * Declarator which has the variable name and which modifies the type
 	 * specifier.
 	 */
 	private final Declarator declarator;
+
 	/**
 	 * Optional initializer expression. Null if not used.
 	 */
 	private final Expression initializer;
-	/**
-	 * Globally unique name for the variable symbol. Set when compiling the
-	 * function.
-	 */
-	private String globallyUniqueName;
 
 	/**
 	 * Constructs a VariableDeclaration.
@@ -68,22 +57,6 @@ public class VariableDeclaration extends Declaration implements Symbol
 	}
 
 	/**
-	 * Returns the type of the variable declaration.
-	 *
-	 * @return the type
-	 */
-	public CType getType()
-	{
-		return type;
-	}
-
-	@Override
-	public String getName()
-	{
-		return declarator.getName();
-	}
-
-	/**
 	 * Returns the initializer expression.
 	 *
 	 * @return initializer expression or null if there isn't one
@@ -97,37 +70,41 @@ public class VariableDeclaration extends Declaration implements Symbol
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		type = declarator.getModifiedType(typeSpecifier.getType(), scope);
+		CType type = declarator.getModifiedType(typeSpecifier.getType(), scope);
 		if (!type.isObject())
 			throw new SyntaxException("Variable must have object type.", getPosition());
 
 		if (type instanceof ArrayType && initializer != null)
 			throw new SyntaxException("Array initializers are not supported.", getPosition());
 
-		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getPosition());
-		globallyUniqueName = scope.makeGloballyUniqueName(getName());
+		Symbol sym = addSymbol(scope, type);
 
 		if (initializer != null && !initializer.isAssignableTo(type, scope))
 			throw new SyntaxException("Initializer type doesn't match variable type.", getPosition());
 
-		isGlobal = scope.isGlobal();
-		if (isGlobal)
-			compileGlobalVariable(asm, scope);
+		if (scope.isGlobal())
+			compileGlobalVariable(asm, scope, sym);
 		else
-			compileLocalVariable(asm, scope, regs);
+			compileLocalVariable(asm, scope, sym, regs);
 	}
 
-	@Override
-	public String getGlobalName()
+	private Symbol addSymbol(Scope scope, CType type) throws SyntaxException
 	{
-		return globallyUniqueName;
-	}
+		String name = declarator.getName();
 
-	@Override
-	public String getReference()
-	{
-		return globallyUniqueName + (isGlobal ? "" : "(fp)");
+		Symbol sym;
+		if (scope.isGlobal()) {
+			sym = new Symbol(name, type, scope, "",
+					Symbol.Category.GlobalVariable);
+		} else {
+			sym = new Symbol(name, type, scope, "(fp)",
+					Symbol.Category.LocalVariable);
+		}
+
+		if (!scope.add(sym))
+			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
+
+		return sym;
 	}
 
 	@Override
@@ -136,7 +113,7 @@ public class VariableDeclaration extends Declaration implements Symbol
 		return "(VAR_DECL " + typeSpecifier + " " + declarator + " " + initializer + ")";
 	}
 
-	private void compileGlobalVariable(Assembler asm, Scope scope)
+	private void compileGlobalVariable(Assembler asm, Scope scope, Symbol sym)
 			throws SyntaxException, IOException
 	{
 		Integer initValue = 0;
@@ -146,19 +123,19 @@ public class VariableDeclaration extends Declaration implements Symbol
 				throw new SyntaxException("Global variable must be initialized with a compile time constant.", getPosition());
 		}
 
-		asm.addLabel(globallyUniqueName);
-		if (type instanceof ArrayType)
-			asm.emit("ds", "" + type.getSize());
+		asm.addLabel(sym.getGlobalName());
+		if (sym.getType() instanceof ArrayType)
+			asm.emit("ds", "" + sym.getType().getSize());
 		else
 			asm.emit("dc", "" + initValue);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope, Registers regs)
-			throws SyntaxException, IOException
+	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym,
+			Registers regs) throws SyntaxException, IOException
 	{
 		if (initializer != null) {
 			initializer.compile(asm, scope, regs);
-			asm.emit("store", regs.get(0).toString(), getReference());
+			asm.emit("store", regs.get(0).toString(), sym.getReference());
 		}
 	}
 

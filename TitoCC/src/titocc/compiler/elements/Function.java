@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Assembler;
-import titocc.compiler.InternalSymbol;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
@@ -28,38 +27,39 @@ import titocc.util.Position;
  *
  * <br> FUNCTION = TYPE_SPECIFIER IDENTIFIER PARAMETER_LIST COMPOUND_STATEMENT
  */
-public class Function extends Declaration implements Symbol
+public class Function extends Declaration
 {
 	/**
 	 * Return type specifier. Note that this is just type specifier (void or
 	 * int) because abstract declarators are not supported.
 	 */
 	private final TypeSpecifier returnType;
+
 	/**
 	 * Function name.
 	 */
 	private final String name;
+
 	/**
 	 * List of paremeters.
 	 */
 	private final ParameterList parameterList;
+
 	/**
 	 * Function body.
 	 */
 	private final CompoundStatement body;
-	/**
-	 * Globally unique name for the function symbol. Set when compiling the
-	 * function.
-	 */
-	private String globallyUniqueName;
+
 	/**
 	 * Symbol for return value. Set when compiling the function.
 	 */
-	private InternalSymbol retValSymbol;
+	private Symbol retValSymbol;
+
 	/**
 	 * Symbol for function end location. Set when compiling the function.
 	 */
-	private InternalSymbol endSymbol;
+	private Symbol endSymbol;
+
 	/**
 	 * Type of the function. Set when compiling the function.
 	 */
@@ -74,8 +74,9 @@ public class Function extends Declaration implements Symbol
 	 * @param body body of the function
 	 * @param position starting position of the function
 	 */
-	public Function(TypeSpecifier returnType, String name, ParameterList parameterList,
-			CompoundStatement body, Position position)
+	public Function(TypeSpecifier returnType, String name,
+			ParameterList parameterList, CompoundStatement body,
+			Position position)
 	{
 		super(position);
 		this.returnType = returnType;
@@ -94,24 +95,14 @@ public class Function extends Declaration implements Symbol
 		return returnType.getType();
 	}
 
-	@Override
+	/**
+	 * Returns the function name.
+	 *
+	 * @return the name
+	 */
 	public String getName()
 	{
 		return name;
-	}
-
-	/**
-	 * Returns the parameter types.
-	 *
-	 * @return parameter list
-	 */
-	public List<CType> getParameterTypes()
-	{
-		List<CType> paramTypes = new ArrayList<CType>();
-		for (Parameter prm : parameterList.getParameters()) {
-			paramTypes.add(prm.getType());
-		}
-		return paramTypes;
 	}
 
 	/**
@@ -138,10 +129,6 @@ public class Function extends Declaration implements Symbol
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
-		globallyUniqueName = scope.makeGloballyUniqueName(name);
-
 		asm.addEmptyLines(1);
 
 		// Create new scope.
@@ -152,6 +139,9 @@ public class Function extends Declaration implements Symbol
 		List<CType> paramTypes = compileParameters(asm, functionScope);
 		type = new FunctionType(returnType.getType(), paramTypes);
 
+		// Point of declaration is right after function's declarator.
+		Symbol sym = addSymbol(scope);
+
 		// Compile body before prologue because we want to know all the local
 		// variables in the prologue.
 		StringWriter bodyWriter = new StringWriter();
@@ -160,33 +150,45 @@ public class Function extends Declaration implements Symbol
 		List<Symbol> localVariables = getLocalVariables(functionScope);
 		bodyAsm.finish();
 
-		compilePrologue(asm, localVariables);
+		compilePrologue(asm, localVariables, sym.getReference());
 		asm.getWriter().append(bodyWriter.toString());
 		compileEpilogue(asm, localVariables);
 	}
 
+	private Symbol addSymbol(Scope scope) throws SyntaxException
+	{
+		Symbol sym = new Symbol(name, type, scope, "", Symbol.Category.Function);
+		if (!scope.add(sym))
+			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
+		return sym;
+	}
+
 	private void addInternalSymbols(Scope scope)
 	{
-		// Add symbol for the function end so that return statements can jump to it.
-		endSymbol = new InternalSymbol("End", scope, "", new VoidType()); //__End
+		// Add symbol for the function end so that return statements can jump to
+		// it.
+		endSymbol = new Symbol("End", new VoidType(), scope,
+				"", Symbol.Category.Internal); //__End
 		scope.add(endSymbol);
 
 		// Add symbol for location of the return value.
-		retValSymbol = new InternalSymbol("Ret", scope, "(fp)", returnType.getType()); //__Ret
+		retValSymbol = new Symbol("Ret", returnType.getType(), scope,
+				"(fp)", Symbol.Category.Internal); //__Ret
 		scope.add(retValSymbol);
 	}
 
 	private List<CType> compileParameters(Assembler asm, Scope scope)
 			throws IOException, SyntaxException
 	{
-		// Define constants for return value and parameters and add their symbols.
+		// Define constants for return value and parameters and add their
+		// symbols.
 		asm.addLabel(retValSymbol.getGlobalName());
 		asm.emit("equ", "-" + (getParameterCount() + 2));
 		return parameterList.compile(asm, scope);
 	}
 
-	private void compilePrologue(Assembler asm, List<Symbol> localVariables)
-			throws IOException, SyntaxException
+	private void compilePrologue(Assembler asm, List<Symbol> localVariables,
+			String startLabel) throws IOException, SyntaxException
 	{
 		// Define constants for local variables.
 		int varOffset = 0;
@@ -197,7 +199,7 @@ public class Function extends Declaration implements Symbol
 		}
 
 		// Label for function entry point.
-		asm.addLabel(getReference());
+		asm.addLabel(startLabel);
 
 		// Allocate stack space for local variables.
 		if (varOffset > 0)
@@ -239,7 +241,7 @@ public class Function extends Declaration implements Symbol
 		List<Symbol> localVariables = new ArrayList<Symbol>();
 
 		for (Symbol symbol : scope.getSymbols()) {
-			if (symbol instanceof VariableDeclaration)
+			if (symbol.getCategory() == Symbol.Category.LocalVariable)
 				localVariables.add(symbol);
 		}
 
@@ -247,32 +249,6 @@ public class Function extends Declaration implements Symbol
 			localVariables.addAll(getLocalVariables(subscope));
 
 		return localVariables;
-	}
-
-	@Override
-	public String getGlobalName()
-	{
-		return globallyUniqueName;
-	}
-
-	@Override
-	public String getReference()
-	{
-		return globallyUniqueName;
-	}
-
-	@Override
-	public CType getType()
-	{
-		return type;
-	}
-
-	private void compileType()
-	{
-		List<CType> paramTypes = new ArrayList<CType>();
-		for (Parameter p : parameterList.getParameters())
-			paramTypes.add(p.getType());
-		type = new FunctionType(returnType.getType(), paramTypes);
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
@@ -81,11 +82,11 @@ public abstract class Expression extends CodeElement
 	 * function.
 	 *
 	 * @param scope in which the expression is evaluated
-	 * @return Function object or null if the expression does not name a
-	 * function
+	 * @return Symbol object with a function type or null if the expression does
+	 * not name a function
 	 * @throws SyntaxException if expression contains an error
 	 */
-	public Function getFunction(Scope scope) throws SyntaxException
+	public Symbol getFunction(Scope scope) throws SyntaxException
 	{
 		return null;
 	}

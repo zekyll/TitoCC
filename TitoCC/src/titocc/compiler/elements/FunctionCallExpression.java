@@ -4,7 +4,9 @@ import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.FunctionType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -23,6 +25,7 @@ public class FunctionCallExpression extends Expression
 	 * Expression used as the function.
 	 */
 	private final Expression function;
+
 	/**
 	 * Argument list for the function call.
 	 */
@@ -48,7 +51,7 @@ public class FunctionCallExpression extends Expression
 	 *
 	 * @return the function
 	 */
-	public Expression getFunction()
+	public Expression getFunctionExpression()
 	{
 		return function;
 	}
@@ -66,26 +69,27 @@ public class FunctionCallExpression extends Expression
 	@Override
 	public void compile(Assembler asm, Scope scope, Registers regs) throws SyntaxException, IOException
 	{
-		Function func = validateFunction(scope);
+		Symbol func = validateFunction(scope);
+		FunctionType funcType = ((FunctionType) func.getType());
 
 		// Reserve space for return value.
-		if (!func.getReturnType().equals(new VoidType()))
+		if (!funcType.getReturnType().equals(new VoidType()))
 			asm.emit("add", "sp", "=1");
 
 		// Push arguments to stack.
-		argumentList.compile(asm, scope, regs, func.getParameterTypes());
+		argumentList.compile(asm, scope, regs, funcType.getParameterTypes());
 
 		// Make the call.
 		asm.emit("call", "sp", func.getReference());
 
 		// Read the return value.
-		if (!func.getReturnType().equals(new VoidType()))
+		if (!funcType.getReturnType().equals(new VoidType()))
 			asm.emit("pop", "sp", regs.get(0).toString());
 	}
 
-	private Function validateFunction(Scope scope) throws SyntaxException
+	private Symbol validateFunction(Scope scope) throws SyntaxException
 	{
-		Function func = function.getFunction(scope);
+		Symbol func = function.getFunction(scope);
 		if (func == null)
 			throw new SyntaxException("Expression is not a function.", getPosition());
 		return func;
@@ -94,8 +98,9 @@ public class FunctionCallExpression extends Expression
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
-		Function func = validateFunction(scope);
-		return func.getReturnType();
+		Symbol func = validateFunction(scope);
+		FunctionType funcType = ((FunctionType) func.getType());
+		return funcType.getReturnType();
 	}
 
 	@Override

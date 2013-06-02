@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -78,9 +79,10 @@ public class ParameterList extends CodeElement
 		List<CType> paramTypes = new ArrayList<CType>();
 		int paramOffset = -1 - parameters.size();
 		for (Parameter p : parameters) {
-			paramTypes.add(p.compile(paramScope, !isFunctionDefinition));
+			Symbol paramSymbol = p.compile(paramScope, !isFunctionDefinition);
+			paramTypes.add(paramSymbol.getType());
 			if (asm != null) {
-				asm.addLabel(p.getGlobalName());
+				asm.addLabel(paramSymbol.getGlobalName());
 				asm.emit("equ", "" + paramOffset);
 			}
 			++paramOffset;

@@ -3,52 +3,18 @@ package titocc.compiler;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import titocc.compiler.types.CType;
 
 public class ScopeTest
 {
-	private class TestSymbol implements Symbol
-	{
-		private String name;
-
-		public TestSymbol(String name)
-		{
-			this.name = name;
-		}
-
-		@Override
-		public String getName()
-		{
-			return name;
-		}
-
-		@Override
-		public String getGlobalName()
-		{
-			return name;
-		}
-
-		@Override
-		public String getReference()
-		{
-			return name;
-		}
-
-		@Override
-		public CType getType()
-		{
-			return null;
-		}
-	}
 	private Scope globalScope;
-	private Symbol sym1, sym2;
+	private Symbol sym1, sym2, sym3;
 
 	@Before
 	public void setUp()
 	{
 		globalScope = new Scope(null, "prefix1_");
-		sym1 = new TestSymbol("aaa");
-		sym2 = new TestSymbol("bbb");
+		sym1 = new Symbol("aaa", null, globalScope, "", Symbol.Category.LocalVariable);
+		sym2 = new Symbol("bbb", null, globalScope, "", Symbol.Category.LocalVariable);
 	}
 
 	@Test
@@ -96,7 +62,9 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		globalScope.add(sym2);
-		boolean ret = globalScope.add(new TestSymbol(sym1.getName()));
+		Symbol sym3 = new Symbol(sym1.getName(), null, globalScope,
+				"", Symbol.Category.LocalVariable);
+		boolean ret = globalScope.add(sym3);
 		assertFalse(ret);
 		assertEquals(2, globalScope.getSymbols().size());
 	}
@@ -124,7 +92,8 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		Scope subScope = new Scope(globalScope, "");
-		Symbol sym3 = new TestSymbol(sym1.getName());
+		Symbol sym3 = new Symbol(sym1.getName(), null, subScope,
+				"", Symbol.Category.LocalVariable);
 		subScope.add(sym3);
 		assertSame(sym3, subScope.find(sym1.getName()));
 		assertSame(sym1, globalScope.find(sym1.getName()));
@@ -143,7 +112,9 @@ public class ScopeTest
 		myScope.addSubScope(subScope);
 
 		siblingScope.add(sym1);
-		subScope.add(new TestSymbol(sym1.getName()));
+		Symbol sym3 = new Symbol(sym1.getName(), null, subScope,
+				"", Symbol.Category.LocalVariable);		
+		subScope.add(sym3);
 
 		assertNull(myScope.find(sym1.getName()));
 	}

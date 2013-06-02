@@ -18,7 +18,7 @@ import titocc.util.Position;
  *
  * <br> PARAMETER = TYPE_SPECIFIER [DECLARATOR]
  */
-public class Parameter extends CodeElement implements Symbol
+public class Parameter extends CodeElement
 {
 	/**
 	 * Type specifier (e.g. void/int).
@@ -30,12 +30,6 @@ public class Parameter extends CodeElement implements Symbol
 	 * specifier.
 	 */
 	private final Declarator declarator;
-
-	/**
-	 * Globally unique name for the parameter symbol. Set when compiling the
-	 * function.
-	 */
-	private String globallyUniqueName;
 
 	/**
 	 * Parameter type. Set when compiling the function.
@@ -58,38 +52,22 @@ public class Parameter extends CodeElement implements Symbol
 	}
 
 	/**
-	 * Returns the parameter type.
-	 *
-	 * @return the type
-	 */
-	public CType getType()
-	{
-		return type;
-	}
-
-	@Override
-	public String getName()
-	{
-		return declarator.getName();
-	}
-
-	/**
 	 * Checks the parameter type and declares a symbol for the parameter.
 	 *
 	 * @param scope scope in which the parameter is compiled
 	 * @param allowUnnamed true if an unnamed parameter is allowed; i.e. the
 	 * parameter is not part of a function definition
-	 * @return type of the parameter
+	 * @return the symbol for the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was
 	 * redefined
 	 * @throws IOException
 	 */
-	public CType compile(Scope scope, boolean allowUnnamed)
+	public Symbol compile(Scope scope, boolean allowUnnamed)
 			throws SyntaxException, IOException
 	{
 		compileType(scope);
-		addSymbol(scope, allowUnnamed);
-		return type;
+		Symbol sym = addSymbol(scope, allowUnnamed);
+		return sym;
 	}
 
 	/**
@@ -105,27 +83,17 @@ public class Parameter extends CodeElement implements Symbol
 			throw new SyntaxException("Array parameters are not supported.", getPosition());
 	}
 
-	private void addSymbol(Scope scope, boolean allowUnnamed)
+	private Symbol addSymbol(Scope scope, boolean allowUnnamed)
 			throws SyntaxException
 	{
-		if (declarator.getName() == null && !allowUnnamed)
+		String name = declarator.getName();
+		if (name == null && !allowUnnamed)
 			throw new SyntaxException("Unnamed parameter in function definition.", getPosition());
-		if (!scope.add(this))
-			throw new SyntaxException("Redefinition of \"" + getName() + "\".", getPosition());
-		globallyUniqueName = scope.makeGloballyUniqueName(getName());
-		scope.add(this);
-	}
-
-	@Override
-	public String getGlobalName()
-	{
-		return globallyUniqueName;
-	}
-
-	@Override
-	public String getReference()
-	{
-		return globallyUniqueName + "(fp)";
+		Symbol sym = new Symbol(name, type, scope, "(fp)",
+				Symbol.Category.Parameter);
+		if (!scope.add(sym))
+			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
+		return sym;
 	}
 
 	@Override

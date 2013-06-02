@@ -1,12 +1,15 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.FunctionType;
 import titocc.compiler.types.IntType;
 import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
@@ -126,10 +129,13 @@ public class TranslationUnit extends CodeElement
 	private boolean mainFunctionExists(Scope scope)
 	{
 		Symbol sym = scope.find("main");
-		if (sym == null || !(sym instanceof Function))
+		if (sym == null)
 			return false;
 
-		Function main = (Function) sym;
-		return main.getReturnType().equals(new IntType()) && main.getParameterCount() == 0;
+		// Required main function type: int()
+		List<CType> paramTypes = new ArrayList<CType>();
+		CType requiredType = new FunctionType(new IntType(), paramTypes);
+
+		return sym.getType().equals(requiredType);
 	}
 }

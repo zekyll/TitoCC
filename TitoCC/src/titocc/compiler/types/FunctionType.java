@@ -11,8 +11,9 @@ public class FunctionType extends CType
 {
 	/**
 	 * Function return type.
-	 */	
+	 */
 	private final CType returnType;
+
 	/**
 	 * List of parameter types.
 	 */
@@ -28,6 +29,26 @@ public class FunctionType extends CType
 	{
 		this.returnType = returnType;
 		this.parameterTypes = parameterTypes;
+	}
+
+	/**
+	 * Returns the function return type.
+	 *
+	 * @return return type
+	 */
+	public CType getReturnType()
+	{
+		return returnType;
+	}
+
+	/**
+	 * Returns a list of parameter types.
+	 *
+	 * @return list of parameter types
+	 */
+	public List<CType> getParameterTypes()
+	{
+		return parameterTypes;
 	}
 
 	@Override

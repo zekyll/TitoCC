@@ -2,7 +2,6 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.InternalSymbol;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
@@ -75,9 +74,11 @@ public class DoStatement extends Statement
 		scope.addSubScope(loopScope);
 
 		// Symbols for break/continue.
-		Symbol breakSymbol = new InternalSymbol("Brk", loopScope, "", new VoidType()); //__Brk
+		Symbol breakSymbol = new Symbol("Brk", new VoidType(), loopScope,
+				"", Symbol.Category.Internal); //__Brk
 		loopScope.add(breakSymbol);
-		Symbol continueSymbol = new InternalSymbol("Cont", loopScope, "", new VoidType()); //__Cont
+		Symbol continueSymbol = new Symbol("Cont", new VoidType(), loopScope,
+				"", Symbol.Category.Internal); //__Cont
 		loopScope.add(continueSymbol);
 
 		// Loop start.
