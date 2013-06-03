@@ -70,7 +70,7 @@ public class VariableDeclaration extends Declaration
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		CType type = declarator.getModifiedType(typeSpecifier.getType(), scope);
+		CType type = declarator.compile(typeSpecifier.getType(), scope, null);
 		if (!type.isObject())
 			throw new SyntaxException("Variable must have object type.", getPosition());
 

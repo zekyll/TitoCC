@@ -1,12 +1,15 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Scope;
+import titocc.compiler.Symbol;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
 import titocc.compiler.types.PointerType;
+import titocc.compiler.types.VoidType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -41,36 +44,8 @@ import titocc.util.Position;
 public abstract class Declarator extends CodeElement
 {
 	/**
-	 * Declarator without identifier. Used in abstract declarators.
-	 */
-	private static class EmptyDeclarator extends Declarator
-	{
-		public EmptyDeclarator(Position position)
-		{
-			super(position);
-		}
-
-		@Override
-		public String getName()
-		{
-			return null;
-		}
-
-		@Override
-		public CType getModifiedType(CType type, Scope scope)
-		{
-			return type;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "(DCLTOR)";
-		}
-	}
-
-	/**
-	 * Declarator that is just a simple identifier.
+	 * Declarator that is just a simple identifier. When name is null then it
+	 * is an abstract declarator without a name.
 	 */
 	private static class IdentifierDeclarator extends Declarator
 	{
@@ -78,7 +53,7 @@ public abstract class Declarator extends CodeElement
 
 		public IdentifierDeclarator(String name, Position position)
 		{
-			super(position);
+			super(null, position);
 			this.name = name;
 		}
 
@@ -89,7 +64,8 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType getModifiedType(CType type, Scope scope)
+		public CType compile(CType type, Scope scope,
+				List<Symbol> paramSymbolsOut)
 		{
 			return type;
 		}
@@ -106,26 +82,18 @@ public abstract class Declarator extends CodeElement
 	 */
 	private static class ArrayDeclarator extends Declarator
 	{
-		private final Declarator subDeclarator;
-
 		private final Expression arrayLength;
 
 		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength,
 				Position position)
 		{
-			super(position);
-			this.subDeclarator = subDeclarator;
+			super(subDeclarator, position);
 			this.arrayLength = arrayLength;
 		}
 
 		@Override
-		public String getName()
-		{
-			return subDeclarator.getName();
-		}
-
-		@Override
-		public CType getModifiedType(CType type, Scope scope)
+		public CType compile(CType type, Scope scope,
+				List<Symbol> paramSymbolsOut)
 				throws SyntaxException, IOException
 		{
 			Integer len = arrayLength.getCompileTimeValue();
@@ -135,7 +103,8 @@ public abstract class Declarator extends CodeElement
 				throw new SyntaxException("Array length must be a compile time constant.", getPosition());
 			else if (len <= 0)
 				throw new SyntaxException("Array length must be a positive integer.", getPosition());
-			return subDeclarator.getModifiedType(new ArrayType(type, len), scope);
+			return subDeclarator.compile(new ArrayType(type, len), scope,
+					paramSymbolsOut);
 		}
 
 		@Override
@@ -150,25 +119,18 @@ public abstract class Declarator extends CodeElement
 	 */
 	private static class PointerDeclarator extends Declarator
 	{
-		private final Declarator subDeclarator;
-
 		public PointerDeclarator(Declarator subDeclarator, Position position)
 		{
-			super(position);
-			this.subDeclarator = subDeclarator;
+			super(subDeclarator, position);
 		}
 
 		@Override
-		public String getName()
-		{
-			return subDeclarator.getName();
-		}
-
-		@Override
-		public CType getModifiedType(CType type, Scope scope)
+		public CType compile(CType type, Scope scope,
+				List<Symbol> paramSymbolsOut)
 				throws SyntaxException, IOException
 		{
-			return subDeclarator.getModifiedType(new PointerType(type), scope);
+			return subDeclarator.compile(new PointerType(type), scope,
+					paramSymbolsOut);
 		}
 
 		@Override
@@ -183,30 +145,52 @@ public abstract class Declarator extends CodeElement
 	 */
 	private static class FunctionDeclarator extends Declarator
 	{
-		private final Declarator subDeclarator;
-
 		private final ParameterList paramList;
 
 		public FunctionDeclarator(Declarator subDeclarator,
 				ParameterList paramList, Position position)
 		{
-			super(position);
-			this.subDeclarator = subDeclarator;
+			super(subDeclarator, position);
 			this.paramList = paramList;
 		}
 
 		@Override
-		public String getName()
-		{
-			return subDeclarator.getName();
-		}
-
-		@Override
-		public CType getModifiedType(CType type, Scope scope)
+		public CType compile(CType type, Scope scope,
+				List<Symbol> paramSymbolsOut)
 				throws SyntaxException, IOException
 		{
-			List<CType> paramTypes = paramList.compile(null, scope);
-			return subDeclarator.getModifiedType(new FunctionType(type, paramTypes), scope);
+			boolean funcDefn = paramSymbolsOut != null;
+
+			checkReturnType(type);
+
+			// Compile the parameter list.
+			List<Symbol> paramSymbols = paramList.compile(scope, funcDefn);
+			List<CType> paramTypes = new ArrayList<CType>();
+			for (Symbol sym : paramSymbols)
+				paramTypes.add(sym.getType());
+
+			// Only add parameter symbols from the innermost function
+			// declarator, in case there are several (e.g. a function returning
+			// a function pointer),
+			if (funcDefn) {
+				paramSymbolsOut.clear();
+				paramSymbolsOut.addAll(paramSymbols);
+			}
+
+			return subDeclarator.compile(new FunctionType(type, paramTypes),
+					scope, paramSymbolsOut);
+		}
+
+		private void checkReturnType(CType retType) throws SyntaxException
+		{
+			// Return type must be void or object type, excluding arrays ($6.9.1/3).
+			if (retType instanceof VoidType)
+				return;
+			if (retType.isObject() && !(retType instanceof ArrayType))
+				return;
+
+			throw new SyntaxException("Invalid function return type. Void or"
+					+ " non-array object type required.", getPosition());
 		}
 
 		@Override
@@ -215,36 +199,47 @@ public abstract class Declarator extends CodeElement
 			return "(DCLTOR " + subDeclarator + " " + paramList + ")";
 		}
 	}
+	protected final Declarator subDeclarator;
 
 	/**
 	 * Constructs a Declarator.
 	 *
+	 * @param subDeclarator next declarator inside this one or null if there
+	 * aren't any
 	 * @param position starting position of the declarator
 	 */
-	protected Declarator(Position position)
+	protected Declarator(Declarator subDeclarator, Position position)
 	{
 		super(position);
+		this.subDeclarator = subDeclarator;
 	}
 
 	/**
 	 * Returns the variable name for this declarator.
 	 *
-	 * @return the variable name
+	 * @return the variable name or null if abstract declarator
 	 */
-	public abstract String getName();
+	public String getName()
+	{
+		return subDeclarator.getName();
+	}
 
 	/**
-	 * Modifies the type with this declarator and all its sub declarators. For
-	 * example given type "int", two nested 2-sized array declarators would
-	 * return int[2][2].
+	 * Does semantic analysis for the declarator and deduces the resulting type.
+	 * Modifies the argument type with this declarator and all its sub
+	 * declarators. For example given type "int", two nested 2-sized array
+	 * declarators would return int[2][2]. For a function declarators used
+	 * in function definition also generates code for parameters.
 	 *
 	 * @param type type to be modified
 	 * @param scope scope in which the declarator is compiled
+	 * @param paramSymbolsOut if the declarator is part of a function
+	 * definition, the parameter symbols are added in this list
 	 * @return modified type
 	 * @throws SyntaxException
 	 */
-	public abstract CType getModifiedType(CType type, Scope scope)
-			throws SyntaxException, IOException;
+	public abstract CType compile(CType type, Scope scope,
+			List<Symbol> paramSymbolsOut) throws SyntaxException, IOException;
 
 	/**
 	 * Attempts to parse a declarator from token stream. If parsing fails the
@@ -294,7 +289,7 @@ public abstract class Declarator extends CodeElement
 
 		// Null/abstract declarator.
 		if (declarator == null && allowAbstract)
-			declarator = new EmptyDeclarator(pos);
+			declarator = new IdentifierDeclarator(null, pos);
 
 		// Parse array/function declarators in loop to avoid left recursion.
 		if (declarator != null) {

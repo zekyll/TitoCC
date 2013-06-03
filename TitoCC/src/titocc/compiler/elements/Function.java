@@ -11,39 +11,35 @@ import titocc.compiler.Symbol;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
 import titocc.compiler.types.VoidType;
-import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
-import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
  * Function declaration and definition. Forward declarations are not currently
  * supported so this is always both declaration and definition. Functions
- * consist of return type, function name, parameter list and a CompoundStatement
- * body.
+ * are parsed using the declarator syntax similar to object declarations,
+ * where the type specifier and declarator together specify the return type,
+ * function name and parameters. The declarator must specify a function type
+ * (checked during semantic analysis). Function definition also needs to have
+ * a compound statement as the function body.
  *
  * <p> EBNF definition:
  *
- * <br> FUNCTION = TYPE_SPECIFIER IDENTIFIER PARAMETER_LIST COMPOUND_STATEMENT
+ * <br> FUNCTION = TYPE_SPECIFIER DECLARATOR COMPOUND_STATEMENT
  */
 public class Function extends Declaration
 {
 	/**
-	 * Return type specifier. Note that this is just type specifier (void or
-	 * int) because abstract declarators are not supported.
+	 * Return type specifier. The actual return type is further modified by
+	 * the declarator.
 	 */
-	private final TypeSpecifier returnType;
+	private final TypeSpecifier returnTypeSpecifier;
 
 	/**
-	 * Function name.
+	 * Declarator that specifies the function name and parameter types.
 	 */
-	private final String name;
-
-	/**
-	 * List of paremeters.
-	 */
-	private final ParameterList parameterList;
+	private final Declarator declarator;
 
 	/**
 	 * Function body.
@@ -61,68 +57,20 @@ public class Function extends Declaration
 	private Symbol endSymbol;
 
 	/**
-	 * Type of the function. Set when compiling the function.
-	 */
-	private CType type;
-
-	/**
 	 * Constructs a Function.
 	 *
-	 * @param returnType return type
-	 * @param name function name
-	 * @param parameterList parameter list
+	 * @param returnTypeSpecifier return type specifier
+	 * @param declarator declarator
 	 * @param body body of the function
 	 * @param position starting position of the function
 	 */
-	public Function(TypeSpecifier returnType, String name,
-			ParameterList parameterList, CompoundStatement body,
-			Position position)
+	public Function(TypeSpecifier returnTypeSpecifier, Declarator declarator,
+			CompoundStatement body, Position position)
 	{
 		super(position);
-		this.returnType = returnType;
-		this.name = name;
-		this.parameterList = parameterList;
+		this.returnTypeSpecifier = returnTypeSpecifier;
+		this.declarator = declarator;
 		this.body = body;
-	}
-
-	/**
-	 * Returns the return type.
-	 *
-	 * @return the return type
-	 */
-	public CType getReturnType()
-	{
-		return returnType.getType();
-	}
-
-	/**
-	 * Returns the function name.
-	 *
-	 * @return the name
-	 */
-	public String getName()
-	{
-		return name;
-	}
-
-	/**
-	 * Returns the function body.
-	 *
-	 * @return the function body
-	 */
-	public CompoundStatement getBody()
-	{
-		return body;
-	}
-
-	/**
-	 * Returns the number of parameters.
-	 *
-	 * @return number of parameters
-	 */
-	public int getParameterCount()
-	{
-		return parameterList.getParameters().size();
 	}
 
 	@Override
@@ -132,15 +80,27 @@ public class Function extends Declaration
 		asm.addEmptyLines(1);
 
 		// Create new scope.
-		Scope functionScope = new Scope(scope, name + "_");
+		Scope functionScope = new Scope(scope, declarator.getName() + "_");
 		scope.addSubScope(functionScope);
 
-		addInternalSymbols(functionScope);
-		List<CType> paramTypes = compileParameters(asm, functionScope);
-		type = new FunctionType(returnType.getType(), paramTypes);
+		// Get function type and declare parameters.
+		List<Symbol> parameters = new ArrayList<Symbol>();
+		CType type = declarator.compile(returnTypeSpecifier.getType(),
+				functionScope, parameters);
 
-		// Point of declaration is right after function's declarator.
-		Symbol sym = addSymbol(scope);
+		// Check that the declarator actually declares a function.
+		if (!(type instanceof FunctionType))
+			throw new SyntaxException("Missing function parameter list.", getPosition());
+		CType returnType = ((FunctionType) type).getReturnType();
+
+		// Declare the function and its symbols. Point of declaration is right
+		// after the function's declarator, i.e. the function name cannot be
+		// used in parameter list.
+		Symbol sym = addSymbol(scope, type);
+		addInternalSymbols(functionScope, returnType);
+
+		// Constants for return value and parameters.
+		int paramTotalSize = addParameterConstants(asm, parameters);
 
 		// Compile body before prologue because we want to know all the local
 		// variables in the prologue.
@@ -152,18 +112,19 @@ public class Function extends Declaration
 
 		compilePrologue(asm, localVariables, sym.getReference());
 		asm.getWriter().append(bodyWriter.toString());
-		compileEpilogue(asm, localVariables);
+		compileEpilogue(asm, localVariables, paramTotalSize);
 	}
 
-	private Symbol addSymbol(Scope scope) throws SyntaxException
+	private Symbol addSymbol(Scope scope, CType type) throws SyntaxException
 	{
+		String name = declarator.getName();
 		Symbol sym = new Symbol(name, type, scope, "", Symbol.Category.Function);
 		if (!scope.add(sym))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
 		return sym;
 	}
 
-	private void addInternalSymbols(Scope scope)
+	private void addInternalSymbols(Scope scope, CType returnType)
 	{
 		// Add symbol for the function end so that return statements can jump to
 		// it.
@@ -172,19 +133,33 @@ public class Function extends Declaration
 		scope.add(endSymbol);
 
 		// Add symbol for location of the return value.
-		retValSymbol = new Symbol("Ret", returnType.getType(), scope,
+		retValSymbol = new Symbol("Ret", returnType, scope,
 				"(fp)", Symbol.Category.Internal); //__Ret
 		scope.add(retValSymbol);
 	}
 
-	private List<CType> compileParameters(Assembler asm, Scope scope)
-			throws IOException, SyntaxException
+	/**
+	 * Emit constants for return value and parameters. Returs total size of
+	 * tha parameters.
+	 */
+	private int addParameterConstants(Assembler asm, List<Symbol> parameters)
+			throws IOException
 	{
-		// Define constants for return value and parameters and add their
-		// symbols.
+		int paramTotalSize = 0;
+		for (Symbol p : parameters)
+			paramTotalSize += p.getType().getSize();
+
 		asm.addLabel(retValSymbol.getGlobalName());
-		asm.emit("equ", "-" + (getParameterCount() + 2));
-		return parameterList.compile(asm, scope);
+		asm.emit("equ", "-" + (paramTotalSize + 2));
+
+		int paramOffset = -1 - paramTotalSize;
+		for (Symbol p : parameters) {
+			asm.addLabel(p.getGlobalName());
+			asm.emit("equ", "" + paramOffset);
+			paramOffset += p.getType().getSize();
+		}
+
+		return paramTotalSize;
 	}
 
 	private void compilePrologue(Assembler asm, List<Symbol> localVariables,
@@ -218,8 +193,8 @@ public class Function extends Declaration
 			st.compile(asm, scope, registers);
 	}
 
-	private void compileEpilogue(Assembler asm, List<Symbol> localVariables)
-			throws IOException, SyntaxException
+	private void compileEpilogue(Assembler asm, List<Symbol> localVariables,
+			int paramTotalSize) throws IOException, SyntaxException
 	{
 		// Pop registers from stack.
 		asm.addLabel(endSymbol.getReference());
@@ -233,7 +208,7 @@ public class Function extends Declaration
 			asm.emit("sub", "sp", "=" + localVarTotalSize);
 
 		// Exit from function.
-		asm.emit("exit", "sp", "=" + getParameterCount());
+		asm.emit("exit", "sp", "=" + paramTotalSize);
 	}
 
 	private List<Symbol> getLocalVariables(Scope scope)
@@ -254,7 +229,7 @@ public class Function extends Declaration
 	@Override
 	public String toString()
 	{
-		return "(FUNC " + returnType + " " + name + " " + parameterList
+		return "(FUNC " + returnTypeSpecifier + " " + declarator
 				+ " " + body + ")";
 	}
 
@@ -271,19 +246,14 @@ public class Function extends Declaration
 		tokens.pushMark();
 		Function function = null;
 
-		TypeSpecifier retType = TypeSpecifier.parse(tokens);
+		TypeSpecifier retTypeSpec = TypeSpecifier.parse(tokens);
 
-		if (retType != null) {
-			Token id = tokens.read();
-			if (id instanceof IdentifierToken) {
-				ParameterList paramList = ParameterList.parse(tokens);
-				if (paramList != null) {
-					CompoundStatement body = CompoundStatement.parse(tokens);
-					if (body != null) {
-						function = new Function(retType, id.toString(), paramList,
-								body, pos);
-					}
-				}
+		if (retTypeSpec != null) {
+			Declarator declarator = Declarator.parse(tokens, false);
+			if (declarator != null) {
+				CompoundStatement body = CompoundStatement.parse(tokens);
+				if (body != null)
+					function = new Function(retTypeSpec, declarator, body, pos);
 			}
 		}
 

@@ -55,18 +55,18 @@ public class Parameter extends CodeElement
 	 * Checks the parameter type and declares a symbol for the parameter.
 	 *
 	 * @param scope scope in which the parameter is compiled
-	 * @param allowUnnamed true if an unnamed parameter is allowed; i.e. the
-	 * parameter is not part of a function definition
+	 * @param functionDefinition true if the parameter is part of a function
+	 * definition; disallows unnamed parameters
 	 * @return the symbol for the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was
 	 * redefined
 	 * @throws IOException
 	 */
-	public Symbol compile(Scope scope, boolean allowUnnamed)
+	public Symbol compile(Scope scope, boolean functionDefinition)
 			throws SyntaxException, IOException
 	{
 		compileType(scope);
-		Symbol sym = addSymbol(scope, allowUnnamed);
+		Symbol sym = addSymbol(scope, functionDefinition);
 		return sym;
 	}
 
@@ -75,7 +75,7 @@ public class Parameter extends CodeElement
 	 */
 	private void compileType(Scope scope) throws SyntaxException, IOException
 	{
-		type = declarator.getModifiedType(typeSpecifier.getType(), scope);
+		type = declarator.compile(typeSpecifier.getType(), scope, null);
 
 		if (!type.isObject())
 			throw new SyntaxException("Parameter must have object type.", getPosition());
@@ -83,12 +83,15 @@ public class Parameter extends CodeElement
 			throw new SyntaxException("Array parameters are not supported.", getPosition());
 	}
 
-	private Symbol addSymbol(Scope scope, boolean allowUnnamed)
+	private Symbol addSymbol(Scope scope, boolean functionDefinition)
 			throws SyntaxException
 	{
 		String name = declarator.getName();
-		if (name == null && !allowUnnamed)
+		if (name == null && functionDefinition)
 			throw new SyntaxException("Unnamed parameter in function definition.", getPosition());
+		if (name == null)
+			name = "__param";
+
 		Symbol sym = new Symbol(name, type, scope, "(fp)",
 				Symbol.Category.Parameter);
 		if (!scope.add(sym))
