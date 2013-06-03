@@ -32,13 +32,13 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Generates assembly code for the expression. Value of the expression is
-	 * returned in the first available register.
+	 * Generates assembly code for the expression. Value of the expression is returned in the first
+	 * available register.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param regs available registers; must have at least one active register
-	 * and the first one is used for return value
+	 * @param regs available registers; must have at least one active register and the first one is
+	 * used for return value
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
@@ -48,8 +48,7 @@ public abstract class Expression extends CodeElement
 	/**
 	 * Evaluates the expression at compile time if possible.
 	 *
-	 * @return value of the expression or null if expression cannot be evaluated
-	 * at compile time
+	 * @return value of the expression or null if expression cannot be evaluated at compile time
 	 * @throws SyntaxException if the expression contains an error
 	 */
 	public Integer getCompileTimeValue() throws SyntaxException
@@ -58,10 +57,9 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Generates assembly code for the expression, evaluating it as an lvalue.
-	 * Either the address of the object is returned in the first register or a
-	 * variable reference is returned. The function returns an Lvalue type which
-	 * is an abstraction of both of these situations.
+	 * Generates assembly code for the expression, evaluating it as an lvalue. Either the address of
+	 * the object is returned in the first register or a variable reference is returned. The
+	 * function returns an Lvalue type which is an abstraction of both of these situations.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
@@ -77,13 +75,11 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Attempts to evaluate the expression as a function. At the moment there
-	 * are no function pointers/lvalues, so it can always return a named
-	 * function.
+	 * Attempts to evaluate the expression as a function. At the moment there are no function
+	 * pointers/lvalues, so it can always return a named function.
 	 *
 	 * @param scope in which the expression is evaluated
-	 * @return Symbol object with a function type or null if the expression does
-	 * not name a function
+	 * @return Symbol object with a function type or null if the expression does not name a function
 	 * @throws SyntaxException if expression contains an error
 	 */
 	public Symbol getFunction(Scope scope) throws SyntaxException
@@ -113,10 +109,9 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Generates code for compile time constant expression. Checks if the
-	 * expression is compile time constant by using getCompileTimeValue() and if
-	 * it is then generates code that returns the value in first available
-	 * register.
+	 * Generates code for compile time constant expression. Checks if the expression is compile time
+	 * constant by using getCompileTimeValue() and if it is then generates code that returns the
+	 * value in first available register.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
@@ -131,8 +126,8 @@ public abstract class Expression extends CodeElement
 	{
 		Integer value = getCompileTimeValue();
 		if (value != null) {
-			// Use immediate operand if value fits in 16 bits; otherwise allocate
-			// a data constant. Load value in first available register.
+			// Use immediate operand if value fits in 16 bits; otherwise allocate a data constant.
+			// Load value in first available register.
 			if (value < 32768 && value >= -32768)
 				asm.emit("load", regs.get(0).toString(), "=" + value);
 			else {
@@ -147,8 +142,8 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Returns whether the expression can be assigned to the target type. Target
-	 * type must be the actual type and not not decayed type.
+	 * Returns whether the expression can be assigned to the target type. Target type must be the
+	 * actual type and not not decayed type.
 	 *
 	 * @param targetType target type of the assignment
 	 * @param scope scope in which the expression is evaluated

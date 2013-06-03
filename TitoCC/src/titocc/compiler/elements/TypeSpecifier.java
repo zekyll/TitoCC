@@ -28,6 +28,7 @@ public class TypeSpecifier extends CodeElement
 			put("int", new IntType());
 		}
 	};
+
 	/**
 	 * Type name for this type specifier.
 	 */
@@ -72,8 +73,8 @@ public class TypeSpecifier extends CodeElement
 	}
 
 	/**
-	 * Attempts to parse a type specifier from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a type specifier from token stream. If parsing fails the stream is reset to
+	 * its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Type object or null if tokens don't form a valid type specifier

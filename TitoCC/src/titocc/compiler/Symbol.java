@@ -5,8 +5,8 @@ import titocc.compiler.types.CType;
 /**
  * Represents a declared name like variable, function or code position.
  *
- * <br> Symbols with names starting with double underscore "__" are used for
- * internal symbols (C standard reserves those identifiers for implementation).
+ * <br> Symbols with names starting with double underscore "__" are used for internal symbols (C
+ * standard reserves those identifiers for implementation).
  */
 public class Symbol
 {
@@ -16,8 +16,8 @@ public class Symbol
 	public enum Category
 	{
 		Function, GlobalVariable, LocalVariable, Parameter, Internal
-
 	};
+
 	/**
 	 * Name of the symbol, including prefix "__".
 	 */
@@ -48,14 +48,12 @@ public class Symbol
 	 *
 	 * @param name name of the symbol
 	 * @param type type of the symbol
-	 * @param scope scope this symbol belongs to; used only for generating the
-	 * globally unique name
-	 * @param referenceSuffix suffix that is added to global name to get the
-	 * reference ("(fp)" can be used for stack frame variables)
+	 * @param scope scope this symbol belongs to; used only for generating the globally unique name
+	 * @param referenceSuffix suffix that is added to global name to get the reference ("(fp)" can
+	 * be used for stack frame variables)
 	 * @param category Symbol category (local variable, parameter, internal etc)
 	 */
-	public Symbol(String name, CType type, Scope scope, String referenceSuffix,
-			Category category)
+	public Symbol(String name, CType type, Scope scope, String referenceSuffix, Category category)
 	{
 		// Prefix internal symbols with "__".
 		this.name = category != Category.Internal ? name : "__" + name;
@@ -77,9 +75,8 @@ public class Symbol
 	}
 
 	/**
-	 * Returns a globally unique name for the symbol. This is the name used in
-	 * the ttk-91 code, accounting for the fact that there is only one namespace
-	 * and names are case insensitive.
+	 * Returns a globally unique name for the symbol. This is the name used in the ttk-91 code,
+	 * accounting for the fact that there is only one namespace and names are case insensitive.
 	 *
 	 * @return the globally unique name
 	 */
@@ -89,10 +86,9 @@ public class Symbol
 	}
 
 	/**
-	 * Returns the assembly code reference to this symbol. Can be used as the
-	 * right side operand in most instructions. E.g. for global variables and
-	 * functions it's the same as global name and for stack frame variables it
-	 * is suffixed with "(fp)".
+	 * Returns the assembly code reference to this symbol. Can be used as the right side operand in
+	 * most instructions. E.g. for global variables and functions it's the same as global name and
+	 * for stack frame variables it is suffixed with "(fp)".
 	 *
 	 * @return assembly code reference
 	 */

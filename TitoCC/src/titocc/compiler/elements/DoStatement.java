@@ -11,8 +11,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Do statement. Similar to while statement but the control expression is
- * evaluated after the body.
+ * Do statement. Similar to while statement but the control expression is evaluated after the body.
  *
  * <p> EBNF definition:
  *
@@ -100,9 +99,10 @@ public class DoStatement extends Statement
 			Registers regs, String loopStartLabel, String loopTestLabel)
 			throws IOException, SyntaxException
 	{
-		if (!controlExpression.getType(scope).decay().isScalar())
+		if (!controlExpression.getType(scope).decay().isScalar()) {
 			throw new SyntaxException("Loop control expression must have a"
 					+ " scalar type.", controlExpression.getPosition());
+		}
 
 		asm.addLabel(loopTestLabel);
 		controlExpression.compile(asm, scope, regs);
@@ -116,12 +116,11 @@ public class DoStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a do statement from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a do statement from token stream. If parsing fails the stream is reset to
+	 * its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return DoStatement object or null if tokens don't form a valid do
-	 * statement
+	 * @return DoStatement object or null if tokens don't form a valid do statement
 	 */
 	public static DoStatement parse(TokenStream tokens)
 	{

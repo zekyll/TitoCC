@@ -53,8 +53,10 @@ public class IdentifierExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (!symbol.getType().isObject())
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getPosition());
+		if (!symbol.getType().isObject()) {
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.",
+					getPosition());
+		}
 
 		// Load value to first register (or address if we have an array).
 		if (symbol.getType() instanceof ArrayType)
@@ -68,8 +70,10 @@ public class IdentifierExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (!symbol.getType().isObject())
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.", getPosition());
+		if (!symbol.getType().isObject()) {
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.",
+					getPosition());
+		}
 
 		return new Lvalue(regs.get(0), symbol.getReference());
 	}
@@ -78,8 +82,10 @@ public class IdentifierExpression extends Expression
 	public Symbol getFunction(Scope scope) throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (!(symbol.getType() instanceof FunctionType))
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.", getPosition());
+		if (!(symbol.getType() instanceof FunctionType)) {
+			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.",
+					getPosition());
+		}
 
 		return symbol;
 	}
@@ -99,14 +105,16 @@ public class IdentifierExpression extends Expression
 	private Symbol findSymbol(Scope scope) throws SyntaxException
 	{
 		Symbol symbol = scope.find(identifier);
-		if (symbol == null)
-			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".", getPosition());
+		if (symbol == null) {
+			throw new SyntaxException("Undeclared identifier \"" + identifier + "\".",
+					getPosition());
+		}
 		return symbol;
 	}
 
 	/**
-	 * Attempts to parse an identifier expression from token stream. If parsing
-	 * fails the stream is reset to its initial position.
+	 * Attempts to parse an identifier expression from token stream. If parsing fails the stream is
+	 * reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression

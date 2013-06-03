@@ -8,10 +8,9 @@ import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Tokenizer;
 
 /**
- * Main compiler class. Accepts either a C source file or parser output
- * (TranslationUnit object) as input and produces assembly code. The main
- * compilation work is done in the code element classes, and Compiler class just
- * works as a wrapper and initializes some necessary variables.
+ * Main compiler class. Accepts either a C source file or parser output (TranslationUnit object) as
+ * input and produces assembly code. The main compilation work is done in the code element classes,
+ * and Compiler class just works as a wrapper and initializes some necessary variables.
  */
 public class Compiler
 {
@@ -22,10 +21,12 @@ public class Compiler
 		"r0", "r1", "r2", "r3", "r3", "r5", "crt", "kbd", "stdin", "stdout",
 		"halt", "read", "write", "time", "date"
 	};
+
 	/**
 	 * Input reader object.
 	 */
 	private final Reader reader;
+
 	/**
 	 * Input TranslationUnit or null if input reader was used instead.
 	 */
@@ -84,10 +85,10 @@ public class Compiler
 	}
 
 	/**
-	 * Reserves names that cannot be used as identifiers in ttk-91 assembly
-	 * language. These include register names, devices and other predefined
-	 * symbols. They can still be used as identifiers in the C program; only the
-	 * generated globally unique names in the assembly code will be different.
+	 * Reserves names that cannot be used as identifiers in ttk-91 assembly language. These include
+	 * register names, devices and other predefined symbols. They can still be used as identifiers
+	 * in the C program; only the generated globally unique names in the assembly code will be
+	 * different.
 	 *
 	 * @param scope
 	 */

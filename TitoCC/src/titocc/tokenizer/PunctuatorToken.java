@@ -12,10 +12,9 @@ import titocc.util.Position;
 public class PunctuatorToken extends Token
 {
 	/**
-	 * List of all punctuators. An important fact is that all multi-character
-	 * punctuators start with some other punctuator (e.g. ">>=" contains ">>"
-	 * which contains ">"). This means that only one character needs to be
-	 * looked ahead.
+	 * List of all punctuators. An important fact is that all multi-character punctuators start with
+	 * some other punctuator (e.g. ">>=" contains ">>" which contains ">"). This means that only one
+	 * character needs to be looked ahead.
 	 */
 	private static final String[] punctuatorList = {
 		"+",
@@ -76,9 +75,8 @@ public class PunctuatorToken extends Token
 	}
 
 	/**
-	 * Attempts to parse a punctuator from input. If the characters don't match
-	 * any punctuators then resets the stream to its original position and
-	 * returns null.
+	 * Attempts to parse a punctuator from input. If the characters don't match any punctuators then
+	 * resets the stream to its original position and returns null.
 	 *
 	 * @param reader code reader from which charactes are read
 	 * @return PunctuatorToken object or null if no valid punctuator was found

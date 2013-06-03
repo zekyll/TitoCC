@@ -1,8 +1,8 @@
 package titocc.util;
 
 /**
- * Position within a text file. Contains a line number and a column number, both
- * of which start from 0.
+ * Position within a text file. Contains a line number and a column number, both of which start from
+ * 0.
  */
 public final class Position implements Comparable<Position>
 {
@@ -43,10 +43,10 @@ public final class Position implements Comparable<Position>
 		Position pos2 = (Position) obj;
 		return line == pos2.line && column == pos2.column;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return "(line " + line + ", column " + column + ")";
-	}	
+	}
 }

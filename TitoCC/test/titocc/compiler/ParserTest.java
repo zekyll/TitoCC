@@ -86,14 +86,16 @@ public class ParserTest
 	@Test
 	public void matchFunctionCallExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (FCALL_EXPR (ID_EXPR bar) (ARG_LIST (ID_EXPR a) (INT_EXPR 7)))))",
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (FCALL_EXPR"
+				+ " (ID_EXPR bar) (ARG_LIST (ID_EXPR a) (INT_EXPR 7)))))",
 				parse("int x = bar(a, 7);"));
 	}
 
 	@Test
 	public void matchIntrinsicCallExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (INTR_EXPR out (ARG_LIST (INT_EXPR 2)))))",
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (INTR_EXPR out (ARG_LIST"
+				+ " (INT_EXPR 2)))))",
 				parse("int x = out(2);"));
 	}
 
@@ -108,7 +110,8 @@ public class ParserTest
 	@Test
 	public void matchPrefixExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (PRE_EXPR ! (PRE_EXPR -- (ID_EXPR a)))))",
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (PRE_EXPR ! (PRE_EXPR --"
+				+ " (ID_EXPR a)))))",
 				parse("int x = !--a;"));
 	}
 
@@ -122,7 +125,8 @@ public class ParserTest
 	@Test
 	public void matchSubscriptExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (SUBSCR_EXPR (ID_EXPR a) (INT_EXPR 2))))",
+		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (SUBSCR_EXPR (ID_EXPR a)"
+				+ " (INT_EXPR 2))))",
 				parse("int x = a[2];"));
 	}
 
@@ -130,7 +134,8 @@ public class ParserTest
 	public void matchChainedPostfixExpressions() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (POST_EXPR -- (SUBSCR_EXPR"
-				+ " (FCALL_EXPR (POST_EXPR -- (POST_EXPR ++ (ID_EXPR y))) (ARG_LIST)) (INT_EXPR 2)))))",
+				+ " (FCALL_EXPR (POST_EXPR -- (POST_EXPR ++ (ID_EXPR y))) (ARG_LIST))"
+				+ " (INT_EXPR 2)))))",
 				parse("int x = y++--()[2]--;"));
 	}
 
@@ -238,7 +243,8 @@ public class ParserTest
 		}
 	}
 
-	private void testFailure(String code, String unexpectedToken, int line, int column) throws IOException
+	private void testFailure(String code, String unexpectedToken, int line, int column)
+			throws IOException
 	{
 		try {
 			parse(code);
@@ -548,13 +554,15 @@ public class ParserTest
 				+ "(BLK_ST) "
 				+ "(DECL_ST (VAR_DECL (TYPE int) (DCLTOR a) null)) "
 				+ "(DECL_ST (VAR_DECL (TYPE int) (DCLTOR b) (INT_EXPR 3))) "
-				+ "(EXPR_ST (BIN_EXPR + (BIN_EXPR * (INT_EXPR 5) (INT_EXPR 2)) (POST_EXPR -- (ID_EXPR b)))) "
+				+ "(EXPR_ST (BIN_EXPR + (BIN_EXPR * (INT_EXPR 5) (INT_EXPR 2))"
+				+ " (POST_EXPR -- (ID_EXPR b)))) "
 				+ "(EXPR_ST (ASGN_EXPR /= (ID_EXPR b) (INT_EXPR 5))) "
 				+ "(BLK_ST "
 				+ "(IF (INT_EXPR 1 u) (EXPR_ST (ID_EXPR a)) null) "
 				+ "(IF (INT_EXPR 0) (RET (ID_EXPR b)) (BLK_ST))"
 				+ ") "
-				+ "(WHILE (PRE_EXPR -- (ID_EXPR i)) (EXPR_ST (FCALL_EXPR (ID_EXPR f) (ARG_LIST (ID_EXPR i))))) "
+				+ "(WHILE (PRE_EXPR -- (ID_EXPR i)) (EXPR_ST (FCALL_EXPR (ID_EXPR f)"
+				+ " (ARG_LIST (ID_EXPR i))))) "
 				+ "(RET (INT_EXPR 7))"
 				+ ")) "
 				+ "(VAR_DECL (TYPE int) (DCLTOR x) null)"

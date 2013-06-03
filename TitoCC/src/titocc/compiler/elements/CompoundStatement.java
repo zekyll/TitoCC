@@ -11,8 +11,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * A list of statements surrounded by {}. The compound statement creates a new
- * block.
+ * A list of statements surrounded by {}. The compound statement creates a new block.
  *
  * <p> EBNF Definition:
  *
@@ -51,11 +50,11 @@ public class CompoundStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		//Create new scope for the block.
+		// Create new scope for the block.
 		Scope blockScope = new Scope(scope, "");
 		scope.addSubScope(blockScope);
 
-		// Compile statements
+		// Compile statements.
 		for (Statement st : statements)
 			st.compile(asm, blockScope, regs);
 	}
@@ -70,12 +69,11 @@ public class CompoundStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a compound statement from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a compound statement from token stream. If parsing fails the stream is
+	 * reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return CompoundStatement object or null if tokens don't form a valid
-	 * compound statement
+	 * @return CompoundStatement object or null if tokens don't form a valid compound statement
 	 */
 	public static CompoundStatement parse(TokenStream tokens)
 	{

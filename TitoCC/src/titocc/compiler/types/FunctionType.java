@@ -3,9 +3,8 @@ package titocc.compiler.types;
 import java.util.List;
 
 /**
- * Corresponds to C function types. Is not an object, scalar, arithmetic or
- * integer type. Equals only to FunctionType with the same return type and
- * parameter types.
+ * Corresponds to C function types. Is not an object, scalar, arithmetic or integer type. Equals
+ * only to FunctionType with the same return type and parameter types.
  */
 public class FunctionType extends CType
 {
@@ -59,8 +58,7 @@ public class FunctionType extends CType
 
 		FunctionType func = (FunctionType) obj;
 
-		return parameterTypes.equals(func.parameterTypes)
-				&& returnType.equals(func.returnType);
+		return parameterTypes.equals(func.parameterTypes) && returnType.equals(func.returnType);
 	}
 
 	@Override

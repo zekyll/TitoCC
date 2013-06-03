@@ -3,8 +3,8 @@ package titocc.compiler.elements;
 import titocc.util.Position;
 
 /**
- * Abstract base for all the code elements. Stores the position of the element
- * within the source file so that it can be used by compiler messages.
+ * Abstract base for all the code elements. Stores the position of the element within the source
+ * file so that it can be used by compiler messages.
  */
 public abstract class CodeElement
 {
@@ -34,8 +34,7 @@ public abstract class CodeElement
 	}
 
 	/**
-	 * Returns a string representation of the code element for testing and
-	 * debugging purposes.
+	 * Returns a string representation of the code element for testing and debugging purposes.
 	 *
 	 * @return the string representation
 	 */

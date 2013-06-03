@@ -12,9 +12,9 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Declares and defines global or local variable. Consists of a type, a name and
- * an optional initializer expression. For global variables the initializer must
- * be a compile time constant expression (thanks to C standard).
+ * Declares and defines global or local variable. Consists of a type, a name and an optional
+ * initializer expression. For global variables the initializer must be a compile time constant
+ * expression (thanks to C standard).
  *
  * <p> EBNF definition:
  *
@@ -43,8 +43,7 @@ public class VariableDeclaration extends Declaration
 	 *
 	 * @param typeSpecifier specifier of the variable
 	 * @param declarator declarator of the variable
-	 * @param initializer initializer expression or null if the variable is left
-	 * uninitialized
+	 * @param initializer initializer expression or null if the variable is left uninitialized
 	 * @param position starting position of the variable declaration
 	 */
 	public VariableDeclaration(TypeSpecifier typeSpecifier, Declarator declarator,
@@ -79,8 +78,10 @@ public class VariableDeclaration extends Declaration
 
 		Symbol sym = addSymbol(scope, type);
 
-		if (initializer != null && !initializer.isAssignableTo(type, scope))
-			throw new SyntaxException("Initializer type doesn't match variable type.", getPosition());
+		if (initializer != null && !initializer.isAssignableTo(type, scope)) {
+			throw new SyntaxException("Initializer type doesn't match variable type.",
+					getPosition());
+		}
 
 		if (scope.isGlobal())
 			compileGlobalVariable(asm, scope, sym);
@@ -119,8 +120,10 @@ public class VariableDeclaration extends Declaration
 		Integer initValue = 0;
 		if (initializer != null) {
 			initValue = initializer.getCompileTimeValue();
-			if (initValue == null)
-				throw new SyntaxException("Global variable must be initialized with a compile time constant.", getPosition());
+			if (initValue == null) {
+				throw new SyntaxException("Global variable must be initialized with a compile"
+						+ " time constant.", getPosition());
+			}
 		}
 
 		asm.addLabel(sym.getGlobalName());
@@ -130,8 +133,8 @@ public class VariableDeclaration extends Declaration
 			asm.emit("dc", "" + initValue);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym,
-			Registers regs) throws SyntaxException, IOException
+	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym, Registers regs)
+			throws SyntaxException, IOException
 	{
 		if (initializer != null) {
 			initializer.compile(asm, scope, regs);
@@ -140,12 +143,11 @@ public class VariableDeclaration extends Declaration
 	}
 
 	/**
-	 * Attempts to parse a variable declaration from token stream. If parsing
-	 * fails the stream is reset to its initial position.
+	 * Attempts to parse a variable declaration from token stream. If parsing fails the stream is
+	 * reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return VariableDeclaration object or null if tokens don't form a valid
-	 * variable declaration
+	 * @return VariableDeclaration object or null if tokens don't form a valid variable declaration
 	 */
 	public static VariableDeclaration parse(TokenStream tokens)
 	{

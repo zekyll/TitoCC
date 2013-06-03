@@ -20,8 +20,8 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~"| "&"| "*")
- * PREFIX_EXPRESSION | POSTFIX_EXPRESSION
+ * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~"| "&"| "*") PREFIX_EXPRESSION
+ * | POSTFIX_EXPRESSION
  */
 public class PrefixExpression extends Expression
 {
@@ -29,10 +29,12 @@ public class PrefixExpression extends Expression
 	 * List of supported prefix operators.
 	 */
 	static final String[] prefixOperators = {"++", "--", "+", "-", "!", "~", "&", "*"};
+
 	/**
 	 * Operator for this prefix expression.
 	 */
 	private final String operator;
+
 	/**
 	 * Operand expression.
 	 */
@@ -110,8 +112,11 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		CType operandType = operand.getType(scope);
-		if (!operandType.isArithmetic() && !(operandType.isPointer() && operandType.dereference().isObject()))
-			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getPosition());
+		if (!operandType.isArithmetic()
+				&& !(operandType.isPointer() && operandType.dereference().isObject())) {
+			throw new SyntaxException("Operator " + operator
+					+ " requires an arithmetic or object pointer type.", getPosition());
+		}
 
 		// Evaluate operand; load address to 2nd register.
 		regs.allocate(asm);
@@ -134,8 +139,10 @@ public class PrefixExpression extends Expression
 	private void compileUnaryPlusMinus(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).isArithmetic())
-			throw new SyntaxException("Operator " + operator + " requires an arithmetic type.", getPosition());
+		if (!operand.getType(scope).isArithmetic()) {
+			throw new SyntaxException("Operator " + operator
+					+ " requires an arithmetic type.", getPosition());
+		}
 
 		operand.compile(asm, scope, regs);
 		operand.compile(asm, scope, regs);
@@ -150,8 +157,10 @@ public class PrefixExpression extends Expression
 	private void compileLogicalNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).decay().isScalar())
-			throw new SyntaxException("Operator " + operator + " requires a scalar type.", getPosition());
+		if (!operand.getType(scope).decay().isScalar()) {
+			throw new SyntaxException("Operator " + operator
+					+ " requires a scalar type.", getPosition());
+		}
 
 		operand.compile(asm, scope, regs);
 
@@ -168,8 +177,10 @@ public class PrefixExpression extends Expression
 	private void compileBitwiseNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).isInteger())
-			throw new SyntaxException("Operator " + operator + " requires an integer type.", getPosition());
+		if (!operand.getType(scope).isInteger()) {
+			throw new SyntaxException("Operator " + operator
+					+ " requires an integer type.", getPosition());
+		}
 
 		operand.compile(asm, scope, regs);
 
@@ -189,8 +200,10 @@ public class PrefixExpression extends Expression
 	private void compileDereference(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).dereference().isValid())
-			throw new SyntaxException("Operator * requires a pointer or array type.", getPosition());
+		if (!operand.getType(scope).dereference().isValid()) {
+			throw new SyntaxException("Operator * requires a pointer or array type.",
+					getPosition());
+		}
 
 		// Operand must be a pointer; load the address.
 		operand.compile(asm, scope, regs);
@@ -206,8 +219,10 @@ public class PrefixExpression extends Expression
 		if (operator.equals("&")) {
 			return new PointerType(operand.getType(scope));
 		} else if (operator.equals("*")) {
-			if (!operand.getType(scope).dereference().isValid())
-				throw new SyntaxException("Operator * requires a pointer or array type.", getPosition());
+			if (!operand.getType(scope).dereference().isValid()) {
+				throw new SyntaxException("Operator * requires a pointer or array type.",
+						getPosition());
+			}
 			return operand.getType(scope).dereference();
 		} else if (operator.equals("!") || operator.equals("~")) {
 			return new IntType();
@@ -218,10 +233,9 @@ public class PrefixExpression extends Expression
 	@Override
 	public Integer getCompileTimeValue() throws SyntaxException
 	{
-		// Handle unary minus for literals as a special case. Literals need to 
-		// be non-negative so this is a way of simulating negative literals.
-		// Also, because 2147483648 doesn't fit int range, this is necessary for
-		// expressing the smallest int value of -2147483648.
+		// Handle unary minus for literals as a special case. Literals need to be non-negative so
+		// this is a way of simulating negative literals. Also, because 2147483648 doesn't fit int
+		// range, this is necessary for expressing the smallest int value of -2147483648.
 		if (operator.equals("-") && operand instanceof IntegerLiteralExpression) {
 			((IntegerLiteralExpression) operand).getCompileTimeValue();
 			String rawValue = ((IntegerLiteralExpression) operand).getRawValue();
@@ -240,8 +254,8 @@ public class PrefixExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse a syntactic prefix expression from token stream. If
-	 * parsing fails the stream is reset to its initial position.
+	 * Attempts to parse a syntactic prefix expression from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression

@@ -11,8 +11,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * While statement. Consists of a scalar control expression and a body
- * statement.
+ * While statement. Consists of a scalar control expression and a body statement.
  *
  * <p> EBNF definition:
  *
@@ -37,8 +36,7 @@ public class WhileStatement extends Statement
 	 * @param body
 	 * @param position starting position of the while statement
 	 */
-	public WhileStatement(Expression controlExpression, Statement body,
-			Position position)
+	public WhileStatement(Expression controlExpression, Statement body, Position position)
 	{
 		super(position);
 		this.controlExpression = controlExpression;
@@ -102,9 +100,10 @@ public class WhileStatement extends Statement
 			Registers regs, String loopStartLabel, String loopTestLabel)
 			throws IOException, SyntaxException
 	{
-		if (!controlExpression.getType(scope).decay().isScalar())
+		if (!controlExpression.getType(scope).decay().isScalar()) {
 			throw new SyntaxException("While loop control expression must have"
 					+ " scalar type.", controlExpression.getPosition());
+		}
 
 		asm.addLabel(loopTestLabel);
 		controlExpression.compile(asm, scope, regs);
@@ -118,12 +117,11 @@ public class WhileStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a while statement from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a while statement from token stream. If parsing fails the stream is reset
+	 * to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return WhileStatement object or null if tokens don't form a valid while
-	 * statement
+	 * @return WhileStatement object or null if tokens don't form a valid while statement
 	 */
 	public static WhileStatement parse(TokenStream tokens)
 	{

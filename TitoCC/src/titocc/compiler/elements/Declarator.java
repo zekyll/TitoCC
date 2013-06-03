@@ -17,35 +17,32 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Identifier that is modified with arbitrary pointer/array/function
- * declarators. Note that the declarators are parsed in reverse order. I.e. the
- * innermost declarator becomes the outermost modifier to the type:
- * ((*a)[2])[3] is identifier "a" that is a pointer to a 2-sized array of
+ * Identifier that is modified with arbitrary pointer/array/function declarators. Note that the
+ * declarators are parsed in reverse order. I.e. the innermost declarator becomes the outermost
+ * modifier to the type: ((*a)[2])[3] is identifier "a" that is a pointer to a 2-sized array of
  * 3-sized arrays.
  *
- * <br> A declarator can be abstract, in which case it doesn't necessarily
- * specify a name. Unlike in standard's terminology the parser for abstract
- * declarator also matches an empty declarator (for consistency).
+ * <br> A declarator can be abstract, in which case it doesn't necessarily specify a name. Unlike in
+ * standard's terminology the parser for abstract declarator also matches an empty declarator (for
+ * consistency).
  *
  * <br> EBNF definition:
  *
  * <br> DECLARATOR = "*" DECLARATOR | DIRECT_DECLARATOR
  *
- * <br> DIRECT_DECLARATOR = IDENTIFIER | "(" DECLARATOR ")" | DIRECT_DECLARATOR
- * "[" EXPRESSION "]" | DIRECT_DECLARATOR PARAMETER_LIST
+ * <br> DIRECT_DECLARATOR = IDENTIFIER | "(" DECLARATOR ")" | DIRECT_DECLARATOR "[" EXPRESSION "]"
+ * | DIRECT_DECLARATOR PARAMETER_LIST
  *
- * <br> ABSTRACT_DECLARATOR = "*" ABSTRACT_DECLARATOR |
- * DIRECT_ABSTRACT_DECLARATOR
+ * <br> ABSTRACT_DECLARATOR = "*" ABSTRACT_DECLARATOR | DIRECT_ABSTRACT_DECLARATOR
  *
  * <br> DIRECT_ABSTRACT_DECLARATOR = [IDENTIFIER] | "(" ABSTRACT_DECLARATOR ")"
- * | * [DIRECT_ABSTRACT_DECLARATOR] "[" EXPRESSION "]"
- * | * [DIRECT_ABSTRACT_DECLARATOR] PARAMETER_LIST
+ * | [DIRECT_ABSTRACT_DECLARATOR] "[" EXPRESSION "]" | [DIRECT_ABSTRACT_DECLARATOR] PARAMETER_LIST
  */
 public abstract class Declarator extends CodeElement
 {
 	/**
-	 * Declarator that is just a simple identifier. When name is null then it
-	 * is an abstract declarator without a name.
+	 * Declarator that is just a simple identifier. When name is null then it is an abstract
+	 * declarator without a name.
 	 */
 	private static class IdentifierDeclarator extends Declarator
 	{
@@ -64,8 +61,7 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope,
-				List<Symbol> paramSymbolsOut)
+		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 		{
 			return type;
 		}
@@ -84,27 +80,29 @@ public abstract class Declarator extends CodeElement
 	{
 		private final Expression arrayLength;
 
-		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength,
-				Position position)
+		public ArrayDeclarator(Declarator subDeclarator, Expression arrayLength, Position position)
 		{
 			super(subDeclarator, position);
 			this.arrayLength = arrayLength;
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope,
-				List<Symbol> paramSymbolsOut)
+		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 				throws SyntaxException, IOException
 		{
-			Integer len = arrayLength.getCompileTimeValue();
 			if (!type.isObject())
 				throw new SyntaxException("Array elements must have object type.", getPosition());
-			if (len == null)
-				throw new SyntaxException("Array length must be a compile time constant.", getPosition());
-			else if (len <= 0)
-				throw new SyntaxException("Array length must be a positive integer.", getPosition());
-			return subDeclarator.compile(new ArrayType(type, len), scope,
-					paramSymbolsOut);
+
+			Integer len = arrayLength.getCompileTimeValue();
+			if (len == null) {
+				throw new SyntaxException("Array length must be a compile time constant.",
+						getPosition());
+			} else if (len <= 0) {
+				throw new SyntaxException("Array length must be a positive integer.",
+						getPosition());
+			}
+
+			return subDeclarator.compile(new ArrayType(type, len), scope, paramSymbolsOut);
 		}
 
 		@Override
@@ -125,12 +123,10 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope,
-				List<Symbol> paramSymbolsOut)
+		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 				throws SyntaxException, IOException
 		{
-			return subDeclarator.compile(new PointerType(type), scope,
-					paramSymbolsOut);
+			return subDeclarator.compile(new PointerType(type), scope, paramSymbolsOut);
 		}
 
 		@Override
@@ -147,16 +143,15 @@ public abstract class Declarator extends CodeElement
 	{
 		private final ParameterList paramList;
 
-		public FunctionDeclarator(Declarator subDeclarator,
-				ParameterList paramList, Position position)
+		public FunctionDeclarator(Declarator subDeclarator, ParameterList paramList,
+				Position position)
 		{
 			super(subDeclarator, position);
 			this.paramList = paramList;
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope,
-				List<Symbol> paramSymbolsOut)
+		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 				throws SyntaxException, IOException
 		{
 			boolean funcDefn = paramSymbolsOut != null;
@@ -177,8 +172,8 @@ public abstract class Declarator extends CodeElement
 				paramSymbolsOut.addAll(paramSymbols);
 			}
 
-			return subDeclarator.compile(new FunctionType(type, paramTypes),
-					scope, paramSymbolsOut);
+			return subDeclarator.compile(new FunctionType(type, paramTypes), scope,
+					paramSymbolsOut);
 		}
 
 		private void checkReturnType(CType retType) throws SyntaxException
@@ -199,13 +194,13 @@ public abstract class Declarator extends CodeElement
 			return "(DCLTOR " + subDeclarator + " " + paramList + ")";
 		}
 	}
+
 	protected final Declarator subDeclarator;
 
 	/**
 	 * Constructs a Declarator.
 	 *
-	 * @param subDeclarator next declarator inside this one or null if there
-	 * aren't any
+	 * @param subDeclarator next declarator inside this one or null if there aren't any
 	 * @param position starting position of the declarator
 	 */
 	protected Declarator(Declarator subDeclarator, Position position)
@@ -225,29 +220,27 @@ public abstract class Declarator extends CodeElement
 	}
 
 	/**
-	 * Does semantic analysis for the declarator and deduces the resulting type.
-	 * Modifies the argument type with this declarator and all its sub
-	 * declarators. For example given type "int", two nested 2-sized array
-	 * declarators would return int[2][2]. For a function declarators used
+	 * Does semantic analysis for the declarator and deduces the resulting type. Modifies the
+	 * argument type with this declarator and all its subdeclarators. For example given type "int",
+	 * two nested 2-sized array declarators would return int[2][2]. For a function declarators used
 	 * in function definition also generates code for parameters.
 	 *
 	 * @param type type to be modified
 	 * @param scope scope in which the declarator is compiled
-	 * @param paramSymbolsOut if the declarator is part of a function
-	 * definition, the parameter symbols are added in this list
+	 * @param paramSymbolsOut if the declarator is part of a function definition, the parameter
+	 * symbols are added in this list
 	 * @return modified type
 	 * @throws SyntaxException
 	 */
-	public abstract CType compile(CType type, Scope scope,
-			List<Symbol> paramSymbolsOut) throws SyntaxException, IOException;
+	public abstract CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
+			throws SyntaxException, IOException;
 
 	/**
-	 * Attempts to parse a declarator from token stream. If parsing fails the
-	 * stream is reset to its initial position.
+	 * Attempts to parse a declarator from token stream. If parsing fails the stream is reset to its
+	 * initial position.
 	 *
 	 * @param tokens source token stream
-	 * @param allowAbstract allows the declarator to be abstract, i.e. without
-	 * name
+	 * @param allowAbstract allows the declarator to be abstract, i.e. without name
 	 * @return Declarator object or null if tokens don't form a valid declarator
 	 */
 	public static Declarator parse(TokenStream tokens, boolean allowAbstract)
@@ -271,12 +264,10 @@ public abstract class Declarator extends CodeElement
 	}
 
 	/**
-	 * Parses a direct declarator. It is either a variable name, declarator
-	 * inside () parentheses, an array declarator or a function declarator.
-	 * declarator inside () parentheses.
+	 * Parses a direct declarator. It is either a variable name, declarator inside () parentheses,
+	 * an array declarator or a function declarator. declarator inside () parentheses.
 	 */
-	private static Declarator parseDirectDeclarator(TokenStream tokens,
-			boolean allowAbstract)
+	private static Declarator parseDirectDeclarator(TokenStream tokens, boolean allowAbstract)
 	{
 		Position pos = tokens.getPosition();
 

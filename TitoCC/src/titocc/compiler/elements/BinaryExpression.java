@@ -32,17 +32,13 @@ import titocc.util.Position;
  *
  * <br> BINARY_EXPRESSION7 = [BINARY_EXPRESSION7 "!=") BINARY_EXPRESSION8
  *
- * <br> BINARY_EXPRESSION8 = [BINARY_EXPRESSION8 ("<" | "<=" | ">" | ">=")]
- * BINARY_EXPRESSION9
+ * <br> BINARY_EXPRESSION8 = [BINARY_EXPRESSION8 ("<" | "<=" | ">" | ">=")] BINARY_EXPRESSION9
  *
- * <br> BINARY_EXPRESSION9 = [BINARY_EXPRESSION9 ("<<" | ">>")]
- * BINARY_EXPRESSION10
+ * <br> BINARY_EXPRESSION9 = [BINARY_EXPRESSION9 ("<<" | ">>")] BINARY_EXPRESSION10
  *
- * <br> BINARY_EXPRESSION10 = [BINARY_EXPRESSION10 ("+" | "-")]
- * BINARY_EXPRESSION11
+ * <br> BINARY_EXPRESSION10 = [BINARY_EXPRESSION10 ("+" | "-")] BINARY_EXPRESSION11
  *
- * <br> BINARY_EXPRESSION11 = [BINARY_EXPRESSION11 ("*" | "/" | "%")]
- * PREFIX_EXPRESSION
+ * <br> BINARY_EXPRESSION11 = [BINARY_EXPRESSION11 ("*" | "/" | "%")] PREFIX_EXPRESSION
  */
 public class BinaryExpression extends Expression
 {
@@ -57,7 +53,9 @@ public class BinaryExpression extends Expression
 	private static class Operator
 	{
 		public String mnemonic;
+
 		public Type type;
+
 		int priority;
 
 		public Operator(String mnemonic, Type type, int priority)
@@ -67,6 +65,7 @@ public class BinaryExpression extends Expression
 			this.priority = priority;
 		}
 	}
+
 	/**
 	 * Binary operators, their main instructions and priorities.
 	 */
@@ -93,14 +92,17 @@ public class BinaryExpression extends Expression
 			put("%", new Operator("mod", Type.ARITHMETIC, 11));
 		}
 	};
+
 	/**
 	 * Binary operator as a string.
 	 */
 	private final String operator;
+
 	/**
 	 * Left hand side expression;
 	 */
 	private final Expression left;
+
 	/**
 	 * Right hand side expression.
 	 */
@@ -196,21 +198,25 @@ public class BinaryExpression extends Expression
 		if (leftIncrSize > 1 && rightIncrSize > 1) {
 			// POINTER - POINTER.
 			compileRight(asm, scope, regs);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
+					regs.get(1).toString());
 			asm.emit("div", regs.get(0).toString(), "=" + leftIncrSize);
 		} else if (leftIncrSize > 1) {
 			// POINTER + INTEGER or POINTER - INTEGER.
 			compileRight(asm, scope, regs);
 			asm.emit("mul", regs.get(1).toString(), "=" + leftIncrSize);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
+					regs.get(1).toString());
 		} else if (rightIncrSize > 1) {
 			// INTEGER + POINTER.
 			asm.emit("mul", regs.get(0).toString(), "=" + rightIncrSize);
 			compileRight(asm, scope, regs);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
+					regs.get(1).toString());
 		} else {
 			compileRight(asm, scope, regs);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), regs.get(1).toString());
+			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
+					regs.get(1).toString());
 		}
 	}
 
@@ -314,12 +320,13 @@ public class BinaryExpression extends Expression
 				return new IntType();
 		}
 
-		throw new SyntaxException("Incompatible operands for operator " + operator + ".", getPosition());
+		throw new SyntaxException("Incompatible operands for operator " + operator + ".",
+				getPosition());
 	}
 
 	/**
-	 * Attempts to parse a syntactic binary expression from token stream. If
-	 * parsing fails the stream is reset to its initial position.
+	 * Attempts to parse a syntactic binary expression from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression
@@ -342,7 +349,7 @@ public class BinaryExpression extends Expression
 		tokens.pushMark();
 		Expression expr = parseImpl(tokens, priority + 1);
 
-		if (expr != null)
+		if (expr != null) {
 			while (true) {
 				tokens.pushMark();
 				Expression right = null;
@@ -356,6 +363,7 @@ public class BinaryExpression extends Expression
 				else
 					break;
 			}
+		}
 
 		tokens.popMark(expr == null);
 		return expr;

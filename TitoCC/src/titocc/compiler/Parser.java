@@ -7,18 +7,17 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
 
 /**
- * Main parser class. Really just a wrapper and the actual parsing is done by
- * the CodeElement classes.
+ * Main parser class. Really just a wrapper and the actual parsing is done by the CodeElement
+ * classes.
  */
 public class Parser
 {
 	/**
-	 * Parses a list of tokens. Produces a code element tree structure where
-	 * TranslationUnit is the root element.
+	 * Parses a list of tokens. Produces a code element tree structure where TranslationUnit is the
+	 * root element.
 	 *
 	 * @param tokens input tokens
-	 * @return a TranslationUnit object which is the top level element in the
-	 * code element hierarchy
+	 * @return a TranslationUnit object which is the top level element in the code element hierarchy
 	 * @throws SyntaxException if the source code has errors
 	 */
 	static public TranslationUnit parse(List<Token> tokens) throws SyntaxException
@@ -28,9 +27,7 @@ public class Parser
 		TranslationUnit trUnit = TranslationUnit.parse(tokenStream);
 		if (trUnit == null) {
 			Token token = tokenStream.getFurthestReadToken();
-			throw new SyntaxException(
-					"Unexpected token \"" + token + "\".",
-					token.getPosition());
+			throw new SyntaxException("Unexpected token \"" + token + "\".", token.getPosition());
 		}
 		return trUnit;
 	}

@@ -21,8 +21,8 @@ import titocc.util.Position;
  *
  * <br> EBNF definition:
  *
- * <br> FOR_STATEMENT = "for" "(" (EXPRESSION_STATEMENT | DECLARATION_STATEMENT
- * | EMPTY_STATEMENT) [EXPRESSION] ; [EXPRESSION] ")" STATEMENT
+ * <br> FOR_STATEMENT = "for" "(" (EXPRESSION_STATEMENT | DECLARATION_STATEMENT | EMPTY_STATEMENT)
+ * [EXPRESSION] ; [EXPRESSION] ")" STATEMENT
  */
 public class ForStatement extends Statement
 {
@@ -47,8 +47,7 @@ public class ForStatement extends Statement
 	private final Statement body;
 
 	/**
-	 * Constructs a ForStatement that uses a declaration as the first
-	 * part.
+	 * Constructs a ForStatement that uses a declaration as the first part.
 	 *
 	 * @param initStatement Initialization statement.
 	 * @param controlExpression Control expression (can be null).
@@ -115,10 +114,10 @@ public class ForStatement extends Statement
 			Registers regs, String loopStartLabel, String loopTestLabel)
 			throws IOException, SyntaxException
 	{
-		if (controlExpression != null
-				&& !controlExpression.getType(scope).decay().isScalar())
+		if (controlExpression != null && !controlExpression.getType(scope).decay().isScalar()) {
 			throw new SyntaxException("For loop control expression must have"
 					+ " scalar type.", controlExpression.getPosition());
+		}
 
 		asm.addLabel(loopTestLabel);
 
@@ -139,12 +138,11 @@ public class ForStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a for statement from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a for statement from token stream. If parsing fails the stream is reset to
+	 * its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return ForStatement object or null if tokens don't form a valid for
-	 * statement
+	 * @return ForStatement object or null if tokens don't form a valid for statement
 	 */
 	public static ForStatement parse(TokenStream tokens)
 	{

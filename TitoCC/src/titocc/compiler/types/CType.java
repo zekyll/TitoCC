@@ -1,8 +1,8 @@
 package titocc.compiler.types;
 
 /**
- * Abstract base class for representing types in C type system. Allows testing
- * equality between types and querying their features.
+ * Abstract base class for representing types in C type system. Allows testing equality between
+ * types and querying their features.
  */
 public abstract class CType
 {
@@ -39,8 +39,8 @@ public abstract class CType
 	/**
 	 * Returns type obtained from dereferencing a pointer or array type.
 	 *
-	 * @return dereferenced type or an instance of InvalidType if this is not a
-	 * pointer or array type
+	 * @return dereferenced type or an instance of InvalidType if this is not a pointer or array
+	 * type
 	 */
 	public CType dereference()
 	{
@@ -68,8 +68,8 @@ public abstract class CType
 	}
 
 	/**
-	 * Returns the size of the type in chars. Note that in ttk-91 char is the
-	 * same as int (i.e. 4 bytes), so sizeof(int) == 1.
+	 * Returns the size of the type in chars. Note that in ttk-91 char is the same as int (i.e. 4
+	 * bytes), so sizeof(int) == 1.
 	 *
 	 * @return the size in chars or 0 if not an object type
 	 */
@@ -79,8 +79,8 @@ public abstract class CType
 	}
 
 	/**
-	 * Returns the step size when incrementing/decrementing the type using -- ++
-	 * + += etc operators. If the type is not incrementable then returns 0.
+	 * Returns the step size when incrementing/decrementing the type using -- ++ + += etc operators.
+	 * If the type is not incrementable then returns 0.
 	 *
 	 * @return increment size or 0 if not incrementable
 	 */
@@ -90,8 +90,7 @@ public abstract class CType
 	}
 
 	/**
-	 * Returns whether the type is valid. (i.e. it is not instance of
-	 * InvalidType).
+	 * Returns whether the type is valid. (i.e. it is not instance of InvalidType).
 	 *
 	 * @return true if valid
 	 */

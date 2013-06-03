@@ -16,9 +16,8 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> POSTFIX_EXPRESSION = POSTFIX_EXPRESSION ("++" | "--") |
- * INTRINSIC_CALL_EXPRESSION | FUNCTION_CALL_EXPRESSION | SUBSCRIPT_EXPRESSION |
- * PRIMARY_EXPRESSION
+ * <br> POSTFIX_EXPRESSION = POSTFIX_EXPRESSION ("++" | "--") | INTRINSIC_CALL_EXPRESSION
+ * | FUNCTION_CALL_EXPRESSION | SUBSCRIPT_EXPRESSION | PRIMARY_EXPRESSION
  */
 public class PostfixExpression extends Expression
 {
@@ -26,10 +25,12 @@ public class PostfixExpression extends Expression
 	 * List of postfix operators.
 	 */
 	static final String[] postfixOperators = {"++", "--"};
+
 	/**
 	 * Operator for this postfix expression.
 	 */
 	private final String operator;
+
 	/**
 	 * Operand expression.
 	 */
@@ -74,8 +75,11 @@ public class PostfixExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		CType operandType = operand.getType(scope);
-		if (!operandType.isArithmetic() && !(operandType.isPointer() && operandType.dereference().isObject()))
-			throw new SyntaxException("Operator " + operator + " requires an arithmetic or object pointer type.", getPosition());
+		if (!operandType.isArithmetic()
+				&& !(operandType.isPointer() && operandType.dereference().isObject())) {
+			throw new SyntaxException("Operator " + operator
+					+ " requires an arithmetic or object pointer type.", getPosition());
+		}
 
 		// Evaluate operand; load address to 2nd register.
 		regs.allocate(asm);
@@ -111,8 +115,8 @@ public class PostfixExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse a syntactic postfix expression from token stream. If
-	 * parsing fails the stream is reset to its initial position.
+	 * Attempts to parse a syntactic postfix expression from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression

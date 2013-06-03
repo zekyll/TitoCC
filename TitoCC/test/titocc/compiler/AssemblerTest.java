@@ -81,7 +81,8 @@ public class AssemblerTest
 		asm.addLabel("lbl1");
 		asm.addLabel("lbl2");
 		asm.emit("abc", "xy", "zv");
-		assertEquals("lbl1        nop     \nlbl2        abc     xy, zv\n", asm.getWriter().toString());
+		assertEquals("lbl1        nop     \nlbl2        abc     xy, zv\n",
+				asm.getWriter().toString());
 	}
 
 	@Test
@@ -98,7 +99,8 @@ public class AssemblerTest
 		asm.emit("abc", "xy", "zv");
 		asm.addLabel("l");
 		asm.finish();
-		assertEquals("            abc     xy, zv\nl           nop     \n", asm.getWriter().toString());
+		assertEquals("            abc     xy, zv\nl           nop     \n",
+				asm.getWriter().toString());
 	}
 
 	@Test
@@ -108,7 +110,8 @@ public class AssemblerTest
 		asm.addLabel("l");
 		asm.addEmptyLines(0);
 		asm.emit("abc", "xy");
-		assertEquals("            abc     xy\nl           abc     xy\n", asm.getWriter().toString());
+		assertEquals("            abc     xy\nl           abc     xy\n",
+				asm.getWriter().toString());
 	}
 
 	@Test
@@ -118,6 +121,7 @@ public class AssemblerTest
 		asm.addLabel("l");
 		asm.addEmptyLines(2);
 		asm.emit("abc", "xy");
-		assertEquals("            abc     xy\n\n\nl           abc     xy\n", asm.getWriter().toString());
+		assertEquals("            abc     xy\n\n\nl           abc     xy\n",
+				asm.getWriter().toString());
 	}
 }

@@ -12,9 +12,9 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Subscript to an array. Takes an array expression and an integer typed
- * subscript expression. C standard actually requires that their order doesn't
- * matter. E.g. myArray[2] is the same as 2[myArray].
+ * Subscript to an array. Takes an array expression and an integer typed subscript expression. C
+ * standard actually requires that their order doesn't matter. E.g. myArray[2] is the same as
+ * 2[myArray].
  *
  * <p> EBNF definition:
  *
@@ -26,6 +26,7 @@ public class SubscriptExpression extends Expression
 	 * Array operand.
 	 */
 	private final Expression array;
+
 	/**
 	 * Subscript operand.
 	 */
@@ -103,8 +104,10 @@ public class SubscriptExpression extends Expression
 			return array;
 		else if (subscript.getType(scope).dereference().isObject())
 			return subscript;
-		else
-			throw new SyntaxException("Operator [] requires an object pointer or an array.", getPosition());
+		else {
+			throw new SyntaxException("Operator [] requires an object pointer or an array.",
+					getPosition());
+		}
 	}
 
 	private Expression getActualSubscriptOperand(Scope scope) throws SyntaxException
@@ -124,14 +127,12 @@ public class SubscriptExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse a subscript expression from token stream, given the
-	 * first operand of the expression. If parsing fails the stream is reset to
-	 * its initial position.
+	 * Attempts to parse a subscript expression from token stream, given the first operand of the
+	 * expression. If parsing fails the stream is reset to its initial position.
 	 *
 	 * @param firstOperand preparsed array expression
 	 * @param tokens source token stream
-	 * @return SubscriptExpression object or null if tokens don't form a valid
-	 * subscript expression
+	 * @return SubscriptExpression object or null if tokens don't form a valid subscript expression
 	 */
 	public static SubscriptExpression parse(Expression firstOperand, TokenStream tokens)
 	{
@@ -141,8 +142,7 @@ public class SubscriptExpression extends Expression
 		if (tokens.read().toString().equals("[")) {
 			Expression subscript = Expression.parse(tokens);
 			if (subscript != null && tokens.read().toString().equals("]"))
-				expr = new SubscriptExpression(firstOperand, subscript,
-						firstOperand.getPosition());
+				expr = new SubscriptExpression(firstOperand, subscript, firstOperand.getPosition());
 		}
 
 		tokens.popMark(expr == null);

@@ -10,6 +10,7 @@ import titocc.util.Position;
 public class TokenStreamTest
 {
 	private TokenStream stream;
+
 	private Token token1, token2, token3;
 
 	@Before

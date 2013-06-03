@@ -6,8 +6,7 @@ import java.util.Stack;
 import titocc.util.Position;
 
 /**
- * Stream of tokens that allows marking positions in the stream and returning
- * back to them.
+ * Stream of tokens that allows marking positions in the stream and returning back to them.
  */
 public class TokenStream
 {
@@ -49,8 +48,7 @@ public class TokenStream
 	}
 
 	/**
-	 * Marks the current position in the stream and pushes the mark into an
-	 * internal stack.
+	 * Marks the current position in the stream and pushes the mark into an internal stack.
 	 */
 	public void pushMark()
 	{
@@ -59,8 +57,7 @@ public class TokenStream
 	}
 
 	/**
-	 * Removes the previously added mark and optionally resets the stream
-	 * position back to the mark.
+	 * Removes the previously added mark and optionally resets the stream position back to the mark.
 	 *
 	 * @param reset if true then stream position is set to the marked position
 	 */
@@ -112,9 +109,8 @@ public class TokenStream
 	}
 
 	/**
-	 * Returns a previously read token that is furthest into the stream. It is
-	 * determined by line number of column. Resetting the stream does not reset
-	 * this.
+	 * Returns a previously read token that is furthest into the stream. It is determined by line
+	 * number of column. Resetting the stream does not reset this.
 	 *
 	 * @return column number
 	 */
@@ -124,8 +120,8 @@ public class TokenStream
 	}
 
 	/**
-	 * Checks if the new token is further in the text. It first checks based on
-	 * line number and if they are the same then based on column.
+	 * Checks if the new token is further in the text. It first checks based on line number and if
+	 * they are the same then based on column.
 	 */
 	private boolean isNewFurthestReadToken(Token token)
 	{

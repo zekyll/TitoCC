@@ -11,8 +11,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Statement that exits the from the current function, optionally setting the
- * return value.
+ * Statement that exits the from the current function, optionally setting the return value.
  *
  * <p> EBNF definition:
  *
@@ -28,8 +27,7 @@ public class ReturnStatement extends Statement
 	/**
 	 * Constructs a ReturnStatement.
 	 *
-	 * @param expression expression for the returned value, or null if there is
-	 * none
+	 * @param expression expression for the returned value, or null if there is none
 	 * @param position starting position of the return statement
 	 */
 	public ReturnStatement(Expression expression, Position position)
@@ -56,8 +54,10 @@ public class ReturnStatement extends Statement
 
 		// Compile return value.
 		if (expression != null) {
-			if (!expression.isAssignableTo(retVal.getType(), scope))
-				throw new SyntaxException("Returned expression doesn't match return value type.", getPosition());
+			if (!expression.isAssignableTo(retVal.getType(), scope)) {
+				throw new SyntaxException("Returned expression doesn't match return value type.",
+						getPosition());
+			}
 
 			// Load expression to first register and store to the return value.
 			expression.compile(asm, scope, regs);
@@ -79,12 +79,11 @@ public class ReturnStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a return statement from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a return statement from token stream. If parsing fails the stream is reset
+	 * to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return ReturnStatement object or null if tokens don't form a valid
-	 * return statement
+	 * @return ReturnStatement object or null if tokens don't form a valid return statement
 	 */
 	public static ReturnStatement parse(TokenStream tokens)
 	{

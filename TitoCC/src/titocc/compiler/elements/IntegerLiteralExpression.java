@@ -14,8 +14,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Integer literal expression. Consists of digits and suffix. Suffixes are not
- * currently supported.
+ * Integer literal expression. Consists of digits and suffix. Suffixes are not currently supported.
  *
  * <p> EBNF definition:
  *
@@ -27,6 +26,7 @@ public class IntegerLiteralExpression extends Expression
 	 * Digits as a string.
 	 */
 	private final String rawValue;
+
 	/**
 	 * Suffix as a string.
 	 */
@@ -97,8 +97,8 @@ public class IntegerLiteralExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse an integer literal expression from token stream. If
-	 * parsing fails the stream is reset to its initial position.
+	 * Attempts to parse an integer literal expression from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression

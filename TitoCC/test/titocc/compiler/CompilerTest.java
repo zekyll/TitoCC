@@ -97,9 +97,12 @@ public class CompilerTest
 		testErr("\nvoid f() { !f(); }", "Operator ! requires a scalar type.", 1, 11);
 		testErr("\nvoid f() { int x; x = f(); }", "Incompatible operands for operator =.", 1, 18);
 		testErr("\nvoid f() { if(f()); }", "Scalar expression required.", 1, 14);
-		testErr("\nvoid f() { while(f()); }", "While loop control expression must have scalar type.", 1, 17);
-		testErr("\nvoid f() { int x = f(); }", "Initializer type doesn't match variable type.", 1, 11);
-		testErr("\nvoid f(int a) { f(out()); }", "Argument type doesn't match type of the parameter.", 1, 18);
+		testErr("\nvoid f() { while(f()); }",
+				"While loop control expression must have scalar type.", 1, 17);
+		testErr("\nvoid f() { int x = f(); }",
+				"Initializer type doesn't match variable type.", 1, 11);
+		testErr("\nvoid f(int a) { f(out()); }",
+				"Argument type doesn't match type of the parameter.", 1, 18);
 	}
 
 	@Test
@@ -112,15 +115,19 @@ public class CompilerTest
 	@Test
 	public void errorWhenWrongNumberOfArguments() throws IOException
 	{
-		testErr("\nvoid f() { f(1); }", "Number of arguments doesn't match the number of parameters.", 1, 12);
-		testErr("\nvoid f(int a) { f(); }", "Number of arguments doesn't match the number of parameters.", 1, 17);
+		testErr("\nvoid f() { f(1); }",
+				"Number of arguments doesn't match the number of parameters.", 1, 12);
+		testErr("\nvoid f(int a) { f(); }",
+				"Number of arguments doesn't match the number of parameters.", 1, 17);
 	}
 
 	@Test
 	public void errorWhenWrongNumberOfArgumentsForIntrinsics() throws IOException
 	{
-		testErr("\nvoid f() { in(1); }", "Number of arguments doesn't match the number of parameters.", 1, 11);
-		testErr("\nvoid f() { out(); }", "Number of arguments doesn't match the number of parameters.", 1, 11);
+		testErr("\nvoid f() { in(1); }",
+				"Number of arguments doesn't match the number of parameters.", 1, 11);
+		testErr("\nvoid f() { out(); }",
+				"Number of arguments doesn't match the number of parameters.", 1, 11);
 	}
 
 	@Test
@@ -166,7 +173,8 @@ public class CompilerTest
 	@Test
 	public void errorWhenGlobalVariableInitializerNotConstant() throws IOException
 	{
-		testErr("\nint a; int b = a;", "Global variable must be initialized with a compile time constant.", 1, 7);
+		testErr("\nint a; int b = a;",
+				"Global variable must be initialized with a compile time constant.", 1, 7);
 	}
 
 	@Test
@@ -219,124 +227,137 @@ public class CompilerTest
 	@Test
 	public void errorWhenIllegalOperandsForIncrement() throws IOException
 	{
-		testErr("\nint f() { int a[2]; ++a; }", "Operator ++ requires an arithmetic or object pointer type.", 1, 20);
-		testErr("\nint f() { int a[2]; a++; }", "Operator ++ requires an arithmetic or object pointer type.", 1, 20);
-		testErr("\nint f() { void* a; a++; }", "Operator ++ requires an arithmetic or object pointer type.", 1, 19);
-		testErr("\nint f() { void* a; ++a; }", "Operator ++ requires an arithmetic or object pointer type.", 1, 19);
-		testErr("\nint f() { f++; }", "Operator ++ requires an arithmetic or object pointer type.", 1, 10);
-		testErr("\nint f() { ++f; }", "Operator ++ requires an arithmetic or object pointer type.", 1, 10);
-		testErr("\nvoid f() { f()++; }", "Operator ++ requires an arithmetic or object pointer type.", 1, 11);
-		testErr("\nvoid f() { ++f(); }", "Operator ++ requires an arithmetic or object pointer type.", 1, 11);
+		String msg = "Operator ++ requires an arithmetic or object pointer type.";
+		testErr("\nint f() { int a[2]; ++a; }", msg, 1, 20);
+		testErr("\nint f() { int a[2]; a++; }", msg, 1, 20);
+		testErr("\nint f() { void* a; a++; }", msg, 1, 19);
+		testErr("\nint f() { void* a; ++a; }", msg, 1, 19);
+		testErr("\nint f() { f++; }", msg, 1, 10);
+		testErr("\nint f() { ++f; }", msg, 1, 10);
+		testErr("\nvoid f() { f()++; }", msg, 1, 11);
+		testErr("\nvoid f() { ++f(); }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForDecrement() throws IOException
 	{
-		testErr("\nint f() { int a[2]; --a; }", "Operator -- requires an arithmetic or object pointer type.", 1, 20);
-		testErr("\nint f() { int a[2]; a--; }", "Operator -- requires an arithmetic or object pointer type.", 1, 20);
-		testErr("\nint f() { void* a; a--; }", "Operator -- requires an arithmetic or object pointer type.", 1, 19);
-		testErr("\nint f() { void* a; --a; }", "Operator -- requires an arithmetic or object pointer type.", 1, 19);
-		testErr("\nint f() { f--; }", "Operator -- requires an arithmetic or object pointer type.", 1, 10);
-		testErr("\nint f() { --f; }", "Operator -- requires an arithmetic or object pointer type.", 1, 10);
-		testErr("\nvoid f() { f()--; }", "Operator -- requires an arithmetic or object pointer type.", 1, 11);
-		testErr("\nvoid f() { --f(); }", "Operator -- requires an arithmetic or object pointer type.", 1, 11);
+		String msg = "Operator -- requires an arithmetic or object pointer type.";
+		testErr("\nint f() { int a[2]; --a; }", msg, 1, 20);
+		testErr("\nint f() { int a[2]; a--; }", msg, 1, 20);
+		testErr("\nint f() { void* a; a--; }", msg, 1, 19);
+		testErr("\nint f() { void* a; --a; }", msg, 1, 19);
+		testErr("\nint f() { f--; }", msg, 1, 10);
+		testErr("\nint f() { --f; }", msg, 1, 10);
+		testErr("\nvoid f() { f()--; }", msg, 1, 11);
+		testErr("\nvoid f() { --f(); }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForAssignment() throws IOException
 	{
-		testErr("\nint f() { int a[2]; int b[2]; a = b; }", "Incompatible operands for operator =.", 1, 30);
-		testErr("\nint f() { int a[2]; int* b; a = b; }", "Incompatible operands for operator =.", 1, 28);
-		testErr("\nint f() { int a[2]; a = 0; }", "Incompatible operands for operator =.", 1, 20);
-		testErr("\nint f() { int a[2]; a=1; }", "Incompatible operands for operator =.", 1, 20);
-		testErr("\nint f() { int* a; a=1; }", "Incompatible operands for operator =.", 1, 18);
-		testErr("\nint f() { void* a; a=1; }", "Incompatible operands for operator =.", 1, 19);
-		testErr("\nint f() { int* a; int** b; a=b; }", "Incompatible operands for operator =.", 1, 27);
-		testErr("\nint f() { int* a; int b[2][2]; a=b; }", "Incompatible operands for operator =.", 1, 31);
-		testErr("\nvoid f() { int a; a = f(); }", "Incompatible operands for operator =.", 1, 18);
-		testErr("\nvoid f() { f() = f(); }", "Incompatible operands for operator =.", 1, 11);
+		String msg = "Incompatible operands for operator =.";
+		testErr("\nint f() { int a[2]; int b[2]; a = b; }", msg, 1, 30);
+		testErr("\nint f() { int a[2]; int* b; a = b; }", msg, 1, 28);
+		testErr("\nint f() { int a[2]; a = 0; }", msg, 1, 20);
+		testErr("\nint f() { int a[2]; a=1; }", msg, 1, 20);
+		testErr("\nint f() { int* a; a=1; }", msg, 1, 18);
+		testErr("\nint f() { void* a; a=1; }", msg, 1, 19);
+		testErr("\nint f() { int* a; int** b; a=b; }", msg, 1, 27);
+		testErr("\nint f() { int* a; int b[2][2]; a=b; }", msg, 1, 31);
+		testErr("\nvoid f() { int a; a = f(); }", msg, 1, 18);
+		testErr("\nvoid f() { f() = f(); }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalInitializerType() throws IOException
 	{
-		testErr("\nint f() { int* a = 1; }", "Initializer type doesn't match variable type.", 1, 10);
-		testErr("\nint f() { void* a = 1; }", "Initializer type doesn't match variable type.", 1, 10);
-		testErr("\nint f() { int** b; int* a = b; }", "Initializer type doesn't match variable type.", 1, 19);
-		testErr("\nint f() { int b[2][2]; int *a = b; }", "Initializer type doesn't match variable type.", 1, 23);
-		testErr("\nvoid f() { int a = f(); }", "Initializer type doesn't match variable type.", 1, 11);
+		String msg = "Initializer type doesn't match variable type.";
+		testErr("\nint f() { int* a = 1; }", msg, 1, 10);
+		testErr("\nint f() { void* a = 1; }", msg, 1, 10);
+		testErr("\nint f() { int** b; int* a = b; }", msg, 1, 19);
+		testErr("\nint f() { int b[2][2]; int *a = b; }", msg, 1, 23);
+		testErr("\nvoid f() { int a = f(); }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalReturnExpression() throws IOException
 	{
 		testErr("\nint f() { return; }", "Function must return a value.", 1, 10);
-		testErr("\nvoid f() {} void g() { return f(); }", "Returned expression doesn't match return value type.", 1, 23);
-		testErr("\nint f() { int*a; return a; }", "Returned expression doesn't match return value type.", 1, 17);
+		testErr("\nvoid f() {} void g() { return f(); }",
+				"Returned expression doesn't match return value type.", 1, 23);
+		testErr("\nint f() { int*a; return a; }",
+				"Returned expression doesn't match return value type.", 1, 17);
 	}
 
 	@Test
 	public void errorWhenIllegalArgumentType() throws IOException
 	{
-		testErr("\nvoid f(int a) { f(f()); }", "Argument type doesn't match type of the parameter.", 1, 18);
-		testErr("\nvoid f(int* a) { f(1); }", "Argument type doesn't match type of the parameter.", 1, 19);
-		testErr("\nvoid f(void* a) { f(1); }", "Argument type doesn't match type of the parameter.", 1, 20);
-		testErr("\nint f(int*a) { int**b; f(b); }", "Argument type doesn't match type of the parameter.", 1, 25);
-		testErr("\nint f(int*a) { int b[2][3]; f(b); }", "Argument type doesn't match type of the parameter.", 1, 30);
+		String msg = "Argument type doesn't match type of the parameter.";
+		testErr("\nvoid f(int a) { f(f()); }", msg, 1, 18);
+		testErr("\nvoid f(int* a) { f(1); }", msg, 1, 19);
+		testErr("\nvoid f(void* a) { f(1); }", msg, 1, 20);
+		testErr("\nint f(int*a) { int**b; f(b); }", msg, 1, 25);
+		testErr("\nint f(int*a) { int b[2][3]; f(b); }", msg, 1, 30);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForAddAssignment() throws IOException
 	{
-		testErr("\nint f() { int a[2]; a+=1; }", "Incompatible operands for operator +=.", 1, 20);
-		testErr("\nint f() { int a[2]; int b[2]; a+=b; }", "Incompatible operands for operator +=.", 1, 30);
-		testErr("\nint f() { int* a; int* b; a+=b; }", "Incompatible operands for operator +=.", 1, 26);
-		testErr("\nint f() { void* a; a+=1; }", "Incompatible operands for operator +=.", 1, 19);
+		String msg = "Incompatible operands for operator +=.";
+		testErr("\nint f() { int a[2]; a+=1; }", msg, 1, 20);
+		testErr("\nint f() { int a[2]; int b[2]; a+=b; }", msg, 1, 30);
+		testErr("\nint f() { int* a; int* b; a+=b; }", msg, 1, 26);
+		testErr("\nint f() { void* a; a+=1; }", msg, 1, 19);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForSubtractAssignment() throws IOException
 	{
-		testErr("\nint f() { int a[2]; a-=1; }", "Incompatible operands for operator -=.", 1, 20);
-		testErr("\nint f() { int a[2]; int b[2]; a-=b; }", "Incompatible operands for operator -=.", 1, 30);
-		testErr("\nint f() { int* a; int* b; a-=b; }", "Incompatible operands for operator -=.", 1, 26);
-		testErr("\nint f() { void* a; a-=1; }", "Incompatible operands for operator -=.", 1, 19);
+		String msg = "Incompatible operands for operator -=.";
+		testErr("\nint f() { int a[2]; a-=1; }", msg, 1, 20);
+		testErr("\nint f() { int a[2]; int b[2]; a-=b; }", msg, 1, 30);
+		testErr("\nint f() { int* a; int* b; a-=b; }", msg, 1, 26);
+		testErr("\nint f() { void* a; a-=1; }", msg, 1, 19);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForBitwiseLogicalAssignment() throws IOException
 	{
-		testErr("\nint f() { int* a; a &= 1; }", "Incompatible operands for operator &=.", 1, 18);
-		testErr("\nint f() { int* a; int*b; a |= b; }", "Incompatible operands for operator |=.", 1, 25);
-		testErr("\nint f() { int a; int*b; a ^= b; }", "Incompatible operands for operator ^=.", 1, 24);
-		testErr("\nvoid f() { int a; a &= f(); }", "Incompatible operands for operator &=.", 1, 18);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nint f() { int* a; a &= 1; }", msg + "&=.", 1, 18);
+		testErr("\nint f() { int* a; int*b; a |= b; }", msg + "|=.", 1, 25);
+		testErr("\nint f() { int a; int*b; a ^= b; }", msg + "^=.", 1, 24);
+		testErr("\nvoid f() { int a; a &= f(); }", msg + "&=.", 1, 18);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForArithmeticAssignment() throws IOException
 	{
-		testErr("\nint f() { int* a; a <<= 1; }", "Incompatible operands for operator <<=.", 1, 18);
-		testErr("\nint f() { int* a; int*b; a %= b; }", "Incompatible operands for operator %=.", 1, 25);
-		testErr("\nint f() { int a; int*b; a >>= b; }", "Incompatible operands for operator >>=.", 1, 24);
-		testErr("\nvoid f() { int a; a /= f(); }", "Incompatible operands for operator /=.", 1, 18);
-		testErr("\nvoid f() { int a; int b[2]; a /= b; }", "Incompatible operands for operator /=.", 1, 28);
-		testErr("\nvoid f() { int a[2]; int b; a *= b; }", "Incompatible operands for operator *=.", 1, 28);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nint f() { int* a; a <<= 1; }", msg + "<<=.", 1, 18);
+		testErr("\nint f() { int* a; int*b; a %= b; }", msg + "%=.", 1, 25);
+		testErr("\nint f() { int a; int*b; a >>= b; }", msg + ">>=.", 1, 24);
+		testErr("\nvoid f() { int a; a /= f(); }", msg + "/=.", 1, 18);
+		testErr("\nvoid f() { int a; int b[2]; a /= b; }", msg + "/=.", 1, 28);
+		testErr("\nvoid f() { int a[2]; int b; a *= b; }", msg + "*=.", 1, 28);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandForUnaryPlus() throws IOException
 	{
-		testErr("\nvoid f() { int* a;   +a;   }", "Operator + requires an arithmetic type.", 1, 21);
-		testErr("\nvoid f() { int a[2]; +a;   }", "Operator + requires an arithmetic type.", 1, 21);
-		testErr("\nvoid f() { int a[2]; +f(); }", "Operator + requires an arithmetic type.", 1, 21);
+		String msg = "Operator + requires an arithmetic type.";
+		testErr("\nvoid f() { int* a;   +a;   }", msg, 1, 21);
+		testErr("\nvoid f() { int a[2]; +a;   }", msg, 1, 21);
+		testErr("\nvoid f() { int a[2]; +f(); }", msg, 1, 21);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandUnaryMinus() throws IOException
 	{
-		testErr("\nvoid f() { int* a;   -a;   }", "Operator - requires an arithmetic type.", 1, 21);
-		testErr("\nvoid f() { int a[2]; -a;   }", "Operator - requires an arithmetic type.", 1, 21);
-		testErr("\nvoid f() { int a[2]; -f(); }", "Operator - requires an arithmetic type.", 1, 21);
+		String msg = "Operator - requires an arithmetic type.";
+		testErr("\nvoid f() { int* a;   -a;   }", msg, 1, 21);
+		testErr("\nvoid f() { int a[2]; -a;   }", msg, 1, 21);
+		testErr("\nvoid f() { int a[2]; -f(); }", msg, 1, 21);
 	}
 
 	@Test
@@ -364,104 +385,114 @@ public class CompilerTest
 	@Test
 	public void errorWhenIllegalOperandForDereference() throws IOException
 	{
-		testErr("\nvoid f() { *3;   }", "Operator * requires a pointer or array type.", 1, 11);
-		testErr("\nvoid f() { *f;   }", "Operator * requires a pointer or array type.", 1, 11);
-		testErr("\nvoid f() { *f(); }", "Operator * requires a pointer or array type.", 1, 11);
+		String msg = "Operator * requires a pointer or array type.";
+		testErr("\nvoid f() { *3;   }", msg, 1, 11);
+		testErr("\nvoid f() { *f;   }", msg, 1, 11);
+		testErr("\nvoid f() { *f(); }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForSubscript() throws IOException
 	{
-		testErr("\nvoid f() {                   3[2];       }", "Operator [] requires an object pointer or an array.", 1, 29);
-		testErr("\nvoid f() {                   f()[2];       }", "Operator [] requires an object pointer or an array.", 1, 29);
-		testErr("\nvoid f() {                   2[f()];       }", "Operator [] requires an object pointer or an array.", 1, 29);
-		testErr("\nvoid f() { int* a; int* b;   a[b];       }", "Operator [] requires an integer operand.", 1, 29);
-		testErr("\nvoid f() { int* a; int b[2]; b[a];      }", "Operator [] requires an integer operand.", 1, 29);
-		testErr("\nvoid f() { int* a;           a[f()];  }", "Operator [] requires an integer operand.", 1, 29);
+		String msg = "Operator [] requires an object pointer or an array.";
+		testErr("\nvoid f() {                   3[2];       }", msg, 1, 29);
+		testErr("\nvoid f() {                   f()[2];       }", msg, 1, 29);
+		testErr("\nvoid f() {                   2[f()];       }", msg, 1, 29);
+		String msg2 = "Operator [] requires an integer operand.";
+		testErr("\nvoid f() { int* a; int* b;   a[b];       }", msg2, 1, 29);
+		testErr("\nvoid f() { int* a; int b[2]; b[a];      }", msg2, 1, 29);
+		testErr("\nvoid f() { int* a;           a[f()];  }", msg2, 1, 29);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForLogicalBinaryOperator() throws IOException
 	{
-		testErr("\nvoid f() { 1 && f(); }", "Incompatible operands for operator &&.", 1, 11);
-		testErr("\nvoid f() { f() || 1; }", "Incompatible operands for operator ||.", 1, 11);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nvoid f() { 1 && f(); }", msg + "&&.", 1, 11);
+		testErr("\nvoid f() { f() || 1; }", msg + "||.", 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForEqualityOperator() throws IOException
 	{
-		testErr("\nvoid f() {                      1 == f(); }", "Incompatible operands for operator ==.", 1, 32);
-		testErr("\nvoid f() {                      f() != 1; }", "Incompatible operands for operator !=.", 1, 32);
-		testErr("\nvoid f() { void * a;            1 == a;   }", "Incompatible operands for operator ==.", 1, 32);
-		testErr("\nvoid f() { void * a;            a != 1;   }", "Incompatible operands for operator !=.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; b == a;   }", "Incompatible operands for operator ==.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; a != b;   }", "Incompatible operands for operator !=.", 1, 32);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nvoid f() {                      1 == f(); }", msg + "==.", 1, 32);
+		testErr("\nvoid f() {                      f() != 1; }", msg + "!=.", 1, 32);
+		testErr("\nvoid f() { void * a;            1 == a;   }", msg + "==.", 1, 32);
+		testErr("\nvoid f() { void * a;            a != 1;   }", msg + "!=.", 1, 32);
+		testErr("\nvoid f() { int* a; int (*b)[2]; b == a;   }", msg + "==.", 1, 32);
+		testErr("\nvoid f() { int* a; int (*b)[2]; a != b;   }", msg + "!=.", 1, 32);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForRelationalOperator() throws IOException
 	{
-		testErr("\nvoid f() {                      1 < f();      }", "Incompatible operands for operator <.", 1, 32);
-		testErr("\nvoid f() {                      f() <= 1;     }", "Incompatible operands for operator <=.", 1, 32);
-		testErr("\nvoid f() { void * a;            1 > a;        }", "Incompatible operands for operator >.", 1, 32);
-		testErr("\nvoid f() { void * a;            a >= 1;       }", "Incompatible operands for operator >=.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; b < a;        }", "Incompatible operands for operator <.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; a > b;        }", "Incompatible operands for operator >.", 1, 32);
-		testErr("\nvoid f() { int a[2];            a[0] < &a[0]; }", "Incompatible operands for operator <.", 1, 32);
-		testErr("\nvoid f() { int a[2];            &a[0] > a[0]; }", "Incompatible operands for operator >.", 1, 32);
-		testErr("\nvoid f() { int* a; void* b;     b < a;        }", "Incompatible operands for operator <.", 1, 32);
-		testErr("\nvoid f() { int* a; void* b;     a > b;        }", "Incompatible operands for operator >.", 1, 32);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nvoid f() {                      1 < f();      }", msg + "<.", 1, 32);
+		testErr("\nvoid f() {                      f() <= 1;     }", msg + "<=.", 1, 32);
+		testErr("\nvoid f() { void * a;            1 > a;        }", msg + ">.", 1, 32);
+		testErr("\nvoid f() { void * a;            a >= 1;       }", msg + ">=.", 1, 32);
+		testErr("\nvoid f() { int* a; int (*b)[2]; b < a;        }", msg + "<.", 1, 32);
+		testErr("\nvoid f() { int* a; int (*b)[2]; a > b;        }", msg + ">.", 1, 32);
+		testErr("\nvoid f() { int a[2];            a[0] < &a[0]; }", msg + "<.", 1, 32);
+		testErr("\nvoid f() { int a[2];            &a[0] > a[0]; }", msg + ">.", 1, 32);
+		testErr("\nvoid f() { int* a; void* b;     b < a;        }", msg + "<.", 1, 32);
+		testErr("\nvoid f() { int* a; void* b;     a > b;        }", msg + ">.", 1, 32);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForAdd() throws IOException
 	{
-		testErr("\nvoid f() {                  0 + f(); }", "Incompatible operands for operator +.", 1, 28);
-		testErr("\nvoid f() {                  f() + 0; }", "Incompatible operands for operator +.", 1, 28);
-		testErr("\nvoid f() { void * a;        0 + a;   }", "Incompatible operands for operator +.", 1, 28);
-		testErr("\nvoid f() { void * a;        a + 0;   }", "Incompatible operands for operator +.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; b + a;   }", "Incompatible operands for operator +.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; a + b;   }", "Incompatible operands for operator +.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  a + b;   }", "Incompatible operands for operator +.", 1, 28);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nvoid f() {                  0 + f(); }", msg + "+.", 1, 28);
+		testErr("\nvoid f() {                  f() + 0; }", msg + "+.", 1, 28);
+		testErr("\nvoid f() { void * a;        0 + a;   }", msg + "+.", 1, 28);
+		testErr("\nvoid f() { void * a;        a + 0;   }", msg + "+.", 1, 28);
+		testErr("\nvoid f() { int* a; void* b; b + a;   }", msg + "+.", 1, 28);
+		testErr("\nvoid f() { int* a; void* b; a + b;   }", msg + "+.", 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  a + b;   }", msg + "+.", 1, 28);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForSubtract() throws IOException
 	{
-		testErr("\nvoid f() {                  0 - f();      }", "Incompatible operands for operator -.", 1, 28);
-		testErr("\nvoid f() {                  f() - 0;      }", "Incompatible operands for operator -.", 1, 28);
-		testErr("\nvoid f() { void * a;        0 - a;        }", "Incompatible operands for operator -.", 1, 28);
-		testErr("\nvoid f() { void * a;        a - 0;        }", "Incompatible operands for operator -.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; b - a;        }", "Incompatible operands for operator -.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; a - b;        }", "Incompatible operands for operator -.", 1, 28);
-		testErr("\nvoid f() { int a[2];        a[0] - &a[0]; }", "Incompatible operands for operator -.", 1, 28);
-		testErr("\nvoid f() { int a[2][2];     &a[0] - a[0]; }", "Incompatible operands for operator -.", 1, 28);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nvoid f() {                  0 - f();      }", msg + "-.", 1, 28);
+		testErr("\nvoid f() {                  f() - 0;      }", msg + "-.", 1, 28);
+		testErr("\nvoid f() { void * a;        0 - a;        }", msg + "-.", 1, 28);
+		testErr("\nvoid f() { void * a;        a - 0;        }", msg + "-.", 1, 28);
+		testErr("\nvoid f() { int* a; void* b; b - a;        }", msg + "-.", 1, 28);
+		testErr("\nvoid f() { int* a; void* b; a - b;        }", msg + "-.", 1, 28);
+		testErr("\nvoid f() { int a[2];        a[0] - &a[0]; }", msg + "-.", 1, 28);
+		testErr("\nvoid f() { int a[2][2];     &a[0] - a[0]; }", msg + "-.", 1, 28);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsBitwiseOperator() throws IOException
 	{
-		testErr("\nvoid f() {                  0 & f(); }", "Incompatible operands for operator &.", 1, 28);
-		testErr("\nvoid f() {                  f() | 0; }", "Incompatible operands for operator |.", 1, 28);
-		testErr("\nvoid f() { int a[2];        a | 0;   }", "Incompatible operands for operator |.", 1, 28);
-		testErr("\nvoid f() { int a[2];        0 & a;   }", "Incompatible operands for operator &.", 1, 28);
-		testErr("\nvoid f() { void * a;        0 ^ a;   }", "Incompatible operands for operator ^.", 1, 28);
-		testErr("\nvoid f() { void * a;        a & 0;   }", "Incompatible operands for operator &.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  b << a;  }", "Incompatible operands for operator <<.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  a >> b;  }", "Incompatible operands for operator >>.", 1, 28);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nvoid f() {                  0 & f(); }", msg + "&.", 1, 28);
+		testErr("\nvoid f() {                  f() | 0; }", msg + "|.", 1, 28);
+		testErr("\nvoid f() { int a[2];        a | 0;   }", msg + "|.", 1, 28);
+		testErr("\nvoid f() { int a[2];        0 & a;   }", msg + "&.", 1, 28);
+		testErr("\nvoid f() { void * a;        0 ^ a;   }", msg + "^.", 1, 28);
+		testErr("\nvoid f() { void * a;        a & 0;   }", msg + "&.", 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  b << a;  }", msg + "<<.", 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  a >> b;  }", msg + ">>.", 1, 28);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsMultiplicativeOperator() throws IOException
 	{
-		testErr("\nvoid f() {                  0 * f(); }", "Incompatible operands for operator *.", 1, 28);
-		testErr("\nvoid f() {                  f() % 0; }", "Incompatible operands for operator %.", 1, 28);
-		testErr("\nvoid f() { int a[2];        a / 0;   }", "Incompatible operands for operator /.", 1, 28);
-		testErr("\nvoid f() { int a[2];        0 * a;   }", "Incompatible operands for operator *.", 1, 28);
-		testErr("\nvoid f() { void * a;        0 % a;   }", "Incompatible operands for operator %.", 1, 28);
-		testErr("\nvoid f() { void * a;        a / 0;   }", "Incompatible operands for operator /.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  b * a;  }", "Incompatible operands for operator *.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  a % b;  }", "Incompatible operands for operator %.", 1, 28);
+		String msg = "Incompatible operands for operator ";
+		testErr("\nvoid f() {                  0 * f(); }", msg + "*.", 1, 28);
+		testErr("\nvoid f() {                  f() % 0; }", msg + "%.", 1, 28);
+		testErr("\nvoid f() { int a[2];        a / 0;   }", msg + "/.", 1, 28);
+		testErr("\nvoid f() { int a[2];        0 * a;   }", msg + "*.", 1, 28);
+		testErr("\nvoid f() { void * a;        0 % a;   }", msg + "%.", 1, 28);
+		testErr("\nvoid f() { void * a;        a / 0;   }", msg + "/.", 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  b * a;  }", msg + "*.", 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  a % b;  }", msg + "%.", 1, 28);
 	}
 
 	@Test
@@ -473,12 +504,14 @@ public class CompilerTest
 	@Test
 	public void errorWhenIllegalTestExpressionForWhile() throws IOException
 	{
-		testErr("\nvoid f() { while(f()); }", "While loop control expression must have scalar type.", 1, 17);
+		testErr("\nvoid f() { while(f()); }",
+				"While loop control expression must have scalar type.", 1, 17);
 	}
 
 	@Test
 	public void errorWhenIllegalTestExpressionInFor() throws IOException
 	{
-		testErr("\nvoid f() { for(;f();); }", "For loop control expression must have scalar type.", 1, 16);
+		testErr("\nvoid f() { for(;f();); }",
+				"For loop control expression must have scalar type.", 1, 16);
 	}
 }

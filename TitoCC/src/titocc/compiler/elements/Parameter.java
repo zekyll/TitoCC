@@ -10,9 +10,8 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Single parameter in a function parameter list. Consists of a type and a name.
- * Parameters in function definitions must have names, elsewhere unnamed
- * parameters can be used.
+ * Single parameter in a function parameter list. Consists of a type and a name. Parameters in
+ * function definitions must have names, elsewhere unnamed parameters can be used.
  *
  * <p> EBNF definition:
  *
@@ -26,8 +25,7 @@ public class Parameter extends CodeElement
 	private final TypeSpecifier typeSpecifier;
 
 	/**
-	 * Declarator which has the parameter name and which modifies the type
-	 * specifier.
+	 * Declarator which has the parameter name and which modifies the type specifier.
 	 */
 	private final Declarator declarator;
 
@@ -43,8 +41,7 @@ public class Parameter extends CodeElement
 	 * @param declarator declarator, or null if parameter is unnamed
 	 * @param position starting position of the parameter
 	 */
-	public Parameter(TypeSpecifier typeSpecifier, Declarator declarator,
-			Position position)
+	public Parameter(TypeSpecifier typeSpecifier, Declarator declarator, Position position)
 	{
 		super(position);
 		this.typeSpecifier = typeSpecifier;
@@ -55,11 +52,10 @@ public class Parameter extends CodeElement
 	 * Checks the parameter type and declares a symbol for the parameter.
 	 *
 	 * @param scope scope in which the parameter is compiled
-	 * @param functionDefinition true if the parameter is part of a function
-	 * definition; disallows unnamed parameters
+	 * @param functionDefinition true if the parameter is part of a function definition; disallows
+	 * unnamed parameters
 	 * @return the symbol for the parameter
-	 * @throws SyntaxException if the parameter has invalid type or the name was
-	 * redefined
+	 * @throws SyntaxException if the parameter has invalid type or the name was redefined
 	 * @throws IOException
 	 */
 	public Symbol compile(Scope scope, boolean functionDefinition)
@@ -106,8 +102,8 @@ public class Parameter extends CodeElement
 	}
 
 	/**
-	 * Attempts to parse a parameter from token stream. If parsing fails the
-	 * stream is reset to its initial position.
+	 * Attempts to parse a parameter from token stream. If parsing fails the stream is reset to its
+	 * initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Parameter object or null if tokens don't form a valid parameter

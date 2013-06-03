@@ -17,18 +17,16 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> ASSIGNMENT_EXPRESSION = BINARY_EXPRESSION [ASSIGNMENT_OPERATOR
- * ASSIGNMENT_EXPRESSION]
+ * <br> ASSIGNMENT_EXPRESSION = BINARY_EXPRESSION [ASSIGNMENT_OPERATOR ASSIGNMENT_EXPRESSION]
  *
- * <br> ASSIGNMENT_OPERATOR = "=" | "+=" | "*=" | "&=" | "|=" | "^=" | "-=" |
- * "/=" | "%=" | "<<=" | ">>="
+ * <br> ASSIGNMENT_OPERATOR = "=" | "+=" | "*=" | "&=" | "|=" | "^=" | "-=" | "/=" | "%=" | "<<=" |
+ * ">>="
  */
 public class AssignmentExpression extends Expression
 {
 	private enum Type
 	{
 		SIMPLE, COMMUTATIVE, NONCOMMUTATIVE
-
 	};
 
 	/**
@@ -46,6 +44,7 @@ public class AssignmentExpression extends Expression
 			this.type = type;
 		}
 	}
+
 	/**
 	 * Map of assignment operators.
 	 */
@@ -202,9 +201,8 @@ public class AssignmentExpression extends Expression
 
 		// If operation is POINTER -= INTEGER, we need to scale the integer value.
 		int incSize = left.getType(scope).getIncrementSize();
-		if (incSize > 1) {
+		if (incSize > 1)
 			asm.emit("mul", regs.get(2).toString(), "=" + incSize);
-		}
 
 		// Load LHS value to 1st register and operate on it.
 		asm.emit("load", regs.get(0).toString(), leftVal.getReference());
@@ -243,7 +241,8 @@ public class AssignmentExpression extends Expression
 				return;
 		}
 
-		throw new SyntaxException("Incompatible operands for operator " + operatorString + ".", getPosition());
+		throw new SyntaxException("Incompatible operands for operator " + operatorString + ".",
+				getPosition());
 	}
 
 	@Override
@@ -259,8 +258,8 @@ public class AssignmentExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse a syntactic assignment expression from token stream. If
-	 * parsing fails the stream is reset to its initial position.
+	 * Attempts to parse a syntactic assignment expression from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression

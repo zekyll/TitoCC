@@ -39,12 +39,11 @@ public abstract class Declaration extends CodeElement
 	public abstract void compile(Assembler asm, Scope scope, Registers regs) throws IOException, SyntaxException;
 
 	/**
-	 * Attempts to parse a declaration from token stream. If parsing fails the
-	 * stream is reset to its initial position.
+	 * Attempts to parse a declaration from token stream. If parsing fails the stream is reset to
+	 * its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return Declaration object or null if tokens don't form a valid
-	 * declaration
+	 * @return Declaration object or null if tokens don't form a valid declaration
 	 */
 	public static Declaration parse(TokenStream tokens)
 	{

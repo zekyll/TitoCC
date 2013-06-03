@@ -49,8 +49,8 @@ public class ArgumentList extends CodeElement
 	}
 
 	/**
-	 * Generates assembly code to evaluate the arguments from left to right and
-	 * push the values to stack.
+	 * Generates assembly code to evaluate the arguments from left to right and push the values to
+	 * stack.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the arguments are evaluated
@@ -62,14 +62,18 @@ public class ArgumentList extends CodeElement
 	public void compile(Assembler asm, Scope scope, Registers regs, List<CType> paramTypes)
 			throws SyntaxException, IOException
 	{
-		if (paramTypes.size() != arguments.size())
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getPosition());
+		if (paramTypes.size() != arguments.size()) {
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
+					getPosition());
+		}
 
 		Iterator<CType> paramIterator = paramTypes.iterator();
 		for (Expression arg : arguments) {
 			CType paramType = paramIterator.next();
-			if (!arg.isAssignableTo(paramType, scope))
-				throw new SyntaxException("Argument type doesn't match type of the parameter.", arg.getPosition());
+			if (!arg.isAssignableTo(paramType, scope)) {
+				throw new SyntaxException("Argument type doesn't match type of the parameter.",
+						arg.getPosition());
+			}
 
 			arg.compile(asm, scope, regs);
 			asm.emit("push", "sp", regs.get(0).toString());
@@ -86,12 +90,11 @@ public class ArgumentList extends CodeElement
 	}
 
 	/**
-	 * Attempts to parse an argument list from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse an argument list from token stream. If parsing fails the stream is reset to
+	 * its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return ArgumentList object or null if tokens don't form a valid argument
-	 * list
+	 * @return ArgumentList object or null if tokens don't form a valid argument list
 	 */
 	public static ArgumentList parse(TokenStream tokens)
 	{

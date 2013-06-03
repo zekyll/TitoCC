@@ -42,8 +42,8 @@ public abstract class Statement extends CodeElement
 			throws IOException, SyntaxException;
 
 	/**
-	 * Attempts to parse statement from token stream. If parsing fails the
-	 * stream is reset to its initial position.
+	 * Attempts to parse statement from token stream. If parsing fails the stream is reset to its
+	 * initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Statement object or null if tokens don't form a valid statement

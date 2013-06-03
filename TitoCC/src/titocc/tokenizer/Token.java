@@ -20,8 +20,7 @@ public abstract class Token
 	/**
 	 * Constructs a Token.
 	 *
-	 * @param string string representation of the token as it appears in the
-	 * source text
+	 * @param string string representation of the token as it appears in the source text
 	 * @param position starting position of the token
 	 */
 	protected Token(String string, Position position)

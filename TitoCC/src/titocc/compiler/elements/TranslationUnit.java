@@ -17,8 +17,8 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Top level code element that represents a single translation unit. Formed by a
- * list of declarations.
+ * Top level code element that represents a single translation unit. Formed by a list of
+ * declarations.
  *
  * <p> EBNF definition:
  *
@@ -54,18 +54,17 @@ public class TranslationUnit extends CodeElement
 	}
 
 	/**
-	 * Generates code for the translation unit. Compiles all declarations,
-	 * searches for the main function and emits code for calling the main
-	 * function.
+	 * Generates code for the translation unit. Compiles all declarations, searches for the main
+	 * function and emits code for calling the main function.
 	 *
 	 * @param asm assembler used for code generation
-	 * @param scope scope in which the translation unit is compiled (should be
-	 * global scope)
+	 * @param scope scope in which the translation unit is compiled (should be global scope)
 	 * @param regs available registers; must have at least one active register
 	 * @throws SyntaxException if translation unit contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Registers regs) throws IOException, SyntaxException
+	public void compile(Assembler asm, Scope scope, Registers regs)
+			throws IOException, SyntaxException
 	{
 		// Call main function and then halt.
 		asm.emit("add", "sp", "=1");
@@ -80,12 +79,11 @@ public class TranslationUnit extends CodeElement
 	}
 
 	/**
-	 * Attempts to parse a translation unit from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a translation unit from token stream. If parsing fails the stream is reset
+	 * to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return TranslationUnit object or null if tokens don't form a valid
-	 * translation unit
+	 * @return TranslationUnit object or null if tokens don't form a valid translation unit
 	 */
 	public static TranslationUnit parse(TokenStream tokens)
 	{

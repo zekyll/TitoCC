@@ -13,9 +13,8 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Similar to function call expression but calls an intrinsic function.
- * Currently two instrinsic functions are supported: in() and out(x) that
- * correspond to the in/out instructions in ttk-91.
+ * Similar to function call expression but calls an intrinsic function. Currently two instrinsic
+ * functions are supported: in() and out(x) that correspond to the in/out instructions in ttk-91.
  *
  * <p> EBNF definition:
  *
@@ -27,12 +26,14 @@ public class IntrinsicCallExpression extends Expression
 	 * List of instrinsic function names.
 	 */
 	static final String[] intrinsicFunctions = {"in", "out"};
+
 	/**
 	 * Name of the intrinsic function to call.
 	 */
 	private final String name;
+
 	/**
-	 * Argument list for the intrinsic call. 
+	 * Argument list for the intrinsic call.
 	 */
 	private ArgumentList argumentList;
 
@@ -84,8 +85,10 @@ public class IntrinsicCallExpression extends Expression
 	private void compileIn(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		if (!argumentList.getArguments().isEmpty())
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getPosition());
+		if (!argumentList.getArguments().isEmpty()) {
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
+					getPosition());
+		}
 
 		asm.emit("in", regs.get(0).toString(), "=kbd");
 	}
@@ -93,8 +96,10 @@ public class IntrinsicCallExpression extends Expression
 	private void compileOut(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		if (argumentList.getArguments().size() != 1)
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.", getPosition());
+		if (argumentList.getArguments().size() != 1) {
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
+					getPosition());
+		}
 
 		argumentList.getArguments().get(0).compile(asm, scope, regs);
 		asm.emit("out", regs.get(0).toString(), "=crt");
@@ -117,14 +122,13 @@ public class IntrinsicCallExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse an intrinsic call expression from token stream, given
-	 * the first operand of the expression. If parsing fails the stream is reset
-	 * to its initial position.
+	 * Attempts to parse an intrinsic call expression from token stream, given the first operand of
+	 * the expression. If parsing fails the stream is reset to its initial position.
 	 *
 	 * @param firstOperand preparsed function expression
 	 * @param tokens source token stream
-	 * @return IntrinsicCallExpression object or null if tokens don't form a
-	 * valid intrinsic call expression
+	 * @return IntrinsicCallExpression object or null if tokens don't form a valid intrinsic call
+	 * expression
 	 */
 	public static IntrinsicCallExpression parse(Expression firstOperand, TokenStream tokens)
 	{

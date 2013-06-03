@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
-import titocc.util.AsciiUtil;
 import titocc.util.Position;
 
 /**

@@ -8,8 +8,7 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> PRIMARY_EXPRESSION = IDENTIFIER_EXPRESSION | INTEGER_LITERAL_EXPRESSION
- * | "(" EXPRESSION ")"
+ * <br> PRIMARY_EXPRESSION = IDENTIFIER_EXPRESSION | INTEGER_LITERAL_EXPRESSION | "(" EXPRESSION ")"
  */
 public abstract class PrimaryExpression extends Expression
 {
@@ -22,8 +21,8 @@ public abstract class PrimaryExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse a syntactic primary expression from token stream. If
-	 * parsing fails the stream is reset to its initial position.
+	 * Attempts to parse a syntactic primary expression from token stream. If parsing fails the
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Expression object or null if tokens don't form a valid expression

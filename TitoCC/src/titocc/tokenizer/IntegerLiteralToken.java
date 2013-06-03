@@ -5,11 +5,10 @@ import titocc.util.AsciiUtil;
 import titocc.util.Position;
 
 /**
- * Integer literals consist of sequence of digits 0-9, followed by an optional
- * suffix. The suffix follows the same rules as identifiers. Hexadecimal and and
- * octal literals are not yet supported. All integer literals are non-negative
- * and "negative literals" are implemented in the parser/compiler with unary
- * minus operator.
+ * Integer literals consist of sequence of digits 0-9, followed by an optional suffix. The suffix
+ * follows the same rules as identifiers. Hexadecimal and and octal literals are not yet supported.
+ * All integer literals are non-negative and "negative literals" are implemented in the
+ * parser/compiler with unary minus operator.
  */
 public class IntegerLiteralToken extends Token
 {
@@ -60,13 +59,11 @@ public class IntegerLiteralToken extends Token
 	}
 
 	/**
-	 * Attempts to parse an integer literal from input. If the characters don't
-	 * match an integer literal then resets the stream to its original position
-	 * and returns null.
+	 * Attempts to parse an integer literal from input. If the characters don't match an integer
+	 * literal then resets the stream to its original position and returns null.
 	 *
 	 * @param reader code reader from which charactes are read
-	 * @return IntegerLiteralToken object or null if no valid integer literal
-	 * was found
+	 * @return IntegerLiteralToken object or null if no valid integer literal was found
 	 * @throws IOException if code reader throws
 	 */
 	public static IntegerLiteralToken parse(CodeReader reader) throws IOException
@@ -86,8 +83,7 @@ public class IntegerLiteralToken extends Token
 				suffix.append(reader.read());
 
 			String tokenString = digitStr + suffix.toString();
-			token = new IntegerLiteralToken(tokenString, pos, digitStr,
-					suffix.toString());
+			token = new IntegerLiteralToken(tokenString, pos, digitStr, suffix.toString());
 		}
 
 		return token;

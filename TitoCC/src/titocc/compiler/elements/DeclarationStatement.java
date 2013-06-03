@@ -58,12 +58,12 @@ public class DeclarationStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a declaration statement from token stream. If parsing
-	 * fails the stream is reset to its initial position.
+	 * Attempts to parse a declaration statement from token stream. If parsing fails the stream is
+	 * reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return DeclarationStatement object or null if tokens don't form a valid
-	 * declaration statement
+	 * @return DeclarationStatement object or null if tokens don't form a valid declaration
+	 * statement
 	 */
 	public static DeclarationStatement parse(TokenStream tokens)
 	{

@@ -58,12 +58,11 @@ public class ExpressionStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse an expression statement from token stream. If parsing
-	 * fails the stream is reset to its initial position.
+	 * Attempts to parse an expression statement from token stream. If parsing fails the stream is
+	 * reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return ExpressionStatement object or null if tokens don't form a valid
-	 * expression statement
+	 * @return ExpressionStatement object or null if tokens don't form a valid expression statement
 	 */
 	public static ExpressionStatement parse(TokenStream tokens)
 	{
@@ -72,9 +71,10 @@ public class ExpressionStatement extends Statement
 		ExpressionStatement exprStatement = null;
 
 		Expression expr = Expression.parse(tokens);
-		if (expr != null)
+		if (expr != null) {
 			if (tokens.read().toString().equals(";"))
 				exprStatement = new ExpressionStatement(expr, pos);
+		}
 
 		tokens.popMark(exprStatement == null);
 		return exprStatement;

@@ -5,10 +5,9 @@ import titocc.util.AsciiUtil;
 import titocc.util.Position;
 
 /**
- * Common base class for identifiers and keywords. Allowed characters in word
- * tokens are letters a-z/A-Z, underscores and digits 0-9. The first character
- * must not be a digit. If the word token is not a keyword then it is considered
- * an identifier.
+ * Common base class for identifiers and keywords. Allowed characters in word tokens are letters
+ * a-z/A-Z, underscores and digits 0-9. The first character must not be a digit. If the word token
+ * is not a keyword then it is considered an identifier.
  */
 public abstract class WordToken extends Token
 {
@@ -24,9 +23,8 @@ public abstract class WordToken extends Token
 	}
 
 	/**
-	 * Attempts to parse a word token from input. If the characters don't
-	 * match a valid word token then resets the stream to its original position
-	 * and returns null.
+	 * Attempts to parse a word token from input. If the characters don't match a valid word token
+	 * then resets the stream to its original position and returns null.
 	 *
 	 * @param reader code reader from which charactes are read
 	 * @return WordToken object or null if no valid word was found

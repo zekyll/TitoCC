@@ -16,13 +16,12 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Function declaration and definition. Forward declarations are not currently
- * supported so this is always both declaration and definition. Functions
- * are parsed using the declarator syntax similar to object declarations,
- * where the type specifier and declarator together specify the return type,
- * function name and parameters. The declarator must specify a function type
- * (checked during semantic analysis). Function definition also needs to have
- * a compound statement as the function body.
+ * Function declaration and definition. Forward declarations are not currently supported so this is
+ * always both declaration and definition. Functions are parsed using the declarator syntax similar
+ * to object declarations, where the type specifier and declarator together specify the return type,
+ * function name and parameters. The declarator must specify a function type (checked during
+ * semantic analysis). Function definition also needs to have a compound statement as the function
+ * body.
  *
  * <p> EBNF definition:
  *
@@ -31,8 +30,7 @@ import titocc.util.Position;
 public class Function extends Declaration
 {
 	/**
-	 * Return type specifier. The actual return type is further modified by
-	 * the declarator.
+	 * Return type specifier. The actual return type is further modified by the declarator.
 	 */
 	private final TypeSpecifier returnTypeSpecifier;
 
@@ -85,8 +83,7 @@ public class Function extends Declaration
 
 		// Get function type and declare parameters.
 		List<Symbol> parameters = new ArrayList<Symbol>();
-		CType type = declarator.compile(returnTypeSpecifier.getType(),
-				functionScope, parameters);
+		CType type = declarator.compile(returnTypeSpecifier.getType(), functionScope, parameters);
 
 		// Check that the declarator actually declares a function.
 		if (!(type instanceof FunctionType))
@@ -126,24 +123,19 @@ public class Function extends Declaration
 
 	private void addInternalSymbols(Scope scope, CType returnType)
 	{
-		// Add symbol for the function end so that return statements can jump to
-		// it.
-		endSymbol = new Symbol("End", new VoidType(), scope,
-				"", Symbol.Category.Internal); //__End
+		// Add symbol ("__End") for the function end so that return statements can jump to it.
+		endSymbol = new Symbol("End", new VoidType(), scope, "", Symbol.Category.Internal);
 		scope.add(endSymbol);
 
-		// Add symbol for location of the return value.
-		retValSymbol = new Symbol("Ret", returnType, scope,
-				"(fp)", Symbol.Category.Internal); //__Ret
+		// Add symbol ("__Ret") for location of the return value.
+		retValSymbol = new Symbol("Ret", returnType, scope, "(fp)", Symbol.Category.Internal);
 		scope.add(retValSymbol);
 	}
 
 	/**
-	 * Emit constants for return value and parameters. Returs total size of
-	 * tha parameters.
+	 * Emit constants for return value and parameters. Returs total size of tha parameters.
 	 */
-	private int addParameterConstants(Assembler asm, List<Symbol> parameters)
-			throws IOException
+	private int addParameterConstants(Assembler asm, List<Symbol> parameters) throws IOException
 	{
 		int paramTotalSize = 0;
 		for (Symbol p : parameters)
@@ -162,8 +154,8 @@ public class Function extends Declaration
 		return paramTotalSize;
 	}
 
-	private void compilePrologue(Assembler asm, List<Symbol> localVariables,
-			String startLabel) throws IOException, SyntaxException
+	private void compilePrologue(Assembler asm, List<Symbol> localVariables, String startLabel)
+			throws IOException, SyntaxException
 	{
 		// Define constants for local variables.
 		int varOffset = 0;
@@ -234,8 +226,8 @@ public class Function extends Declaration
 	}
 
 	/**
-	 * Attempts to parse a function from token stream. If parsing fails the
-	 * stream is reset to its initial position.
+	 * Attempts to parse a function from token stream. If parsing fails the stream is reset to its
+	 * initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return Function object or null if tokens don't form a valid function

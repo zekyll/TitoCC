@@ -67,7 +67,8 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs) throws SyntaxException, IOException
+	public void compile(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
 		Symbol func = validateFunction(scope);
 		FunctionType funcType = ((FunctionType) func.getType());
@@ -110,24 +111,21 @@ public class FunctionCallExpression extends Expression
 	}
 
 	/**
-	 * Attempts to parse a function call expression from token stream, given the
-	 * first operand of the expression. If parsing fails the stream is reset to
-	 * its initial position.
+	 * Attempts to parse a function call expression from token stream, given the first operand of
+	 * the expression. If parsing fails the stream is reset to its initial position.
 	 *
 	 * @param firstOperand preparsed function expression
 	 * @param tokens source token stream
-	 * @return FunctionCallExpression object or null if tokens don't form a
-	 * valid function call expression
+	 * @return FunctionCallExpression object or null if tokens don't form a valid function call
+	 * expression
 	 */
 	public static FunctionCallExpression parse(Expression firstOperand, TokenStream tokens)
 	{
 		FunctionCallExpression expr = null;
 
 		ArgumentList argList = ArgumentList.parse(tokens);
-		if (argList != null) {
-			expr = new FunctionCallExpression(firstOperand, argList,
-					firstOperand.getPosition());
-		}
+		if (argList != null)
+			expr = new FunctionCallExpression(firstOperand, argList, firstOperand.getPosition());
 
 		return expr;
 	}

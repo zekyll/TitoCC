@@ -23,5 +23,4 @@ public class EofTokenTest
 		assertNull(EofToken.parse(cr));
 		assertEquals('a', cr.read());
 	}
-
 }

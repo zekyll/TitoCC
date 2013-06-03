@@ -10,9 +10,8 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Statement that breaks the execution of a loop (for/do-while/for) or switch
- * statement and jumps to the next statement after it. Can only appear in
- * loop/switch body.
+ * Statement that breaks the execution of a loop (for/do-while/for) or switch statement and jumps to
+ * the next statement after it. Can only appear in loop/switch body.
  *
  * <p> EBNF definition:
  *
@@ -37,8 +36,7 @@ public class BreakStatement extends Statement
 		Symbol jumpPosition = scope.find("__Brk");
 
 		if (jumpPosition == null)
-			throw new SyntaxException("Break used outside loop or switch.",
-					getPosition());
+			throw new SyntaxException("Break used outside loop or switch.", getPosition());
 
 		// Jump to end of the loop/switch
 		asm.emit("jump", "sp", jumpPosition.getReference());
@@ -51,12 +49,11 @@ public class BreakStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a break statement from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a break statement from token stream. If parsing fails the stream is reset
+	 * to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return BreakStatement object or null if tokens don't form a valid
-	 * break statement
+	 * @return BreakStatement object or null if tokens don't form a valid break statement
 	 */
 	public static BreakStatement parse(TokenStream tokens)
 	{

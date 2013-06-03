@@ -11,10 +11,9 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * List of parameters for a function type. A parameter list can occur in two
- * different contexts: in function definitions, where parameter names are
- * required, and in function declarations or other type declarators where
- * unnamed parameters are allowed.
+ * List of parameters for a function type. A parameter list can occur in two different contexts: in
+ * function definitions, where parameter names are required, and in function declarations or other
+ * type declarators where unnamed parameters are allowed.
  *
  * <p> EBNF definition:
  *
@@ -53,9 +52,9 @@ public class ParameterList extends CodeElement
 	 * Deduces paramter types and declares symbols for them.
 	 *
 	 * @param scope scope in which the parameter list is compiled
-	 * @param functionDefinition true if the parameter list is part of a
-	 * function definition; disallows unnamed parameters and declares them
-	 * in the current scope instead of creating a "temporary" subscope
+	 * @param functionDefinition true if the parameter list is part of a function definition;
+	 * disallows unnamed parameters and declares them in the current scope instead of creating a
+	 * "temporary" subscope
 	 * @return list of parameter symbols
 	 * @throws SyntaxException if the parameters contain errors
 	 * @throws IOException if assembler throws
@@ -90,8 +89,8 @@ public class ParameterList extends CodeElement
 	}
 
 	/**
-	 * Attempts to parse a parameter list from token stream. If parsing fails
-	 * the stream is reset to its initial position.
+	 * Attempts to parse a parameter list from token stream. If parsing fails the stream is reset to
+	 * its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return ParameterList object or null if tokens don't form a valid

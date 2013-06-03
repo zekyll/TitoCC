@@ -9,8 +9,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * If statement. Consists of test expression, a "true statement" and optional
- * "else statement".
+ * If statement. Consists of test expression, a "true statement" and optional "else statement".
  *
  * <p> EBNF definition:
  *
@@ -22,10 +21,12 @@ public class IfStatement extends Statement
 	 * Test expression.
 	 */
 	private final Expression test;
+
 	/**
 	 * Statement executed when test is true.
 	 */
 	private final Statement trueStatement;
+
 	/**
 	 * Statement executed when test is false. Null if not used.
 	 */
@@ -36,12 +37,12 @@ public class IfStatement extends Statement
 	 *
 	 * @param test expression used as the test
 	 * @param trueStatement statement evaluated when test is not 0
-	 * @param elseStatement statement evaluated when test is 0; this parameter
-	 * can be null if there is no else statement
+	 * @param elseStatement statement evaluated when test is 0; this parameter can be null if there
+	 * is no else statement
 	 * @param position starting position of the if statement
 	 */
-	public IfStatement(Expression test, Statement trueStatement,
-			Statement elseStatement, Position position)
+	public IfStatement(Expression test, Statement trueStatement, Statement elseStatement,
+			Position position)
 	{
 		super(position);
 		this.test = test;
@@ -122,12 +123,11 @@ public class IfStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse an if statement from token stream. If parsing fails the
-	 * stream is reset to its initial position.
+	 * Attempts to parse an if statement from token stream. If parsing fails the stream is reset to
+	 * its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return IfStatement object or null if tokens don't form a valid if
-	 * statement
+	 * @return IfStatement object or null if tokens don't form a valid if statement
 	 */
 	public static IfStatement parse(TokenStream tokens)
 	{

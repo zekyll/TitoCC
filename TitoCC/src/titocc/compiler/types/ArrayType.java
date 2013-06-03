@@ -1,8 +1,8 @@
 package titocc.compiler.types;
 
 /**
- * Corresponds to C array type. Is an object, but not scalar or arithmetic.
- * Equals only to ArrayType that has same element type and length.
+ * Corresponds to C array type. Is an object, but not scalar or arithmetic. Equals only to ArrayType
+ * that has same element type and length.
  */
 public class ArrayType extends CType
 {
@@ -10,6 +10,7 @@ public class ArrayType extends CType
 	 * Element type.
 	 */
 	private final CType elementType;
+
 	/**
 	 * Array length.
 	 */

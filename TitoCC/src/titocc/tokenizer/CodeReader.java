@@ -6,9 +6,9 @@ import java.io.Reader;
 import titocc.util.Position;
 
 /**
- * Wrapper for Reader interface that reads characters one at a time and keeps
- * track of lines and columns. Also supports peeking the next and character
- * after that without removing them from the input stream.
+ * Wrapper for Reader interface that reads characters one at a time and keeps track of lines and
+ * columns. Also supports peeking the next and character after that without removing them from the
+ * input stream.
  */
 public class CodeReader
 {
@@ -74,8 +74,8 @@ public class CodeReader
 	}
 
 	/**
-	 * Return the next character that will be returned by read(), but does not
-	 * remove the character from the stream.
+	 * Return the next character that will be returned by read(), but does not remove the character
+	 * from the stream.
 	 *
 	 * @return next character
 	 */
@@ -85,8 +85,8 @@ public class CodeReader
 	}
 
 	/**
-	 * Return the character that will be returned by second call to read(), but
-	 * does not remove any characters from the stream.
+	 * Return the character that will be returned by second call to read(), but does not remove any
+	 * characters from the stream.
 	 *
 	 * @return the character after next character
 	 */
@@ -126,8 +126,7 @@ public class CodeReader
 	}
 
 	/**
-	 * Reads and ignores characters until next non-whitespace character is
-	 * found.
+	 * Reads and ignores characters until next non-whitespace character is found.
 	 *
 	 * @throws IOException if the underlying reader throws
 	 */
@@ -138,8 +137,8 @@ public class CodeReader
 	}
 
 	/**
-	 * Reads one character from the internal reader. Convert the int value to
-	 * char so that EOF (-1) is repsesented by null character.
+	 * Reads one character from the internal reader. Convert the int value to char so that EOF (-1)
+	 * is repsesented by null character.
 	 *
 	 * @param c character to convert
 	 * @return result of the conversion

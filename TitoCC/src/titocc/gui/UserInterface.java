@@ -40,11 +40,17 @@ public class UserInterface implements Runnable, ActionListener, DocumentListener
 	 * GUI components.
 	 */
 	private JFrame frame;
+
 	private JMenuItem openItem, exitItem, saveItem, saveAsItem, compileItem;
+
 	private JCheckBoxMenuItem saveOnCompileItem, createOutputFileItem;
+
 	private JTextArea sourceTextArea, outputTextArea;
+
 	private LogArea logArea;
+
 	private JFileChooser fileChooser;
+
 	/**
 	 * Source file object.
 	 */

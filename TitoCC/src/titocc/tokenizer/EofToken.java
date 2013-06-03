@@ -19,9 +19,8 @@ public class EofToken extends Token
 	}
 
 	/**
-	 * Attempts to parse end of file token from input. If the reader is not at
-	 * the end of the text then resets the stream to its original position and
-	 * returns null.
+	 * Attempts to parse end of file token from input. If the reader is not at the end of the text
+	 * then resets the stream to its original position and returns null.
 	 *
 	 * @param reader code reader from which charactes are read
 	 * @return EofToken object or null if not at the end of file

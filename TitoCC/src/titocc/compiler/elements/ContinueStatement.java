@@ -10,8 +10,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Statement that jumps to the next iteration of a loop. Can only appear in
- * loop body.
+ * Statement that jumps to the next iteration of a loop. Can only appear in loop body.
  *
  * <p> EBNF definition:
  *
@@ -36,8 +35,7 @@ public class ContinueStatement extends Statement
 		Symbol jumpPosition = scope.find("__Cont");
 
 		if (jumpPosition == null)
-			throw new SyntaxException("Continue used outside of loop.",
-					getPosition());
+			throw new SyntaxException("Continue used outside of loop.", getPosition());
 
 		// Jump to next iteration.
 		asm.emit("jump", "sp", jumpPosition.getReference());
@@ -50,12 +48,11 @@ public class ContinueStatement extends Statement
 	}
 
 	/**
-	 * Attempts to parse a continue statement from token stream. If parsing
-	 * fails the stream is reset to its initial position.
+	 * Attempts to parse a continue statement from token stream. If parsing fails the stream is
+	 * reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return ContinueStatement object or null if tokens don't form a valid
-	 * continue statement
+	 * @return ContinueStatement object or null if tokens don't form a valid continue statement
 	 */
 	public static ContinueStatement parse(TokenStream tokens)
 	{

@@ -20,9 +20,8 @@ import titocc.tokenizer.Token;
 import titocc.tokenizer.Tokenizer;
 
 /**
- * Source code file that may have a file on the disk associated with it.
- * Provides functionality to compile the file and write/read the contents
- * to/from disk.
+ * Source code file that may have a file on the disk associated with it. Provides functionality to
+ * compile the file and write/read the contents to/from disk.
  */
 public class SourceFile
 {
@@ -30,6 +29,7 @@ public class SourceFile
 	 * Document object that contains the actual text data.
 	 */
 	private final PlainDocument document;
+
 	/**
 	 * File object associated with this source file.
 	 */
@@ -44,8 +44,7 @@ public class SourceFile
 	}
 
 	/**
-	 * Returns the Document object associated with the source file to be used
-	 * with JTextArea etc.
+	 * Returns the Document object associated with the source file to be used with JTextArea etc.
 	 *
 	 * @return the Document object
 	 */
@@ -94,8 +93,7 @@ public class SourceFile
 	 *
 	 * @param log logger for compiler messages and errors
 	 * @param writer Writer object used for compiler output
-	 * @param createOutputFile if true, additionally a .k91 output file will be
-	 * created
+	 * @param createOutputFile if true, additionally a .k91 output file will be created
 	 * @throws IOException if writing the output file fails
 	 */
 	public void compile(MessageLog log, Writer writer, boolean createOutputFile) throws IOException
@@ -120,7 +118,8 @@ public class SourceFile
 		} catch (SyntaxException e) {
 			int line = e.getPosition().line + 1;
 			int character = e.getPosition().column + 1;
-			log.logMessage("Compiler error (line " + line + ", ch " + character + "): " + e.getMessage());
+			log.logMessage("Compiler error (line " + line + ", ch " + character + "): "
+					+ e.getMessage());
 		} catch (Exception e) {
 			log.logMessage("Compilation failed: " + e.getMessage());
 		}
@@ -194,8 +193,7 @@ public class SourceFile
 	}
 
 	/**
-	 * Generates the name of the output file by replacing the extension with
-	 * .k91 extension.
+	 * Generates the name of the output file by replacing the extension with .k91 extension.
 	 *
 	 * @return name of the output file.
 	 */

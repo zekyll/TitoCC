@@ -9,8 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Represents a scope (aka namespace) that contains symbols declared within that
- * scope.
+ * Represents a scope (aka namespace) that contains symbols declared within that scope.
  */
 public class Scope
 {
@@ -18,19 +17,22 @@ public class Scope
 	 * Parent scope.
 	 */
 	private final Scope parent;
+
 	/**
 	 * Map of symbols in this scope.
 	 */
 	private final Map<String, Symbol> symbols = new HashMap<String, Symbol>();
+
 	/**
 	 * Subscopes of this scope.
 	 */
 	private final List<Scope> subScopes = new ArrayList<Scope>();
+
 	/**
-	 * All the reserved names in the ttk-91 namespace. This is list is shared by
-	 * all Scope objects.
+	 * All the reserved names in the ttk-91 namespace. This is list is shared by all Scope objects.
 	 */
 	private final Set<String> globallyUniqueNames;
+
 	/**
 	 * Prefix added for this scope when generating globally unique names.
 	 */
@@ -40,8 +42,7 @@ public class Scope
 	 * Constructs a new Scope.
 	 *
 	 * @param parent parent scope, or null if this is the global scope
-	 * @param globalNamePrefix prefix used for this scope when generating
-	 * globally unique names
+	 * @param globalNamePrefix prefix used for this scope when generating globally unique names
 	 */
 	public Scope(Scope parent, String globalNamePrefix)
 	{
@@ -99,12 +100,10 @@ public class Scope
 	}
 
 	/**
-	 * Adds a new symbol to the scope if no symbols with the same name exist
-	 * already.
+	 * Adds a new symbol to the scope if no symbols with the same name exist already.
 	 *
 	 * @param symbol Symbol to be added.
-	 * @return true if succeeded, or false if symbol was not added (already
-	 * exists)
+	 * @return true if succeeded, or false if symbol was not added (already exists)
 	 */
 	public boolean add(Symbol symbol)
 	{
@@ -135,9 +134,8 @@ public class Scope
 	}
 
 	/**
-	 * Generates a globally unique name by first adding the prefixes of the
-	 * scope and all its parent scopes. Then tries number suffixes starting from
-	 * 2 until the name is unique.
+	 * Generates a globally unique name by first adding the prefixes of the scope and all its parent
+	 * scopes. Then tries number suffixes starting from 2 until the name is unique.
 	 *
 	 * @param name local name
 	 * @return a globally unique name
@@ -152,8 +150,8 @@ public class Scope
 	}
 
 	/**
-	 * Generates the global name prefix for this scope by combining the prefixes
-	 * from all parent scopes.
+	 * Generates the global name prefix for this scope by combining the prefixes from all parent
+	 * scopes.
 	 *
 	 * @return the combined prefix
 	 */
