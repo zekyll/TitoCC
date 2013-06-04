@@ -94,13 +94,10 @@ public class VariableDeclaration extends Declaration
 		String name = declarator.getName();
 
 		Symbol sym;
-		if (scope.isGlobal()) {
-			sym = new Symbol(name, type, scope, "",
-					Symbol.Category.GlobalVariable);
-		} else {
-			sym = new Symbol(name, type, scope, "(fp)",
-					Symbol.Category.LocalVariable);
-		}
+		if (scope.isGlobal())
+			sym = new Symbol(name, type, "", Symbol.Category.GlobalVariable);
+		else
+			sym = new Symbol(name, type, "(fp)", Symbol.Category.LocalVariable);
 
 		if (!scope.add(sym))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());

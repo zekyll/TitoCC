@@ -19,7 +19,7 @@ public class Symbol
 	};
 
 	/**
-	 * Name of the symbol, including prefix "__".
+	 * Name of the symbol.
 	 */
 	private final String name;
 
@@ -29,9 +29,9 @@ public class Symbol
 	private final CType type;
 
 	/**
-	 * Globally unique name.
+	 * Globally unique name. Set when adding the symbol to a scope.
 	 */
-	private final String globallyUniqueName;
+	private String globallyUniqueName = null;
 
 	/**
 	 * Suffix to add to the reference. (for example "(fp)")
@@ -48,18 +48,14 @@ public class Symbol
 	 *
 	 * @param name name of the symbol
 	 * @param type type of the symbol
-	 * @param scope scope this symbol belongs to; used only for generating the globally unique name
 	 * @param referenceSuffix suffix that is added to global name to get the reference ("(fp)" can
 	 * be used for stack frame variables)
 	 * @param category Symbol category (local variable, parameter, internal etc)
 	 */
-	public Symbol(String name, CType type, Scope scope, String referenceSuffix, Category category)
+	public Symbol(String name, CType type, String referenceSuffix, Category category)
 	{
-		// Prefix internal symbols with "__".
-		this.name = category != Category.Internal ? name : "__" + name;
-
+		this.name = name;
 		this.type = type;
-		this.globallyUniqueName = scope.makeGloballyUniqueName(name);
 		this.referenceSuffix = referenceSuffix;
 		this.category = category;
 	}
@@ -78,11 +74,19 @@ public class Symbol
 	 * Returns a globally unique name for the symbol. This is the name used in the ttk-91 code,
 	 * accounting for the fact that there is only one namespace and names are case insensitive.
 	 *
-	 * @return the globally unique name
+	 * @return the globally unique name or null if not set
 	 */
 	public String getGlobalName()
 	{
 		return globallyUniqueName;
+	}
+
+	/**
+	 * Sets the globally unique name for this symbol. Meant to be only called by Scope.addsymbol.
+	 */
+	public void setGlobalName(String globalName)
+	{
+		globallyUniqueName = globalName;
 	}
 
 	/**

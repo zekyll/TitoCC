@@ -88,8 +88,7 @@ public class Parameter extends CodeElement
 		if (name == null)
 			name = "__param";
 
-		Symbol sym = new Symbol(name, type, scope, "(fp)",
-				Symbol.Category.Parameter);
+		Symbol sym = new Symbol(name, type, "(fp)", Symbol.Category.Parameter);
 		if (!scope.add(sym))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
 		return sym;

@@ -100,7 +100,8 @@ public class Scope
 	}
 
 	/**
-	 * Adds a new symbol to the scope if no symbols with the same name exist already.
+	 * Adds a new symbol to the scope if no symbols with the same name exist already. Also reserves
+	 * and sets the globally unique name for the symbol.
 	 *
 	 * @param symbol Symbol to be added.
 	 * @return true if succeeded, or false if symbol was not added (already exists)
@@ -110,6 +111,8 @@ public class Scope
 		if (symbols.containsKey(symbol.getName()))
 			return false;
 		symbols.put(symbol.getName(), symbol);
+		String globalName = makeGloballyUniqueName(symbol.getName());
+		symbol.setGlobalName(globalName);
 		return true;
 	}
 

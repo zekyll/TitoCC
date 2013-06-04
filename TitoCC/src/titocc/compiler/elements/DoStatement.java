@@ -73,11 +73,9 @@ public class DoStatement extends Statement
 		scope.addSubScope(loopScope);
 
 		// Symbols for break/continue.
-		Symbol breakSymbol = new Symbol("Brk", new VoidType(), loopScope,
-				"", Symbol.Category.Internal); //__Brk
+		Symbol breakSymbol = new Symbol("__Brk", new VoidType(), "", Symbol.Category.Internal);
 		loopScope.add(breakSymbol);
-		Symbol continueSymbol = new Symbol("Cont", new VoidType(), loopScope,
-				"", Symbol.Category.Internal); //__Cont
+		Symbol continueSymbol = new Symbol("__Cont", new VoidType(), "", Symbol.Category.Internal);
 		loopScope.add(continueSymbol);
 
 		// Loop start.

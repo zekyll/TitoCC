@@ -7,14 +7,15 @@ import org.junit.Test;
 public class ScopeTest
 {
 	private Scope globalScope;
+
 	private Symbol sym1, sym2, sym3;
 
 	@Before
 	public void setUp()
 	{
 		globalScope = new Scope(null, "prefix1_");
-		sym1 = new Symbol("aaa", null, globalScope, "", Symbol.Category.LocalVariable);
-		sym2 = new Symbol("bbb", null, globalScope, "", Symbol.Category.LocalVariable);
+		sym1 = new Symbol("aaa", null, "", Symbol.Category.LocalVariable);
+		sym2 = new Symbol("bbb", null, "", Symbol.Category.LocalVariable);
 	}
 
 	@Test
@@ -62,8 +63,7 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		globalScope.add(sym2);
-		Symbol sym3 = new Symbol(sym1.getName(), null, globalScope,
-				"", Symbol.Category.LocalVariable);
+		Symbol sym3 = new Symbol(sym1.getName(), null, "", Symbol.Category.LocalVariable);
 		boolean ret = globalScope.add(sym3);
 		assertFalse(ret);
 		assertEquals(2, globalScope.getSymbols().size());
@@ -92,8 +92,7 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		Scope subScope = new Scope(globalScope, "");
-		Symbol sym3 = new Symbol(sym1.getName(), null, subScope,
-				"", Symbol.Category.LocalVariable);
+		Symbol sym3 = new Symbol(sym1.getName(), null, "", Symbol.Category.LocalVariable);
 		subScope.add(sym3);
 		assertSame(sym3, subScope.find(sym1.getName()));
 		assertSame(sym1, globalScope.find(sym1.getName()));
@@ -112,8 +111,7 @@ public class ScopeTest
 		myScope.addSubScope(subScope);
 
 		siblingScope.add(sym1);
-		Symbol sym3 = new Symbol(sym1.getName(), null, subScope,
-				"", Symbol.Category.LocalVariable);		
+		Symbol sym3 = new Symbol(sym1.getName(), null, "", Symbol.Category.LocalVariable);
 		subScope.add(sym3);
 
 		assertNull(myScope.find(sym1.getName()));
@@ -159,5 +157,13 @@ public class ScopeTest
 		Scope subScope = new Scope(globalScope, "prefix2_");
 		globalScope.makeGloballyUniqueName("prefix2_name");
 		assertEquals("prefix1_prefix2_name2", subScope.makeGloballyUniqueName("name"));
+	}
+
+	@Test
+	public void addingToScopeSetsGlobalName()
+	{
+		Scope subScope = new Scope(globalScope, "prefix2_");
+		subScope.add(sym1);
+		assertEquals("prefix1_prefix2_aaa", sym1.getGlobalName());
 	}
 }
