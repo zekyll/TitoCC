@@ -14,8 +14,8 @@ public class ScopeTest
 	public void setUp()
 	{
 		globalScope = new Scope(null, "prefix1_");
-		sym1 = new Symbol("aaa", null, "", Symbol.Category.LocalVariable);
-		sym2 = new Symbol("bbb", null, "", Symbol.Category.LocalVariable);
+		sym1 = new Symbol("aaa", null, Symbol.Category.LocalVariable, StorageClass.Auto, false);
+		sym2 = new Symbol("bbb", null, Symbol.Category.LocalVariable, StorageClass.Auto, false);
 	}
 
 	@Test
@@ -63,7 +63,8 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		globalScope.add(sym2);
-		Symbol sym3 = new Symbol(sym1.getName(), null, "", Symbol.Category.LocalVariable);
+		Symbol sym3 = new Symbol(sym1.getName(), null, Symbol.Category.LocalVariable,
+				StorageClass.Auto, false);
 		boolean ret = globalScope.add(sym3);
 		assertFalse(ret);
 		assertEquals(2, globalScope.getSymbols().size());
@@ -92,7 +93,8 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		Scope subScope = new Scope(globalScope, "");
-		Symbol sym3 = new Symbol(sym1.getName(), null, "", Symbol.Category.LocalVariable);
+		Symbol sym3 = new Symbol(sym1.getName(), null, Symbol.Category.LocalVariable,
+				StorageClass.Auto, false);
 		subScope.add(sym3);
 		assertSame(sym3, subScope.find(sym1.getName()));
 		assertSame(sym1, globalScope.find(sym1.getName()));
@@ -111,7 +113,8 @@ public class ScopeTest
 		myScope.addSubScope(subScope);
 
 		siblingScope.add(sym1);
-		Symbol sym3 = new Symbol(sym1.getName(), null, "", Symbol.Category.LocalVariable);
+		Symbol sym3 = new Symbol(sym1.getName(), null, Symbol.Category.LocalVariable,
+				StorageClass.Auto, false);
 		subScope.add(sym3);
 
 		assertNull(myScope.find(sym1.getName()));

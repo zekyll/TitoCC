@@ -29,14 +29,19 @@ public class Symbol
 	private final CType type;
 
 	/**
+	 * Storage class.
+	 */
+	private final StorageClass storageClass;
+
+	/**
+	 * Whether function was declared with inline specifier.
+	 */
+	private final boolean inline;
+
+	/**
 	 * Globally unique name. Set when adding the symbol to a scope.
 	 */
 	private String globallyUniqueName = null;
-
-	/**
-	 * Suffix to add to the reference. (for example "(fp)")
-	 */
-	private final String referenceSuffix;
 
 	/**
 	 * True is local variable.
@@ -48,16 +53,19 @@ public class Symbol
 	 *
 	 * @param name name of the symbol
 	 * @param type type of the symbol
-	 * @param referenceSuffix suffix that is added to global name to get the reference ("(fp)" can
-	 * be used for stack frame variables)
 	 * @param category Symbol category (local variable, parameter, internal etc)
+	 * @param storageClass storage class
+	 * @param inline whether a function was declared inline or not; ignored if symbol has object
+	 * type
 	 */
-	public Symbol(String name, CType type, String referenceSuffix, Category category)
+	public Symbol(String name, CType type, Category category, StorageClass storageClass,
+			boolean inline)
 	{
 		this.name = name;
 		this.type = type;
-		this.referenceSuffix = referenceSuffix;
 		this.category = category;
+		this.storageClass = storageClass;
+		this.inline = inline;
 	}
 
 	/**
@@ -98,7 +106,10 @@ public class Symbol
 	 */
 	public String getReference()
 	{
-		return globallyUniqueName + referenceSuffix;
+		// Stack variables (automatic local variables and parameters) are accessed through stack
+		// pointer (sp).
+		return storageClass == StorageClass.Auto ? globallyUniqueName + "(fp)"
+				: globallyUniqueName;
 	}
 
 	/**
@@ -119,5 +130,25 @@ public class Symbol
 	public Category getCategory()
 	{
 		return category;
+	}
+
+	/**
+	 * Returns storage class.
+	 *
+	 * @return storage class
+	 */
+	public StorageClass getStorageClass()
+	{
+		return storageClass;
+	}
+
+	/**
+	 * Returns the inline specifier flag.
+	 *
+	 * @return true if inline function
+	 */
+	public boolean getInline()
+	{
+		return inline;
 	}
 }

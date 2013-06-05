@@ -74,9 +74,11 @@ public class ForStatement extends Statement
 		scope.addSubScope(loopScope);
 
 		// Symbols for break/continue.
-		Symbol breakSymbol = new Symbol("__Brk", new VoidType(), "", Symbol.Category.Internal);
+		Symbol breakSymbol = new Symbol("__Brk", new VoidType(), Symbol.Category.Internal,
+				null, false);
 		loopScope.add(breakSymbol);
-		Symbol continueSymbol = new Symbol("__Cont", new VoidType(), "", Symbol.Category.Internal);
+		Symbol continueSymbol = new Symbol("__Cont", new VoidType(), Symbol.Category.Internal,
+				null, false);
 		loopScope.add(continueSymbol);
 
 		// Reserve labels.

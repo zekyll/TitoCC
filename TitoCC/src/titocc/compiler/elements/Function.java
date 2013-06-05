@@ -118,7 +118,8 @@ public class Function extends Declaration
 	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
 	{
 		String name = declarator.getName();
-		Symbol sym = new Symbol(name, declType.type, "", Symbol.Category.Function);
+		Symbol sym = new Symbol(name, declType.type, Symbol.Category.Function,
+				StorageClass.Extern, false);
 		if (!scope.add(sym))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
 		return sym;
@@ -127,11 +128,13 @@ public class Function extends Declaration
 	private void addInternalSymbols(Scope scope, CType returnType)
 	{
 		// Add symbol for the function end so that return statements can jump to it.
-		endSymbol = new Symbol("__End", new VoidType(), "", Symbol.Category.Internal);
+		endSymbol = new Symbol("__End", new VoidType(), Symbol.Category.Internal,
+				null, false);
 		scope.add(endSymbol);
 
 		// Add symbol for location of the return value.
-		retValSymbol = new Symbol("__Ret", returnType, "(fp)", Symbol.Category.Internal);
+		retValSymbol = new Symbol("__Ret", returnType, Symbol.Category.Internal,
+				StorageClass.Auto, false);
 		scope.add(retValSymbol);
 	}
 

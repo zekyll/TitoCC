@@ -97,9 +97,11 @@ public class VariableDeclaration extends Declaration
 
 		Symbol sym;
 		if (scope.isGlobal()) {
-			sym = new Symbol(name, declType.type, "", Symbol.Category.GlobalVariable);
+			sym = new Symbol(name, declType.type, Symbol.Category.GlobalVariable,
+					null, false);
 		} else {
-			sym = new Symbol(name, declType.type, "(fp)", Symbol.Category.LocalVariable);
+			sym = new Symbol(name, declType.type, Symbol.Category.LocalVariable,
+					StorageClass.Auto, false);
 		}
 
 		if (!scope.add(sym))
