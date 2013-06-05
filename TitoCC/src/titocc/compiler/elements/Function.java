@@ -5,8 +5,10 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Assembler;
+import titocc.compiler.DeclarationType;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
@@ -16,12 +18,11 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Function declaration and definition. Forward declarations are not currently supported so this is
- * always both declaration and definition. Functions are parsed using the declarator syntax similar
- * to object declarations, where the type specifier and declarator together specify the return type,
- * function name and parameters. The declarator must specify a function type (checked during
- * semantic analysis). Function definition also needs to have a compound statement as the function
- * body.
+ * Function definition that defines the type, storage class and name of the function, and
+ * executed statements. Functions are parsed using a declarator syntax similar to variable
+ * declarations. Declaration specifiers and declarator together specify the return type, storage
+ * class, function name and parameters. The declarator must be a function declarator (checked in
+ * compilation phase). Function definition also requires a compound statement body.
  *
  * <p> EBNF definition:
  *
@@ -30,12 +31,13 @@ import titocc.util.Position;
 public class Function extends Declaration
 {
 	/**
-	 * Return type specifier. The actual return type is further modified by the declarator.
+	 * Declaration specifiers that specify the storage class and part of the return type. The
+	 * actual return type is further modified by the declarator.
 	 */
-	private final TypeSpecifier returnTypeSpecifier;
+	private final DeclarationSpecifiers declarationSpecifiers;
 
 	/**
-	 * Declarator that specifies the function name and parameter types.
+	 * Declarator that modifies the return type, and specifies the function name and parameters.
 	 */
 	private final Declarator declarator;
 
@@ -57,16 +59,16 @@ public class Function extends Declaration
 	/**
 	 * Constructs a Function.
 	 *
-	 * @param returnTypeSpecifier return type specifier
+	 * @param declarationSpecifiers return type specifier
 	 * @param declarator declarator
 	 * @param body body of the function
 	 * @param position starting position of the function
 	 */
-	public Function(TypeSpecifier returnTypeSpecifier, Declarator declarator,
+	public Function(DeclarationSpecifiers declarationSpecifiers, Declarator declarator,
 			CompoundStatement body, Position position)
 	{
 		super(position);
-		this.returnTypeSpecifier = returnTypeSpecifier;
+		this.declarationSpecifiers = declarationSpecifiers;
 		this.declarator = declarator;
 		this.body = body;
 	}
@@ -83,17 +85,18 @@ public class Function extends Declaration
 
 		// Get function type and declare parameters.
 		List<Symbol> parameters = new ArrayList<Symbol>();
-		CType type = declarator.compile(returnTypeSpecifier.getType(), functionScope, parameters);
+		DeclarationType declType = declarationSpecifiers.compile(scope);
+		declType.type = declarator.compile(declType.type, functionScope, parameters);
 
 		// Check that the declarator actually declares a function.
-		if (!(type instanceof FunctionType))
+		if (!(declType.type instanceof FunctionType))
 			throw new SyntaxException("Missing function parameter list.", getPosition());
-		CType returnType = ((FunctionType) type).getReturnType();
+		CType returnType = ((FunctionType) declType.type).getReturnType();
 
 		// Declare the function and its symbols. Point of declaration is right
 		// after the function's declarator, i.e. the function name cannot be
 		// used in parameter list.
-		Symbol sym = addSymbol(scope, type);
+		Symbol sym = addSymbol(scope, declType);
 		addInternalSymbols(functionScope, returnType);
 
 		// Constants for return value and parameters.
@@ -112,10 +115,10 @@ public class Function extends Declaration
 		compileEpilogue(asm, localVariables, paramTotalSize);
 	}
 
-	private Symbol addSymbol(Scope scope, CType type) throws SyntaxException
+	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
 	{
 		String name = declarator.getName();
-		Symbol sym = new Symbol(name, type, "", Symbol.Category.Function);
+		Symbol sym = new Symbol(name, declType.type, "", Symbol.Category.Function);
 		if (!scope.add(sym))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
 		return sym;
@@ -221,7 +224,7 @@ public class Function extends Declaration
 	@Override
 	public String toString()
 	{
-		return "(FUNC " + returnTypeSpecifier + " " + declarator
+		return "(FUNC " + declarationSpecifiers + " " + declarator
 				+ " " + body + ")";
 	}
 
@@ -238,14 +241,14 @@ public class Function extends Declaration
 		tokens.pushMark();
 		Function function = null;
 
-		TypeSpecifier retTypeSpec = TypeSpecifier.parse(tokens);
+		DeclarationSpecifiers declSpecifiers = DeclarationSpecifiers.parse(tokens);
 
-		if (retTypeSpec != null) {
+		if (declSpecifiers != null) {
 			Declarator declarator = Declarator.parse(tokens, false);
 			if (declarator != null) {
 				CompoundStatement body = CompoundStatement.parse(tokens);
 				if (body != null)
-					function = new Function(retTypeSpec, declarator, body, pos);
+					function = new Function(declSpecifiers, declarator, body, pos);
 			}
 		}
 

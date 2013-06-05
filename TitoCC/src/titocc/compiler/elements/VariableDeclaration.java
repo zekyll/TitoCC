@@ -2,34 +2,34 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.DeclarationType;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.ArrayType;
-import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Declares and defines global or local variable. Consists of a type, a name and an optional
- * initializer expression. For global variables the initializer must be a compile time constant
- * expression (thanks to C standard).
+ * Declares and defines a global or local variable. Consists of a type and a name (given by
+ * declaration specifiers and a declarator) and an optional initializer expression. For global
+ * variables the initializer must be a compile time constant expression.
  *
  * <p> EBNF definition:
  *
- * <br> VARIABLE_DECLARATION = TYPE_SPECIFIER DECLARATOR ["=" EXPRESSION] ";"
+ * <br> VARIABLE_DECLARATION = DECLARATION_SPECIFIERS DECLARATOR ["=" EXPRESSION] ";"
  */
 public class VariableDeclaration extends Declaration
 {
 	/**
-	 * Type specifier for the declaration. (void or int)
+	 * Declaration specifiers, giving the storage class and part of the type.
 	 */
-	private final TypeSpecifier typeSpecifier;
+	private final DeclarationSpecifiers declarationSpecifiers;
 
 	/**
-	 * Declarator which has the variable name and which modifies the type
-	 * specifier.
+	 * Declarator which modifies the type and gives the variable name.
 	 */
 	private final Declarator declarator;
 
@@ -41,16 +41,16 @@ public class VariableDeclaration extends Declaration
 	/**
 	 * Constructs a VariableDeclaration.
 	 *
-	 * @param typeSpecifier specifier of the variable
+	 * @param declarationSpecifiers declaration specifiers
 	 * @param declarator declarator of the variable
 	 * @param initializer initializer expression or null if the variable is left uninitialized
 	 * @param position starting position of the variable declaration
 	 */
-	public VariableDeclaration(TypeSpecifier typeSpecifier, Declarator declarator,
+	public VariableDeclaration(DeclarationSpecifiers declarationSpecifiers, Declarator declarator,
 			Expression initializer, Position position)
 	{
 		super(position);
-		this.typeSpecifier = typeSpecifier;
+		this.declarationSpecifiers = declarationSpecifiers;
 		this.declarator = declarator;
 		this.initializer = initializer;
 	}
@@ -69,16 +69,18 @@ public class VariableDeclaration extends Declaration
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		CType type = declarator.compile(typeSpecifier.getType(), scope, null);
-		if (!type.isObject())
+		DeclarationType declType = declarationSpecifiers.compile(scope);
+
+		declType.type = declarator.compile(declType.type, scope, null);
+		if (!declType.type.isObject())
 			throw new SyntaxException("Variable must have object type.", getPosition());
 
-		if (type instanceof ArrayType && initializer != null)
+		if (declType.type instanceof ArrayType && initializer != null)
 			throw new SyntaxException("Array initializers are not supported.", getPosition());
 
-		Symbol sym = addSymbol(scope, type);
+		Symbol sym = addSymbol(scope, declType);
 
-		if (initializer != null && !initializer.isAssignableTo(type, scope)) {
+		if (initializer != null && !initializer.isAssignableTo(declType.type, scope)) {
 			throw new SyntaxException("Initializer type doesn't match variable type.",
 					getPosition());
 		}
@@ -89,15 +91,16 @@ public class VariableDeclaration extends Declaration
 			compileLocalVariable(asm, scope, sym, regs);
 	}
 
-	private Symbol addSymbol(Scope scope, CType type) throws SyntaxException
+	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
 	{
 		String name = declarator.getName();
 
 		Symbol sym;
-		if (scope.isGlobal())
-			sym = new Symbol(name, type, "", Symbol.Category.GlobalVariable);
-		else
-			sym = new Symbol(name, type, "(fp)", Symbol.Category.LocalVariable);
+		if (scope.isGlobal()) {
+			sym = new Symbol(name, declType.type, "", Symbol.Category.GlobalVariable);
+		} else {
+			sym = new Symbol(name, declType.type, "(fp)", Symbol.Category.LocalVariable);
+		}
 
 		if (!scope.add(sym))
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
@@ -108,7 +111,7 @@ public class VariableDeclaration extends Declaration
 	@Override
 	public String toString()
 	{
-		return "(VAR_DECL " + typeSpecifier + " " + declarator + " " + initializer + ")";
+		return "(VAR_DECL " + declarationSpecifiers + " " + declarator + " " + initializer + ")";
 	}
 
 	private void compileGlobalVariable(Assembler asm, Scope scope, Symbol sym)
@@ -152,14 +155,14 @@ public class VariableDeclaration extends Declaration
 		tokens.pushMark();
 		VariableDeclaration varDeclaration = null;
 
-		TypeSpecifier type = TypeSpecifier.parse(tokens);
+		DeclarationSpecifiers declSpecifiers = DeclarationSpecifiers.parse(tokens);
 
-		if (type != null) {
+		if (declSpecifiers != null) {
 			Declarator declarator = Declarator.parse(tokens, false);
 			if (declarator != null) {
 				Expression init = parseInitializer(tokens);
 				if (tokens.read().toString().equals(";"))
-					varDeclaration = new VariableDeclaration(type, declarator, init, pos);
+					varDeclaration = new VariableDeclaration(declSpecifiers, declarator, init, pos);
 			}
 		}
 

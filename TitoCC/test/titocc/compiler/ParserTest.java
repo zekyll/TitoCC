@@ -22,71 +22,71 @@ public class ParserTest
 
 	private String inFunc(String s)
 	{
-		return "(TRUNIT (FUNC (TYPE void) (DCLTOR (DCLTOR f) (PRM_LIST)) (BLK_ST " + s + ")))";
+		return "(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR f) (PRM_LIST)) (BLK_ST " + s + ")))";
 	}
 
 	@Test
 	public void matchVariableDeclaration() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR abc) null))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR abc) null))",
 				parse("int abc;"));
-		assertEquals("(TRUNIT (VAR_DECL (TYPE void) (DCLTOR _cba123) null))",
+		assertEquals("(TRUNIT (VAR_DECL (DS void) (DCLTOR _cba123) null))",
 				parse("void _cba123;")); // legal in parser
 	}
 
 	@Test
 	public void matchVariableDeclarationWithInitializer() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR xyz) (INT_EXPR 0 U)))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR xyz) (INT_EXPR 0 U)))",
 				parse("int xyz = 0U;"));
 	}
 
 	@Test
 	public void matchArrayDeclarator() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR (DCLTOR (DCLTOR xyz) (ID_EXPR a)) (INT_EXPR 3)) null))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR (DCLTOR xyz) (ID_EXPR a)) (INT_EXPR 3)) null))",
 				parse("int xyz[a][3];"));
 	}
 
 	@Test
 	public void matchPointerDeclarator() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR (DCLTOR (DCLTOR xyz))) null))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR (DCLTOR xyz))) null))",
 				parse("int * * xyz;"));
 	}
 
 	@Test
 	public void matchBraceDeclarator() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR xyz) null))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR xyz) null))",
 				parse("int (xyz);"));
 	}
 
 	@Test
 	public void matchComplexDeclaration() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR (DCLTOR (DCLTOR (DCLTOR xyz) (INT_EXPR 2))) (ID_EXPR a)) null))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR (DCLTOR (DCLTOR xyz) (INT_EXPR 2))) (ID_EXPR a)) null))",
 				parse("int (*xyz[2])[a];"));
 	}
 
 	@Test
 	public void matchIdentifierExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (ID_EXPR a)))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (ID_EXPR a)))",
 				parse("int x = a;"));
 	}
 
 	@Test
 	public void matchBraceExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (ID_EXPR a)))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (ID_EXPR a)))",
 				parse("int x = (a);"));
 	}
 
 	@Test
 	public void matchFunctionCallExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (FCALL_EXPR"
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (FCALL_EXPR"
 				+ " (ID_EXPR bar) (ARG_LIST (ID_EXPR a) (INT_EXPR 7)))))",
 				parse("int x = bar(a, 7);"));
 	}
@@ -94,7 +94,7 @@ public class ParserTest
 	@Test
 	public void matchIntrinsicCallExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (INTR_EXPR out (ARG_LIST"
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (INTR_EXPR out (ARG_LIST"
 				+ " (INT_EXPR 2)))))",
 				parse("int x = out(2);"));
 	}
@@ -102,7 +102,7 @@ public class ParserTest
 	@Test
 	public void matchBinaryExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (BIN_EXPR +"
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (BIN_EXPR +"
 				+ " (BIN_EXPR - (ID_EXPR a) (INT_EXPR 7)) (INT_EXPR 4))))",
 				parse("int x = a - 7 + 4;"));
 	}
@@ -110,7 +110,7 @@ public class ParserTest
 	@Test
 	public void matchPrefixExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (PRE_EXPR ! (PRE_EXPR --"
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (PRE_EXPR ! (PRE_EXPR --"
 				+ " (ID_EXPR a)))))",
 				parse("int x = !--a;"));
 	}
@@ -118,14 +118,14 @@ public class ParserTest
 	@Test
 	public void matchPostfixExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (POST_EXPR ++ (ID_EXPR y))))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (POST_EXPR ++ (ID_EXPR y))))",
 				parse("int x = y++;"));
 	}
 
 	@Test
 	public void matchSubscriptExpression() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (SUBSCR_EXPR (ID_EXPR a)"
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (SUBSCR_EXPR (ID_EXPR a)"
 				+ " (INT_EXPR 2))))",
 				parse("int x = a[2];"));
 	}
@@ -133,7 +133,7 @@ public class ParserTest
 	@Test
 	public void matchChainedPostfixExpressions() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (TYPE int) (DCLTOR x) (POST_EXPR -- (SUBSCR_EXPR"
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR x) (POST_EXPR -- (SUBSCR_EXPR"
 				+ " (FCALL_EXPR (POST_EXPR -- (POST_EXPR ++ (ID_EXPR y))) (ARG_LIST))"
 				+ " (INT_EXPR 2)))))",
 				parse("int x = y++--()[2]--;"));
@@ -142,23 +142,23 @@ public class ParserTest
 	@Test
 	public void matchFunction() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) (DCLTOR (DCLTOR foo) (PRM_LIST)) (BLK_ST)))",
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR foo) (PRM_LIST)) (BLK_ST)))",
 				parse("void foo() {}"));
 	}
 
 	@Test
 	public void matchFunctionWithParameters() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) (DCLTOR (DCLTOR foo) (PRM_LIST (PRM"
-				+ " (TYPE int) (DCLTOR a)) (PRM (TYPE int) (DCLTOR b)))) (BLK_ST)))",
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR foo) (PRM_LIST (PRM"
+				+ " (DS int) (DCLTOR a)) (PRM (DS int) (DCLTOR b)))) (BLK_ST)))",
 				parse("void foo(int a, int b) {}"));
 	}
 
 	@Test
 	public void matchDeclaratorsInParameters() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (TYPE void) (DCLTOR (DCLTOR foo) (PRM_LIST (PRM"
-				+ " (TYPE int) (DCLTOR (DCLTOR (DCLTOR a) (INT_EXPR 2)))))) (BLK_ST)))",
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR foo) (PRM_LIST (PRM"
+				+ " (DS int) (DCLTOR (DCLTOR (DCLTOR a) (INT_EXPR 2)))))) (BLK_ST)))",
 				parse("void foo(int *a[2]) {}"));
 	}
 
@@ -172,7 +172,7 @@ public class ParserTest
 	@Test
 	public void matchCompoundStatement() throws IOException, SyntaxException
 	{
-		assertEquals(inFunc("(BLK_ST (DECL_ST (VAR_DECL (TYPE int) (DCLTOR x) null)))"),
+		assertEquals(inFunc("(BLK_ST (DECL_ST (VAR_DECL (DS int) (DCLTOR x) null)))"),
 				parse("void f() { { int x; } }"));
 	}
 
@@ -186,7 +186,7 @@ public class ParserTest
 	@Test
 	public void matchDeclarationStatement() throws IOException, SyntaxException
 	{
-		assertEquals(inFunc("(DECL_ST (VAR_DECL (TYPE int) (DCLTOR x) null))"),
+		assertEquals(inFunc("(DECL_ST (VAR_DECL (DS int) (DCLTOR x) null))"),
 				parse("void f() { int x; }"));
 	}
 
@@ -228,7 +228,7 @@ public class ParserTest
 	@Test
 	public void matchForStatement() throws IOException, SyntaxException
 	{
-		assertEquals(inFunc("(FOR (DECL_ST (VAR_DECL (TYPE int) (DCLTOR i) (INT_EXPR 0)))"
+		assertEquals(inFunc("(FOR (DECL_ST (VAR_DECL (DS int) (DCLTOR i) (INT_EXPR 0)))"
 				+ " (BIN_EXPR < (ID_EXPR i) (ID_EXPR n)) (PRE_EXPR ++ (ID_EXPR i)) (BLK_ST))"),
 				parse("void f() { for(int i = 0; i < n; ++i) {} }"));
 	}
@@ -548,12 +548,12 @@ public class ParserTest
 		TranslationUnit tunit = Parser.parse(t.tokenize());
 		assertEquals(""
 				+ "(TRUNIT "
-				+ "(FUNC (TYPE int) (DCLTOR (DCLTOR foo) "
-				+ "(PRM_LIST (PRM (TYPE int) (DCLTOR a)) (PRM (TYPE int) (DCLTOR b)))) "
+				+ "(FUNC (DS int) (DCLTOR (DCLTOR foo) "
+				+ "(PRM_LIST (PRM (DS int) (DCLTOR a)) (PRM (DS int) (DCLTOR b)))) "
 				+ "(BLK_ST "
 				+ "(BLK_ST) "
-				+ "(DECL_ST (VAR_DECL (TYPE int) (DCLTOR a) null)) "
-				+ "(DECL_ST (VAR_DECL (TYPE int) (DCLTOR b) (INT_EXPR 3))) "
+				+ "(DECL_ST (VAR_DECL (DS int) (DCLTOR a) null)) "
+				+ "(DECL_ST (VAR_DECL (DS int) (DCLTOR b) (INT_EXPR 3))) "
 				+ "(EXPR_ST (BIN_EXPR + (BIN_EXPR * (INT_EXPR 5) (INT_EXPR 2))"
 				+ " (POST_EXPR -- (ID_EXPR b)))) "
 				+ "(EXPR_ST (ASGN_EXPR /= (ID_EXPR b) (INT_EXPR 5))) "
@@ -565,7 +565,7 @@ public class ParserTest
 				+ " (ARG_LIST (ID_EXPR i))))) "
 				+ "(RET (INT_EXPR 7))"
 				+ ")) "
-				+ "(VAR_DECL (TYPE int) (DCLTOR x) null)"
+				+ "(VAR_DECL (DS int) (DCLTOR x) null)"
 				+ ")",
 				tunit.toString());
 	}
