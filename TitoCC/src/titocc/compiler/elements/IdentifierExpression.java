@@ -2,6 +2,7 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
@@ -53,27 +54,26 @@ public class IdentifierExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (!symbol.getType().isObject()) {
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.",
-					getPosition());
+		if (!symbol.getType().isObject() && !symbol.getType().isFunction()) {
+			throw new SyntaxException("Identifier \"" + identifier
+					+ "\" is not an object or function.", getPosition());
 		}
 
-		// Load value to first register (or address if we have an array).
-		if (symbol.getType() instanceof ArrayType)
+		// Load value to first register (or address if we have an array/function).
+		if (symbol.getType() instanceof ArrayType || symbol.getType().isFunction())
 			asm.emit("load", regs.get(0).toString(), "=" + symbol.getReference());
 		else
 			asm.emit("load", regs.get(0).toString(), symbol.getReference());
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs, boolean addressOf)
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (!symbol.getType().isObject()) {
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not an object.",
-					getPosition());
-		}
+
+		if (!addressOf)
+			requireLvalueType(scope);
 
 		return new Lvalue(regs.get(0), symbol.getReference());
 	}
@@ -82,10 +82,8 @@ public class IdentifierExpression extends Expression
 	public Symbol getFunction(Scope scope) throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
-		if (!(symbol.getType() instanceof FunctionType)) {
-			throw new SyntaxException("Identifier \"" + identifier + "\" is not a function.",
-					getPosition());
-		}
+		if (!(symbol.getType() instanceof FunctionType))
+			return null;
 
 		return symbol;
 	}
@@ -93,7 +91,7 @@ public class IdentifierExpression extends Expression
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
-		return findSymbol(scope).getType();
+		return findSymbol(scope).getType(); // No decay since we want to return the original type.
 	}
 
 	@Override

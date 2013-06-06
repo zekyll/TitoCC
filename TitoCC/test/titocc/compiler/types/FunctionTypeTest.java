@@ -9,6 +9,7 @@ import org.junit.Test;
 public class FunctionTypeTest
 {
 	private CType t;
+
 	private List<CType> params;
 
 	@Before
@@ -51,7 +52,7 @@ public class FunctionTypeTest
 	@Test
 	public void decayReturnsCorrectType()
 	{
-		assertEquals(t, t.decay());
+		assertEquals(new PointerType(t), t.decay());
 	}
 
 	@Test

@@ -192,8 +192,8 @@ public class BinaryExpression extends Expression
 	private void compileSimpleOperator(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		int leftIncrSize = left.getType(scope).getIncrementSize();
-		int rightIncrSize = right.getType(scope).getIncrementSize();
+		int leftIncrSize = left.getType(scope).decay().getIncrementSize();
+		int rightIncrSize = right.getType(scope).decay().getIncrementSize();
 
 		if (leftIncrSize > 1 && rightIncrSize > 1) {
 			// POINTER - POINTER.

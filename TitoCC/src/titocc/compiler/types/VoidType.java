@@ -6,12 +6,10 @@ package titocc.compiler.types;
  */
 public class VoidType extends CType
 {
-	/**
-	 * Constructs a VoidType.
-	 */
-	public boolean isObject()
+	@Override
+	public boolean isIncomplete()
 	{
-		return false;
+		return true;
 	}
 
 	@Override

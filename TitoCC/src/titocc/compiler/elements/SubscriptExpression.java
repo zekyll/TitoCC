@@ -49,7 +49,7 @@ public class SubscriptExpression extends Expression
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
-		return getActualArrayOperand(scope).getType(scope).dereference();
+		return getActualArrayOperand(scope).getType(scope).decay().dereference();
 	}
 
 	@Override
@@ -60,9 +60,12 @@ public class SubscriptExpression extends Expression
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs, boolean addressOf)
 			throws SyntaxException, IOException
 	{
+		if (!addressOf)
+			requireLvalueType(scope);
+
 		compile(asm, scope, regs, true);
 		return new Lvalue(regs.get(0));
 	}
@@ -84,14 +87,15 @@ public class SubscriptExpression extends Expression
 		regs.addFirst();
 
 		// If increment size > 1 then multiply subscript.
-		int incSize = actualArrayOperand.getType(scope).getIncrementSize();
+		int incSize = actualArrayOperand.getType(scope).decay().getIncrementSize();
 		if (incSize != 1)
 			asm.emit("mul", regs.get(1).toString(), "=" + incSize);
 
 		// Add subscript to the array pointer. Dereference the result if lvalue
-		// is not explicitly requested and result is not an array.
+		// is not explicitly requested and result is not an array or function.
 		asm.emit("add", regs.get(0).toString(), regs.get(1).toString());
-		if (!lvalue && !(getType(scope) instanceof ArrayType))
+		CType resultType = getType(scope);
+		if (!lvalue && !(resultType instanceof ArrayType) && !resultType.isFunction())
 			asm.emit("load", regs.get(0).toString(), "@" + regs.get(0).toString());
 
 		// Deallocate second register.
@@ -100,21 +104,23 @@ public class SubscriptExpression extends Expression
 
 	private Expression getActualArrayOperand(Scope scope) throws SyntaxException
 	{
-		if (array.getType(scope).dereference().isObject())
+		// ($6.5.2.1/1)
+		if (array.getType(scope).decay().dereference().isObject())
 			return array;
-		else if (subscript.getType(scope).dereference().isObject())
+		else if (subscript.getType(scope).decay().dereference().isObject())
 			return subscript;
 		else {
-			throw new SyntaxException("Operator [] requires an object pointer or an array.",
+			throw new SyntaxException("Operator [] requires an object pointer.",
 					getPosition());
 		}
 	}
 
 	private Expression getActualSubscriptOperand(Scope scope) throws SyntaxException
 	{
-		if (subscript.getType(scope).isInteger())
+		// ($6.5.2.1/1)
+		if (subscript.getType(scope).decay().isInteger())
 			return subscript;
-		else if (array.getType(scope).isInteger())
+		else if (array.getType(scope).decay().isInteger())
 			return array;
 		else
 			throw new SyntaxException("Operator [] requires an integer operand.", getPosition());

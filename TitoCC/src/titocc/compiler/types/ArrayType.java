@@ -35,12 +35,6 @@ public class ArrayType extends CType
 	}
 
 	@Override
-	public CType dereference()
-	{
-		return elementType;
-	}
-
-	@Override
 	public int getSize()
 	{
 		return elementType.getSize() * length;

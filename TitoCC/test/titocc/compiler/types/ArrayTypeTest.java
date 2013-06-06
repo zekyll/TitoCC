@@ -35,13 +35,13 @@ public class ArrayTypeTest
 	@Test
 	public void incrementSizeIsCorrect()
 	{
-		assertEquals(6, t.getIncrementSize());
+		assertEquals(0, t.getIncrementSize());
 	}
 
 	@Test
 	public void dereferenceReturnsCorrectType()
 	{
-		assertEquals(new ArrayType(new IntType(), 6), t.dereference());
+		assertTrue(t.dereference() instanceof InvalidType);
 	}
 
 	@Test

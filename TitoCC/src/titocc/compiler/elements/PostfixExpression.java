@@ -74,24 +74,26 @@ public class PostfixExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		CType operandType = operand.getType(scope);
-		if (!operandType.isArithmetic()
-				&& !(operandType.isPointer() && operandType.dereference().isObject())) {
+		// ($6.5.2.4)
+		CType operandType = operand.getType(scope).decay();
+		if (!operandType.isArithmetic() && !operandType.dereference().isObject()) {
+			//TODO arithmetic -> real
 			throw new SyntaxException("Operator " + operator
 					+ " requires an arithmetic or object pointer type.", getPosition());
 		}
 
+
 		// Evaluate operand; load address to 2nd register.
 		regs.allocate(asm);
 		regs.removeFirst();
-		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
+		Lvalue val = operand.compileAsLvalue(asm, scope, regs, false);
 		regs.addFirst();
 
 		// Load value to 1st register.
 		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
-		int incSize = operand.getType(scope).getIncrementSize();
+		int incSize = operand.getType(scope).decay().getIncrementSize();
 		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=" + incSize);
 		asm.emit("store", regs.get(0).toString(), val.getReference());
 
@@ -105,7 +107,7 @@ public class PostfixExpression extends Expression
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
-		return operand.getType(scope);
+		return operand.getType(scope).decay();
 	}
 
 	@Override

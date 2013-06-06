@@ -2,11 +2,14 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.FunctionType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -64,11 +67,13 @@ public abstract class Expression extends CodeElement
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
 	 * @param regs available registers; must have at least one active register
+	 * @param addressOf true if the expression appears as the operand of operator &, which disables
+	 * the array->pointer decay and function->pointer decay
 	 * @return an Lvalue object
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs, boolean addressOf)
 			throws SyntaxException, IOException
 	{
 		throw new SyntaxException("Operation requires an lvalue.", getPosition());
@@ -142,8 +147,8 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Returns whether the expression can be assigned to the target type. Target type must be the
-	 * actual type and not not decayed type.
+	 * Returns whether the expression can be assigned to the target type. Target type must be a
+	 * decayed type.
 	 *
 	 * @param targetType target type of the assignment
 	 * @param scope scope in which the expression is evaluated
@@ -152,22 +157,39 @@ public abstract class Expression extends CodeElement
 	 */
 	protected boolean isAssignableTo(CType targetType, Scope scope) throws SyntaxException
 	{
-		CType sourceType = getType(scope);
+		CType sourceType = getType(scope).decay();
 		CType sourceDeref = sourceType.dereference();
 		CType targetDeref = targetType.dereference();
 
+		// These rules are defined in ($6.5.16.1/1).
 		if (targetType.isArithmetic() && sourceType.isArithmetic())
 			return true;
-		if (targetType.isPointer() && sourceDeref.equals(targetDeref))
+		if (sourceDeref.equals(targetDeref))
 			return true;
-		if (targetType.isPointer() && sourceDeref.isValid()
-				&& (targetDeref instanceof VoidType || sourceDeref instanceof VoidType))
+		if (targetDeref instanceof VoidType && (sourceDeref.isObject() || sourceDeref.isFunction())
+				|| sourceDeref instanceof VoidType && (targetDeref.isObject()
+				|| targetDeref.isFunction()))
 			return true;
-
 		if (targetType.isPointer() && sourceType.isInteger()
 				&& new Integer(0).equals(getCompileTimeValue()))
 			return true;
 
 		return false;
+	}
+
+	/**
+	 * Throws if the expression cannot be an lvalue based on its type.
+	 *
+	 * @param scope scope where the expression is evaluated
+	 * @throws SyntaxException if array type
+	 */
+	protected void requireLvalueType(Scope scope) throws SyntaxException
+	{
+		CType resultType = getType(scope);
+		if (resultType instanceof ArrayType)
+			throw new SyntaxException("Array cannot be used as an lvalue.", getPosition());
+		// Functions should never be used as lvalues (except with operator &).
+		if (resultType instanceof FunctionType)
+			throw new InternalCompilerException("Function used as an lvalue.");
 	}
 }

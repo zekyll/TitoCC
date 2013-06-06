@@ -51,6 +51,18 @@ public class FunctionType extends CType
 	}
 
 	@Override
+	public boolean isFunction()
+	{
+		return true;
+	}
+
+	@Override
+	public CType decay()
+	{
+		return new PointerType(this);
+	}
+
+	@Override
 	public boolean equals(Object obj)
 	{
 		if (!(obj instanceof FunctionType))

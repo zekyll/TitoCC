@@ -108,8 +108,10 @@ public class CompilerTest
 	@Test
 	public void errorWhenCallingNonFunction() throws IOException
 	{
-		testErr("\nvoid f() { 0(); }", "Expression is not a function.", 1, 11);
-		testErr("\nvoid f() { int x; x(); }", "Identifier \"x\" is not a function.", 1, 18);
+		testErr("\nvoid f() { 0(); }",
+				"Expression does not evaluate to a function pointer.", 1, 11);
+		testErr("\nvoid f() { int x; x(); }",
+				"Expression does not evaluate to a function pointer.", 1, 18);
 	}
 
 	@Test
@@ -228,37 +230,36 @@ public class CompilerTest
 	public void errorWhenIllegalOperandsForIncrement() throws IOException
 	{
 		String msg = "Operator ++ requires an arithmetic or object pointer type.";
-		testErr("\nint f() { int a[2]; ++a; }", msg, 1, 20);
-		testErr("\nint f() { int a[2]; a++; }", msg, 1, 20);
 		testErr("\nint f() { void* a; a++; }", msg, 1, 19);
 		testErr("\nint f() { void* a; ++a; }", msg, 1, 19);
 		testErr("\nint f() { f++; }", msg, 1, 10);
 		testErr("\nint f() { ++f; }", msg, 1, 10);
 		testErr("\nvoid f() { f()++; }", msg, 1, 11);
 		testErr("\nvoid f() { ++f(); }", msg, 1, 11);
+		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nint f() { int a[2]; ++a; }", msg2, 1, 22);
+		testErr("\nint f() { int a[2]; a++; }", msg2, 1, 20);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForDecrement() throws IOException
 	{
 		String msg = "Operator -- requires an arithmetic or object pointer type.";
-		testErr("\nint f() { int a[2]; --a; }", msg, 1, 20);
-		testErr("\nint f() { int a[2]; a--; }", msg, 1, 20);
 		testErr("\nint f() { void* a; a--; }", msg, 1, 19);
 		testErr("\nint f() { void* a; --a; }", msg, 1, 19);
 		testErr("\nint f() { f--; }", msg, 1, 10);
 		testErr("\nint f() { --f; }", msg, 1, 10);
 		testErr("\nvoid f() { f()--; }", msg, 1, 11);
 		testErr("\nvoid f() { --f(); }", msg, 1, 11);
+		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nint f() { int a[2]; --a; }", msg2, 1, 22);
+		testErr("\nint f() { int a[2]; a--; }", msg2, 1, 20);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForAssignment() throws IOException
 	{
 		String msg = "Incompatible operands for operator =.";
-		testErr("\nint f() { int a[2]; int b[2]; a = b; }", msg, 1, 30);
-		testErr("\nint f() { int a[2]; int* b; a = b; }", msg, 1, 28);
-		testErr("\nint f() { int a[2]; a = 0; }", msg, 1, 20);
 		testErr("\nint f() { int a[2]; a=1; }", msg, 1, 20);
 		testErr("\nint f() { int* a; a=1; }", msg, 1, 18);
 		testErr("\nint f() { void* a; a=1; }", msg, 1, 19);
@@ -266,6 +267,10 @@ public class CompilerTest
 		testErr("\nint f() { int* a; int b[2][2]; a=b; }", msg, 1, 31);
 		testErr("\nvoid f() { int a; a = f(); }", msg, 1, 18);
 		testErr("\nvoid f() { f() = f(); }", msg, 1, 11);
+		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nint f() { int a[2]; a = 0; }", msg2, 1, 20);
+		testErr("\nint f() { int a[2]; int b[2]; a = b; }", msg2, 1, 30);
+		testErr("\nint f() { int a[2]; int* b; a = b; }", msg2, 1, 28);
 	}
 
 	@Test
@@ -304,20 +309,22 @@ public class CompilerTest
 	public void errorWhenIllegalOperandsForAddAssignment() throws IOException
 	{
 		String msg = "Incompatible operands for operator +=.";
-		testErr("\nint f() { int a[2]; a+=1; }", msg, 1, 20);
 		testErr("\nint f() { int a[2]; int b[2]; a+=b; }", msg, 1, 30);
 		testErr("\nint f() { int* a; int* b; a+=b; }", msg, 1, 26);
 		testErr("\nint f() { void* a; a+=1; }", msg, 1, 19);
+		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nint f() { int a[2]; a+=1; }", msg2, 1, 20);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForSubtractAssignment() throws IOException
 	{
 		String msg = "Incompatible operands for operator -=.";
-		testErr("\nint f() { int a[2]; a-=1; }", msg, 1, 20);
 		testErr("\nint f() { int a[2]; int b[2]; a-=b; }", msg, 1, 30);
 		testErr("\nint f() { int* a; int* b; a-=b; }", msg, 1, 26);
 		testErr("\nint f() { void* a; a-=1; }", msg, 1, 19);
+		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nint f() { int a[2]; a-=1; }", msg2, 1, 20);
 	}
 
 	@Test
@@ -377,7 +384,6 @@ public class CompilerTest
 	@Test
 	public void errorWhenIllegalOperandForAddressOf() throws IOException
 	{
-		testErr("\nvoid f() { &f;   }", "Identifier \"f\" is not an object.", 1, 12);
 		testErr("\nvoid f() { &2;   }", "Operation requires an lvalue.", 1, 12);
 		testErr("\nvoid f() { &f(); }", "Operation requires an lvalue.", 1, 12);
 	}
@@ -385,16 +391,15 @@ public class CompilerTest
 	@Test
 	public void errorWhenIllegalOperandForDereference() throws IOException
 	{
-		String msg = "Operator * requires a pointer or array type.";
+		String msg = "Invalid operand for operator *. Pointer type required.";
 		testErr("\nvoid f() { *3;   }", msg, 1, 11);
-		testErr("\nvoid f() { *f;   }", msg, 1, 11);
 		testErr("\nvoid f() { *f(); }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForSubscript() throws IOException
 	{
-		String msg = "Operator [] requires an object pointer or an array.";
+		String msg = "Operator [] requires an object pointer.";
 		testErr("\nvoid f() {                   3[2];       }", msg, 1, 29);
 		testErr("\nvoid f() {                   f()[2];       }", msg, 1, 29);
 		testErr("\nvoid f() {                   2[f()];       }", msg, 1, 29);

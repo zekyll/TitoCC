@@ -89,7 +89,7 @@ public class Function extends Declaration
 		declType.type = declarator.compile(declType.type, functionScope, parameters);
 
 		// Check that the declarator actually declares a function.
-		if (!(declType.type instanceof FunctionType))
+		if (!declType.type.isFunction())
 			throw new SyntaxException("Missing function parameter list.", getPosition());
 		CType returnType = ((FunctionType) declType.type).getReturnType();
 

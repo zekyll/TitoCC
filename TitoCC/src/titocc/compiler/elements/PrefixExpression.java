@@ -96,11 +96,15 @@ public class PrefixExpression extends Expression
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs)
+	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs, boolean addressOf)
 			throws IOException, SyntaxException
 	{
+		// Dereference operator is the only one that can return an lvalue.
 		if (!operator.equals("*"))
 			throw new SyntaxException("Operation requires an lvalue.", getPosition());
+
+		if (!addressOf)
+			requireLvalueType(scope);
 
 		// Operand for * must be a pointer so we just load its value.
 		operand.compile(asm, scope, regs);
@@ -111,9 +115,10 @@ public class PrefixExpression extends Expression
 	private void compileIncDec(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		CType operandType = operand.getType(scope);
-		if (!operandType.isArithmetic()
-				&& !(operandType.isPointer() && operandType.dereference().isObject())) {
+		// ($6.5.3.1)
+		CType operandType = operand.getType(scope).decay();
+		if (!operandType.isArithmetic() && !operandType.dereference().isObject()) {
+			//TODO arithmetic -> real
 			throw new SyntaxException("Operator " + operator
 					+ " requires an arithmetic or object pointer type.", getPosition());
 		}
@@ -121,14 +126,14 @@ public class PrefixExpression extends Expression
 		// Evaluate operand; load address to 2nd register.
 		regs.allocate(asm);
 		regs.removeFirst();
-		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
+		Lvalue val = operand.compileAsLvalue(asm, scope, regs, false);
 		regs.addFirst();
 
 		// Load value to first register.
 		asm.emit("load", regs.get(0).toString(), val.getReference());
 
 		// Modify and write back the value.
-		int incSize = operand.getType(scope).getIncrementSize();
+		int incSize = operand.getType(scope).decay().getIncrementSize();
 		asm.emit(operator.equals("++") ? "add" : "sub", regs.get(0).toString(), "=" + incSize);
 		asm.emit("store", regs.get(0).toString(), val.getReference());
 
@@ -139,7 +144,8 @@ public class PrefixExpression extends Expression
 	private void compileUnaryPlusMinus(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).isArithmetic()) {
+		// ($6.5.3.3/1)
+		if (!operand.getType(scope).decay().isArithmetic()) {
 			throw new SyntaxException("Operator " + operator
 					+ " requires an arithmetic type.", getPosition());
 		}
@@ -157,6 +163,7 @@ public class PrefixExpression extends Expression
 	private void compileLogicalNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
+		// ($6.5.3.3/1)
 		if (!operand.getType(scope).decay().isScalar()) {
 			throw new SyntaxException("Operator " + operator
 					+ " requires a scalar type.", getPosition());
@@ -177,7 +184,8 @@ public class PrefixExpression extends Expression
 	private void compileBitwiseNegation(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).isInteger()) {
+		// ($6.5.3.3/1)
+		if (!operand.getType(scope).decay().isInteger()) {
 			throw new SyntaxException("Operator " + operator
 					+ " requires an integer type.", getPosition());
 		}
@@ -193,41 +201,46 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		// Load the address of the operand in the first register.
-		Lvalue val = operand.compileAsLvalue(asm, scope, regs);
+		Lvalue val = operand.compileAsLvalue(asm, scope, regs, true);
 		val.loadAddressToRegister(asm);
 	}
 
 	private void compileDereference(Assembler asm, Scope scope, Registers regs)
 			throws IOException, SyntaxException
 	{
-		if (!operand.getType(scope).dereference().isValid()) {
-			throw new SyntaxException("Operator * requires a pointer or array type.",
+		// ($6.5.3.2/2)
+		if (!operand.getType(scope).decay().isPointer()) {
+			throw new SyntaxException("Invalid operand for operator *. Pointer type required.",
 					getPosition());
 		}
 
 		// Operand must be a pointer; load the address.
 		operand.compile(asm, scope, regs);
 
-		// Dereference the pointer unless the result type is an array!
-		if (!(getType(scope) instanceof ArrayType))
+		// Dereference the pointer unless the result type is an array or function!
+		CType resultType = getType(scope);
+		if (!(resultType instanceof ArrayType) && !resultType.isFunction())
 			asm.emit("load", regs.get(0).toString(), "@" + regs.get(0).toString());
 	}
 
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
+		CType operandType = operand.getType(scope).decay();
+
 		if (operator.equals("&")) {
+			// No decay with operator &. ($6.3.2.1/3-4)
 			return new PointerType(operand.getType(scope));
 		} else if (operator.equals("*")) {
-			if (!operand.getType(scope).dereference().isValid()) {
-				throw new SyntaxException("Operator * requires a pointer or array type.",
+			if (!operandType.isPointer()) {
+				throw new SyntaxException("Invalid operand for operator *. Pointer type required.",
 						getPosition());
 			}
-			return operand.getType(scope).dereference();
+			return operandType.dereference();
 		} else if (operator.equals("!") || operator.equals("~")) {
 			return new IntType();
-		} else
-			return operand.getType(scope).decay();
+		} else // ++ -- + -
+			return operandType;
 	}
 
 	@Override

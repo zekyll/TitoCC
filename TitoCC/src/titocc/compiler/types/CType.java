@@ -17,6 +17,26 @@ public abstract class CType
 	}
 
 	/**
+	 * Returns whether the type is a function type.
+	 *
+	 * @return true if function type
+	 */
+	public boolean isFunction()
+	{
+		return false;
+	}
+
+	/**
+	 * Returns whether the type is incomplete (e.g void or array without size).
+	 *
+	 * @return true if incomplete type
+	 */
+	public boolean isIncomplete()
+	{
+		return false;
+	}
+
+	/**
 	 * Returns whether the type is a scalar type (arithmetic or pointer).
 	 *
 	 * @return true if scalar type
@@ -37,10 +57,9 @@ public abstract class CType
 	}
 
 	/**
-	 * Returns type obtained from dereferencing a pointer or array type.
+	 * Returns type obtained from dereferencing a pointer type.
 	 *
-	 * @return dereferenced type or an instance of InvalidType if this is not a pointer or array
-	 * type
+	 * @return dereferenced type or an instance of InvalidType if this is not a pointer type
 	 */
 	public CType dereference()
 	{
@@ -80,7 +99,7 @@ public abstract class CType
 
 	/**
 	 * Returns the step size when incrementing/decrementing the type using -- ++ + += etc operators.
-	 * If the type is not incrementable then returns 0.
+	 * If the type is not incrementable (i.e. pointer or real type) then returns 0.
 	 *
 	 * @return increment size or 0 if not incrementable
 	 */
@@ -100,7 +119,8 @@ public abstract class CType
 	}
 
 	/**
-	 * Decays an array type into a pointer type. All other types are unaffected.
+	 * Decays an array type into a pointer and a function type into a function pointer according
+	 * to ($6.3.2.1/3) and ($6.3.2.1/4). All other types are unaffected.
 	 *
 	 * @return the decayed type
 	 */

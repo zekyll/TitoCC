@@ -22,9 +22,9 @@ import titocc.util.Position;
 public class FunctionCallExpression extends Expression
 {
 	/**
-	 * Expression used as the function.
+	 * Expression used as the function pointer.
 	 */
-	private final Expression function;
+	private final Expression functionPointer;
 
 	/**
 	 * Argument list for the function call.
@@ -34,26 +34,26 @@ public class FunctionCallExpression extends Expression
 	/**
 	 * Constructs a function call expression.
 	 *
-	 * @param function expression that will be evaluated as the function
+	 * @param functionPointer expression that will be evaluated as the function pointer
 	 * @param argumentList list of arguments passed to the function
 	 * @param position starting position of the function call expression
 	 */
-	public FunctionCallExpression(Expression function, ArgumentList argumentList,
+	public FunctionCallExpression(Expression functionPointer, ArgumentList argumentList,
 			Position position)
 	{
 		super(position);
-		this.function = function;
+		this.functionPointer = functionPointer;
 		this.argumentList = argumentList;
 	}
 
 	/**
-	 * Returns the function expression.
+	 * Returns the function pointer expression.
 	 *
 	 * @return the function
 	 */
-	public Expression getFunctionExpression()
+	public Expression getFunctionPointerExpression()
 	{
-		return function;
+		return functionPointer;
 	}
 
 	/**
@@ -70,44 +70,62 @@ public class FunctionCallExpression extends Expression
 	public void compile(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		Symbol func = validateFunction(scope);
-		FunctionType funcType = ((FunctionType) func.getType());
+		FunctionType funcType = getFunctionType(scope);
 
 		// Reserve space for return value.
 		if (!funcType.getReturnType().equals(new VoidType()))
-			asm.emit("add", "sp", "=1");
+			asm.emit("add", "sp", "=" + funcType.getReturnType().getSize());
 
 		// Push arguments to stack.
 		argumentList.compile(asm, scope, regs, funcType.getParameterTypes());
 
+		// Evaluate the function pointer.
+		String funcReference = compileFunctionPointer(asm, scope, regs);
+
 		// Make the call.
-		asm.emit("call", "sp", func.getReference());
+		asm.emit("call", "sp", funcReference);
 
 		// Read the return value.
 		if (!funcType.getReturnType().equals(new VoidType()))
 			asm.emit("pop", "sp", regs.get(0).toString());
 	}
 
-	private Symbol validateFunction(Scope scope) throws SyntaxException
+	private String compileFunctionPointer(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
 	{
-		Symbol func = function.getFunction(scope);
-		if (func == null)
-			throw new SyntaxException("Expression is not a function.", getPosition());
-		return func;
+		Symbol func = functionPointer.getFunction(scope);
+		if (func != null)
+			return func.getReference();
+
+		functionPointer.compile(asm, scope, regs);
+		return regs.get(0).toString();
+	}
+
+	private FunctionType getFunctionType(Scope scope) throws SyntaxException
+	{
+		Symbol func = functionPointer.getFunction(scope);
+		if (func != null)
+			return (FunctionType) func.getType();
+
+		CType funcType = functionPointer.getType(scope).decay().dereference();
+		if (!funcType.isFunction()) {
+			throw new SyntaxException("Expression does not evaluate to a function pointer.",
+					getPosition());
+		}
+
+		return (FunctionType) funcType;
 	}
 
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
-		Symbol func = validateFunction(scope);
-		FunctionType funcType = ((FunctionType) func.getType());
-		return funcType.getReturnType();
+		return getFunctionType(scope).getReturnType();
 	}
 
 	@Override
 	public String toString()
 	{
-		return "(FCALL_EXPR " + function + " " + argumentList + ")";
+		return "(FCALL_EXPR " + functionPointer + " " + argumentList + ")";
 	}
 
 	/**

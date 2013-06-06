@@ -147,7 +147,7 @@ public class AssignmentExpression extends Expression
 			throws SyntaxException, IOException
 	{
 		regs.removeFirst();
-		Lvalue leftVal = left.compileAsLvalue(asm, scope, regs);
+		Lvalue leftVal = left.compileAsLvalue(asm, scope, regs, false);
 		regs.addFirst();
 		return leftVal;
 	}
@@ -171,7 +171,7 @@ public class AssignmentExpression extends Expression
 		right.compile(asm, scope, regs);
 
 		// If operation is POINTER += INTEGER, we need to scale the integer value.
-		int incSize = left.getType(scope).getIncrementSize();
+		int incSize = left.getType(scope).decay().getIncrementSize();
 		if (incSize > 1) {
 			asm.emit("mul", regs.get(0).toString(), "=" + incSize);
 		}
@@ -200,7 +200,7 @@ public class AssignmentExpression extends Expression
 		regs.addFirst();
 
 		// If operation is POINTER -= INTEGER, we need to scale the integer value.
-		int incSize = left.getType(scope).getIncrementSize();
+		int incSize = left.getType(scope).decay().getIncrementSize();
 		if (incSize > 1)
 			asm.emit("mul", regs.get(2).toString(), "=" + incSize);
 
@@ -217,17 +217,17 @@ public class AssignmentExpression extends Expression
 
 	private void checkTypes(Scope scope) throws SyntaxException
 	{
-		CType leftType = left.getType(scope);
+		CType leftType = left.getType(scope).decay();
 		CType rightType = right.getType(scope).decay();
-		CType leftDeref = leftType.dereference();
 
+		// Compound assignment rules defined in ($6.5.16.2).
 		if (operatorString.equals("=")) {
 			if (right.isAssignableTo(leftType, scope))
 				return;
 		} else if (operatorString.equals("+=") || operatorString.equals("-=")) {
-			if (leftType.isArithmetic() && rightType.isArithmetic())
+			if (leftType.dereference().isObject() && rightType.isInteger())
 				return;
-			if (leftType.isPointer() && leftDeref.isObject() && rightType.isInteger())
+			if (leftType.isArithmetic() && rightType.isArithmetic())
 				return;
 		} else if (operatorString.equals("&=") || operatorString.equals("|=")
 				|| operatorString.equals("^=")) {
