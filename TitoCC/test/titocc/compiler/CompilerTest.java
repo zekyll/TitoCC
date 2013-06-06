@@ -168,8 +168,15 @@ public class CompilerTest
 	@Test
 	public void errorWhenRedefiningAVariable() throws IOException
 	{
-		testErr("\nvoid f() { int a = 0; int a; }", "Redefinition of \"a\".", 1, 22);
-		testErr("\nvoid f(int a) { int a; }", "Redefinition of \"a\".", 1, 16);
+		String msg = "Redefinition of \"a\".";
+		testErr("\nvoid f() { int a = 0; int a; }", msg, 1, 22);
+		testErr("\nvoid f(int a) { int a; }", msg, 1, 16);
+		testErr("\nvoid f() { if(1){int a; int a;} }", msg, 1, 24);
+		testErr("\nvoid f() { if(1);else{int a; int a;} }", msg, 1, 29);
+		testErr("\nvoid f() { for(;;) {int a; int a;} }", msg, 1, 27);
+		testErr("\nvoid f() { while(1) {int a; int a;} }", msg, 1, 28);
+		testErr("\nvoid f() { do{int a; int a;}while(1); }", msg, 1, 21);
+		testErr("\nvoid f() { {int a; int a;} }", msg, 1, 19);
 	}
 
 	@Test
@@ -518,5 +525,26 @@ public class CompilerTest
 	{
 		testErr("\nvoid f() { for(;f();); }",
 				"For loop control expression must have scalar type.", 1, 16);
+	}
+//	@Test
+//	public void errorForLoopVariableRedeclared() throws IOException
+//	{
+//		testErr("\nvoid f() { for(int i,i;;); }", "", 1, 16);
+//	}
+
+	@Test
+	public void errorWhenBreakUsedOutsideLoopOrSwitch() throws IOException
+	{
+		String msg = "Break used outside loop or switch.";
+		testErr("\nvoid f() { break; for(;;) {} }", msg, 1, 11);
+		testErr("\nvoid f() { do ; while(1); if(1) { break; } }", msg, 1, 34);
+	}
+
+	@Test
+	public void errorWhenContinueUsedOutsideLoop() throws IOException
+	{
+		String msg = "Continue used outside of loop.";
+		testErr("\nvoid f() { continue; while(1){} }", msg, 1, 11);
+		testErr("\nvoid f() { {for(;;); if (1) ; else { continue; } } }", msg, 1, 37);
 	}
 }

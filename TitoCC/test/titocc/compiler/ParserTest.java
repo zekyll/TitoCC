@@ -219,6 +219,13 @@ public class ParserTest
 	}
 
 	@Test
+	public void matchDoStatement() throws IOException, SyntaxException
+	{
+		assertEquals(inFunc("(DO (CE (INT_EXPR 1) (ID_EXPR a)) (BLK_ST))"),
+				parse("void f() { do ; while(1,a); }"));
+	}
+
+	@Test
 	public void matchEmptyForStatement() throws IOException, SyntaxException
 	{
 		assertEquals(inFunc("(FOR (BLK_ST) null null (BLK_ST))"),
@@ -231,6 +238,24 @@ public class ParserTest
 		assertEquals(inFunc("(FOR (DECL_ST (VAR_DECL (DS int) (DCLTOR i) (INT_EXPR 0)))"
 				+ " (BIN_EXPR < (ID_EXPR i) (ID_EXPR n)) (PRE_EXPR ++ (ID_EXPR i)) (BLK_ST))"),
 				parse("void f() { for(int i = 0; i < n; ++i) {} }"));
+	}
+
+	@Test
+	public void matchBreakStatement() throws IOException, SyntaxException
+	{
+		assertEquals(inFunc("(BRK)"),
+				parse("void f() { break; }"));
+		assertEquals(inFunc("(FOR (BLK_ST) null null (BRK))"),
+				parse("void f() { for(;;) break; }"));
+	}
+
+	@Test
+	public void matchContinueStatement() throws IOException, SyntaxException
+	{
+		assertEquals(inFunc("(CONT)"),
+				parse("void f() { continue; }"));
+		assertEquals(inFunc("(WHILE (ID_EXPR a) (BLK_ST (CONT)))"),
+				parse("void f() { while(a) { continue; } }"));
 	}
 
 	@Test
@@ -477,6 +502,42 @@ public class ParserTest
 	}
 
 	@Test
+	public void failAtDoStatementBody() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { do } while(0); }", "}", 1, 16);
+	}
+
+	@Test
+	public void failAtDoStatementWhileKeyword() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { do { } (0); }", "(", 1, 20);
+	}
+
+	@Test
+	public void failAtDoStatementOpeningBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { do { } while a); }", "a", 1, 26);
+	}
+
+	@Test
+	public void failAtDoStatementTestExpression() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { do { } while(); }", ")", 1, 26);
+	}
+
+	@Test
+	public void failAtDoStatementClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { do { } while(1; }", ";", 1, 27);
+	}
+
+	@Test
+	public void failAtDoStatementSemicolon() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { do { } while(1) }", "}", 1, 29);
+	}
+
+	@Test
 	public void failAtForStatementOpeningBrace() throws IOException, SyntaxException
 	{
 		testFailure("\nvoid foo() { for a == b) foo(); }", "a", 1, 17);
@@ -528,45 +589,14 @@ public class ParserTest
 	}
 
 	@Test
-	public void testEverything() throws IOException, SyntaxException
+	public void failAtBreakStatementSemicolon() throws IOException, SyntaxException
 	{
-		String code = "int foo(int a, int b) {"
-				+ ";"
-				+ "int a;"
-				+ "int b = (3);"
-				+ "5 * 2 + b--;"
-				+ "b /= 5;"
-				+ "{"
-				+ "if(1u) a;"
-				+ "if(0) return b; else {}"
-				+ "}"
-				+ "while(--i) f(i);"
-				+ "return 7;"
-				+ "}"
-				+ "int x;";
-		Tokenizer t = new Tokenizer(new StringReader(code));
-		TranslationUnit tunit = Parser.parse(t.tokenize());
-		assertEquals(""
-				+ "(TRUNIT "
-				+ "(FUNC (DS int) (DCLTOR (DCLTOR foo) "
-				+ "(PRM_LIST (PRM (DS int) (DCLTOR a)) (PRM (DS int) (DCLTOR b)))) "
-				+ "(BLK_ST "
-				+ "(BLK_ST) "
-				+ "(DECL_ST (VAR_DECL (DS int) (DCLTOR a) null)) "
-				+ "(DECL_ST (VAR_DECL (DS int) (DCLTOR b) (INT_EXPR 3))) "
-				+ "(EXPR_ST (BIN_EXPR + (BIN_EXPR * (INT_EXPR 5) (INT_EXPR 2))"
-				+ " (POST_EXPR -- (ID_EXPR b)))) "
-				+ "(EXPR_ST (ASGN_EXPR /= (ID_EXPR b) (INT_EXPR 5))) "
-				+ "(BLK_ST "
-				+ "(IF (INT_EXPR 1 u) (EXPR_ST (ID_EXPR a)) null) "
-				+ "(IF (INT_EXPR 0) (RET (ID_EXPR b)) (BLK_ST))"
-				+ ") "
-				+ "(WHILE (PRE_EXPR -- (ID_EXPR i)) (EXPR_ST (FCALL_EXPR (ID_EXPR f)"
-				+ " (ARG_LIST (ID_EXPR i))))) "
-				+ "(RET (INT_EXPR 7))"
-				+ ")) "
-				+ "(VAR_DECL (DS int) (DCLTOR x) null)"
-				+ ")",
-				tunit.toString());
+		testFailure("\nvoid foo() { break }", "}", 1, 19);
+	}
+
+	@Test
+	public void failAtContinueStatementSemicolon() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { continue }", "}", 1, 22);
 	}
 }

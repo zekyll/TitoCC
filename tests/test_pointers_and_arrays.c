@@ -3,7 +3,7 @@ int y;
 
 int globalArray[3][4];
 
-int* fpCheckVarLoc;  
+int* fpCheckVarLoc;
 
 int foo(int *a, int (*b)[2])
 {
@@ -122,3 +122,4 @@ int main()
 	out(&fpCheckVar == fpCheckVarLoc);
 
 }
+
