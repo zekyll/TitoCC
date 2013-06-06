@@ -30,13 +30,14 @@ import titocc.util.Position;
  *
  * <br> DECLARATOR = "*" DECLARATOR | DIRECT_DECLARATOR
  *
- * <br> DIRECT_DECLARATOR = IDENTIFIER | "(" DECLARATOR ")" | DIRECT_DECLARATOR "[" EXPRESSION "]"
- * | DIRECT_DECLARATOR PARAMETER_LIST
+ * <br> DIRECT_DECLARATOR = IDENTIFIER | "(" DECLARATOR ")"
+ * | DIRECT_DECLARATOR "[" ASSIGNMENT_EXPRESSION "]" | DIRECT_DECLARATOR PARAMETER_LIST
  *
  * <br> ABSTRACT_DECLARATOR = "*" ABSTRACT_DECLARATOR | DIRECT_ABSTRACT_DECLARATOR
  *
  * <br> DIRECT_ABSTRACT_DECLARATOR = [IDENTIFIER] | "(" ABSTRACT_DECLARATOR ")"
- * | [DIRECT_ABSTRACT_DECLARATOR] "[" EXPRESSION "]" | [DIRECT_ABSTRACT_DECLARATOR] PARAMETER_LIST
+ * | [DIRECT_ABSTRACT_DECLARATOR] "[" ASSIGNMENT_EXPRESSION "]"
+ * | [DIRECT_ABSTRACT_DECLARATOR] PARAMETER_LIST
  */
 public abstract class Declarator extends CodeElement
 {
@@ -350,7 +351,7 @@ public abstract class Declarator extends CodeElement
 		Expression subscript = null;
 
 		if (tokens.read().toString().equals("[")) {
-			subscript = Expression.parse(tokens);
+			subscript = AssignmentExpression.parse(tokens);
 			if (subscript != null && !tokens.read().toString().equals("]"))
 				subscript = null;
 		}

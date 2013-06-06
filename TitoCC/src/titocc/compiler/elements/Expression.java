@@ -110,7 +110,7 @@ public abstract class Expression extends CodeElement
 	 */
 	public static Expression parse(TokenStream tokens)
 	{
-		return AssignmentExpression.parse(tokens);
+		return CommaExpression.parse(tokens);
 	}
 
 	/**

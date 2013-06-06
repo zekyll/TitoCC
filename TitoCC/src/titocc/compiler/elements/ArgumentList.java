@@ -17,7 +17,7 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> ARGUMENT_LIST = "(" [EXPRESSION {"," EXPRESSION}] ")"
+ * <br> ARGUMENT_LIST = "(" [ASSIGNMENT_EXPRESSION {"," ASSIGNMENT_EXPRESSION}] ")"
  */
 public class ArgumentList extends CodeElement
 {
@@ -104,13 +104,13 @@ public class ArgumentList extends CodeElement
 
 		if (tokens.read().toString().equals("(")) {
 			List<Expression> args = new LinkedList<Expression>();
-			Expression expr = Expression.parse(tokens);
+			Expression expr = AssignmentExpression.parse(tokens);
 			while (expr != null) {
 				tokens.pushMark();
 				args.add(expr);
 				expr = null;
 				if (tokens.read().toString().equals(","))
-					expr = Expression.parse(tokens);
+					expr = AssignmentExpression.parse(tokens);
 				tokens.popMark(expr == null);
 			}
 

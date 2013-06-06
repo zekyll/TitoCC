@@ -19,7 +19,7 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> VARIABLE_DECLARATION = DECLARATION_SPECIFIERS DECLARATOR ["=" EXPRESSION] ";"
+ * <br> VARIABLE_DECLARATION = DECLARATION_SPECIFIERS DECLARATOR ["=" ASSIGNMENT_EXPRESSION] ";"
  */
 public class VariableDeclaration extends Declaration
 {
@@ -178,7 +178,7 @@ public class VariableDeclaration extends Declaration
 		Expression init = null;
 
 		if (tokens.read().toString().equals("="))
-			init = Expression.parse(tokens);
+			init = AssignmentExpression.parse(tokens);
 
 		tokens.popMark(init == null);
 		return init;

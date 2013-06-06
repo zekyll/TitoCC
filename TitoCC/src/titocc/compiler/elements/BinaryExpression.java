@@ -106,7 +106,7 @@ public class BinaryExpression extends Expression
 	/**
 	 * Right hand side expression.
 	 */
-	private Expression right;
+	private final Expression right;
 
 	/**
 	 * Constructs a BinaryExpression.
