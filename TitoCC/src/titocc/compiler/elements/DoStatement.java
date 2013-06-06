@@ -36,8 +36,7 @@ public class DoStatement extends Statement
 	 * @param body loop body
 	 * @param position starting position of the do statement
 	 */
-	public DoStatement(Expression controlExpression, Statement body,
-			Position position)
+	public DoStatement(Expression controlExpression, Statement body, Position position)
 	{
 		super(position);
 		this.controlExpression = controlExpression;
@@ -135,7 +134,8 @@ public class DoStatement extends Statement
 					if (tokens.read().toString().equals("(")) {
 						Expression test = Expression.parse(tokens);
 						if (test != null) {
-							if (tokens.read().toString().equals(")"))
+							if (tokens.read().toString().equals(")")
+									&& tokens.read().toString().equals(";"))
 								doStatement = new DoStatement(test, statement, pos);
 						}
 					}
