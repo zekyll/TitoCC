@@ -161,14 +161,17 @@ public abstract class Expression extends CodeElement
 		CType sourceDeref = sourceType.dereference();
 		CType targetDeref = targetType.dereference();
 
-		// These rules are defined in ($6.5.16.1/1).
+		// These rules are defined in ($6.5.16.1/1). In addition to these requirements the target
+		// expression must be lvalue, which is checked separately in compileAsLvalue().
 		if (targetType.isArithmetic() && sourceType.isArithmetic())
 			return true;
 		if (sourceDeref.equals(targetDeref))
 			return true;
-		if (targetDeref instanceof VoidType && (sourceDeref.isObject() || sourceDeref.isFunction())
-				|| sourceDeref instanceof VoidType && (targetDeref.isObject()
-				|| targetDeref.isFunction()))
+		if (targetDeref instanceof VoidType && (sourceDeref.isObject()
+				|| sourceDeref.isIncomplete()))
+			return true;
+		if (sourceDeref instanceof VoidType && (targetDeref.isObject()
+				|| targetDeref.isIncomplete()))
 			return true;
 		if (targetType.isPointer() && sourceType.isInteger()
 				&& new Integer(0).equals(getCompileTimeValue()))

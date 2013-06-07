@@ -283,13 +283,16 @@ public class BinaryExpression extends Expression
 				return new IntType();
 			if (leftDeref.equals(rightDeref))
 				return new IntType();
-			if (leftDeref.isValid() && rightDeref.isValid()
-					&& (leftDeref instanceof VoidType || rightDeref instanceof VoidType))
+			if (leftDeref instanceof VoidType && (rightDeref.isObject()
+					|| rightDeref.isIncomplete()))
 				return new IntType();
-			if (leftDeref.isValid() && rightType.isInteger()
+			if (rightDeref instanceof VoidType && (leftDeref.isObject()
+					|| leftDeref.isIncomplete()))
+				return new IntType();
+			if (leftType.isPointer() && rightType.isInteger()
 					&& new Integer(0).equals(right.getCompileTimeValue()))
 				return new IntType();
-			if (rightDeref.isValid() && leftType.isInteger()
+			if (rightType.isPointer() && leftType.isInteger()
 					&& new Integer(0).equals(left.getCompileTimeValue()))
 				return new IntType();
 		} else if (op.type == Type.RELATIONAL) {
