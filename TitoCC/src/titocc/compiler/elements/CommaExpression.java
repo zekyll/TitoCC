@@ -58,7 +58,9 @@ public class CommaExpression extends Expression
 	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
-		return right.getType(scope);
+		// Unlike () expressions, the comma operator causes decay on right operand. E.g. if
+		// "int a[2]" then "sizeof(0,a)" equals "sizeof(int*)".
+		return right.getType(scope).decay();
 	}
 
 	@Override
