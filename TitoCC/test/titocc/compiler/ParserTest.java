@@ -383,6 +383,12 @@ public class ParserTest
 	}
 
 	@Test
+	public void failAtCommaxExprRhs() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid foo() { a, ; }", ";", 1, 16);
+	}
+
+	@Test
 	public void failAtCompoundStatementClosingBrace() throws IOException, SyntaxException
 	{
 		testFailure("\nvoid foo() { ; ", "<End of file>", 1, 15);
@@ -677,5 +683,12 @@ public class ParserTest
 	public void failAtContinueStatementSemicolon() throws IOException, SyntaxException
 	{
 		testFailure("\nvoid foo() { continue }", "}", 1, 22);
+	}
+
+	@Test
+	public void failWhenCommaExpressionUsedInIllegalPlace() throws IOException, SyntaxException
+	{
+		testFailure("\nint x[a,b]", ",", 1, 7);
+		testFailure("\nint x = a,0", ",", 1, 9);
 	}
 }

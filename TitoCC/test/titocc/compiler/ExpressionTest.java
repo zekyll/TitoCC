@@ -19,6 +19,15 @@ public class ExpressionTest
 	}
 
 	// Tests the precedence of operators.
+	//TODO test operator associativity
+	@Test
+	public void commaExpressionParsedAfterAssignmentExpression()
+			throws IOException, SyntaxException
+	{
+		assertEquals("(CE (ASGN_EXPR = (ID_EXPR a) (ID_EXPR b)) (ID_EXPR c))",
+				parse("a = b, c"));
+	}
+
 	@Test
 	public void assignmentExpressionParsedAfterBinaryExpression1()
 			throws IOException, SyntaxException
