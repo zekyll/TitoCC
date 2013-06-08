@@ -52,15 +52,17 @@ public class Parameter extends CodeElement
 	 * @param scope scope in which the parameter is compiled
 	 * @param functionDefinition true if the parameter is part of a function definition; disallows
 	 * unnamed parameters
+	 * @param idx position of the parameter in parameter list; used for generating an internal name
+	 * for unnamed parameters
 	 * @return the symbol for the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was redefined
 	 * @throws IOException
 	 */
-	public Symbol compile(Scope scope, boolean functionDefinition)
+	public Symbol compile(Scope scope, boolean functionDefinition, int idx)
 			throws SyntaxException, IOException
 	{
 		DeclarationType declType = compileType(scope);
-		Symbol sym = addSymbol(scope, declType, functionDefinition);
+		Symbol sym = addSymbol(scope, declType, functionDefinition, idx);
 		return sym;
 	}
 
@@ -80,14 +82,15 @@ public class Parameter extends CodeElement
 		return declType;
 	}
 
-	private Symbol addSymbol(Scope scope, DeclarationType declType, boolean functionDefinition)
+	private Symbol addSymbol(Scope scope, DeclarationType declType, boolean functionDefinition,
+			int idx)
 			throws SyntaxException
 	{
 		String name = declarator.getName();
 		if (name == null && functionDefinition)
 			throw new SyntaxException("Unnamed parameter in function definition.", getPosition());
 		if (name == null)
-			name = "__param";
+			name = "__param" + idx;
 
 		Symbol sym = new Symbol(name, declType.type, Symbol.Category.Parameter, StorageClass.Auto,
 				false);

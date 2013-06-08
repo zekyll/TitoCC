@@ -71,9 +71,11 @@ public class ParameterList extends CodeElement
 		}
 
 		List<Symbol> paramSymbols = new ArrayList<Symbol>();
+		int i = 0;
 		for (Parameter p : parameters) {
-			Symbol paramSymbol = p.compile(paramScope, functionDefinition);
+			Symbol paramSymbol = p.compile(paramScope, functionDefinition, i);
 			paramSymbols.add(paramSymbol);
+			++i;
 		}
 
 		return paramSymbols;
