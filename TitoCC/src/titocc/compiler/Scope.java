@@ -145,6 +145,12 @@ public class Scope
 	 */
 	public String makeGloballyUniqueName(String name)
 	{
+		if (name.startsWith("__"))
+			name = name.substring(2);
+
+		if (name.isEmpty())
+			throw new InternalCompilerException("Declaring empty identifier.");
+
 		String uniqueNameBase = generateGlobalNamePrefix() + name;
 		String uniqueName = uniqueNameBase;
 		for (int i = 2; !globallyUniqueNames.add(uniqueName.toLowerCase()); ++i)
