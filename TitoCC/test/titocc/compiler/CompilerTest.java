@@ -108,19 +108,21 @@ public class CompilerTest
 	@Test
 	public void errorWhenCallingNonFunction() throws IOException
 	{
-		testErr("\nvoid f() { 0(); }",
-				"Expression does not evaluate to a function pointer.", 1, 11);
-		testErr("\nvoid f() { int x; x(); }",
-				"Expression does not evaluate to a function pointer.", 1, 18);
+		String msg = "Expression does not evaluate to a function pointer.";
+		testErr("\nvoid f() { 0(); }", msg, 1, 11);
+		testErr("\nvoid f() { int x; x(); }", msg, 1, 18);
+		testErr("\nvoid f() { int (*fp)(); (&fp)(); }", msg, 1, 25);
+		testErr("\nvoid f() { f()(); }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenWrongNumberOfArguments() throws IOException
 	{
-		testErr("\nvoid f() { f(1); }",
-				"Number of arguments doesn't match the number of parameters.", 1, 12);
-		testErr("\nvoid f(int a) { f(); }",
-				"Number of arguments doesn't match the number of parameters.", 1, 17);
+		String msg = "Number of arguments doesn't match the number of parameters.";
+		testErr("\nvoid f() { f(1); }", msg, 1, 12);
+		testErr("\nvoid f(int a) { f(); }", msg, 1, 17);
+		testErr("\nvoid f() { int (*fp)(int); fp(); }", msg, 1, 29);
+		testErr("\nvoid f() { int (*fp)(); (*fp)(8); }", msg, 1, 29);
 	}
 
 	@Test
@@ -139,16 +141,37 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenUsingVoidParameter() throws IOException
+	public void errorWhenWrongDeclaratorTypeInFUnctionDefinition() throws IOException
 	{
-		testErr("\nvoid f(void a) { }", "Parameter must have object type.", 1, 7);
+		String msg = "Missing function parameter list.";
+		testErr("\nint f {}", msg, 1, 0);
+		testErr("\nint f[2] {}", msg, 1, 0);
+		testErr("\nint *f {}", msg, 1, 0);
+	}
+
+	@Test
+	public void errorWhenInvalidFunctionReturnType() throws IOException
+	{
+		String msg = "Invalid function return type. Void or non-array object type required.";
+		testErr("\nint f()(int a) {}", msg, 1, 4);
+		testErr("\nint f()[2] {}", msg, 1, 4);
+		testErr("\nvoid f() { int (*fp)()();}", msg, 1, 15);
+		testErr("\nvoid f() { int (*fp)()[5];}", msg, 1, 15);
+	}
+
+	@Test
+	public void errorWhenUnnamedParameterInFunctionDefinition() throws IOException
+	{
+		String msg = "Unnamed parameter in function definition.";
+		testErr("\nint (*f(int a, int))(int a, int) {}", msg, 1, 15);
 	}
 
 	@Test
 	public void errorWhenRedefiningAParameter() throws IOException
 	{
-		// should this be col 18 instead?
-		testErr("\nvoid f(int a, int a) { }", "Redefinition of \"a\".", 1, 14);
+		String msg = "Redefinition of \"a\".";
+		testErr("\nvoid f(int a, int a) { }", msg, 1, 14);
+		testErr("\nvoid (*fp)(int, void* a, int (*a)(), int*);", msg, 1, 25);
 	}
 
 	@Test
@@ -196,12 +219,14 @@ public class CompilerTest
 	public void errorWhenVariableIsNotObject() throws IOException
 	{
 		testErr("\nvoid a;", "Variable must have object type.", 1, 0);
+		testErr("\nvoid a();", "Variable must have object type.", 1, 0);
 	}
 
 	@Test
 	public void errorWhenArrayElementIsNotObject() throws IOException
 	{
 		testErr("\nvoid a[2];", "Array elements must have object type.", 1, 5);
+		testErr("\nint a[2]();", "Array elements must have object type.", 1, 4);
 	}
 
 	@Test
@@ -218,9 +243,11 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenParameterIsArray() throws IOException
+	public void errorWhenInvalidParameterType() throws IOException
 	{
 		testErr("\nvoid f(int *x[2]) {}", "Array parameters are not supported.", 1, 7);
+		testErr("\nvoid f(int a()) {}", "Parameter must have object type.", 1, 7);
+		testErr("\nvoid f(void a) { }", "Parameter must have object type.", 1, 7);
 	}
 
 //	@Test
@@ -243,7 +270,9 @@ public class CompilerTest
 		testErr("\nint f() { ++f; }", msg, 1, 10);
 		testErr("\nvoid f() { f()++; }", msg, 1, 11);
 		testErr("\nvoid f() { ++f(); }", msg, 1, 11);
-		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nvoid f() { void (*p)(); p++; }", msg, 1, 24);
+		testErr("\nvoid f() { void (*p)(); ++p; }", msg, 1, 24);
+		String msg2 = "Array used as an lvalue.";
 		testErr("\nint f() { int a[2]; ++a; }", msg2, 1, 22);
 		testErr("\nint f() { int a[2]; a++; }", msg2, 1, 20);
 	}
@@ -258,7 +287,9 @@ public class CompilerTest
 		testErr("\nint f() { --f; }", msg, 1, 10);
 		testErr("\nvoid f() { f()--; }", msg, 1, 11);
 		testErr("\nvoid f() { --f(); }", msg, 1, 11);
-		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nvoid f() { void (*p)(); p--; }", msg, 1, 24);
+		testErr("\nvoid f() { void (*p)(); --p; }", msg, 1, 24);
+		String msg2 = "Array used as an lvalue.";
 		testErr("\nint f() { int a[2]; --a; }", msg2, 1, 22);
 		testErr("\nint f() { int a[2]; a--; }", msg2, 1, 20);
 	}
@@ -273,11 +304,12 @@ public class CompilerTest
 		testErr("\nint f() { int* a; int** b; a=b; }", msg, 1, 27);
 		testErr("\nint f() { int* a; int b[2][2]; a=b; }", msg, 1, 31);
 		testErr("\nvoid f() { int a; a = f(); }", msg, 1, 18);
-		testErr("\nvoid f() { f() = f(); }", msg, 1, 11);
-		String msg2 = "Array cannot be used as an lvalue.";
+		String msg2 = "Array used as an lvalue.";
 		testErr("\nint f() { int a[2]; a = 0; }", msg2, 1, 20);
 		testErr("\nint f() { int a[2]; int b[2]; a = b; }", msg2, 1, 30);
 		testErr("\nint f() { int a[2]; int* b; a = b; }", msg2, 1, 28);
+		String msg3 = "Function used as an lvalue.";
+		testErr("\nvoid g(){} void f() { f = g; }", msg3, 1, 22);
 	}
 
 	@Test
@@ -287,6 +319,9 @@ public class CompilerTest
 		testErr("\nint f() { int* a = 1; }", msg, 1, 10);
 		testErr("\nint f() { void* a = 1; }", msg, 1, 10);
 		testErr("\nint f() { int** b; int* a = b; }", msg, 1, 19);
+		testErr("\nint f() { int (*p)(int) = f; }", msg, 1, 10);
+		testErr("\nint f() { void* v; int (*p)() = v; }", msg, 1, 19);
+		testErr("\nint f() { int (*p)(); void* v = p; }", msg, 1, 22);
 		testErr("\nint f() { int b[2][2]; int *a = b; }", msg, 1, 23);
 		testErr("\nvoid f() { int a = f(); }", msg, 1, 11);
 	}
@@ -319,7 +354,8 @@ public class CompilerTest
 		testErr("\nint f() { int a[2]; int b[2]; a+=b; }", msg, 1, 30);
 		testErr("\nint f() { int* a; int* b; a+=b; }", msg, 1, 26);
 		testErr("\nint f() { void* a; a+=1; }", msg, 1, 19);
-		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nint f() { int (*a)(); a+=1; }", msg, 1, 22);
+		String msg2 = "Array used as an lvalue.";
 		testErr("\nint f() { int a[2]; a+=1; }", msg2, 1, 20);
 	}
 
@@ -330,7 +366,8 @@ public class CompilerTest
 		testErr("\nint f() { int a[2]; int b[2]; a-=b; }", msg, 1, 30);
 		testErr("\nint f() { int* a; int* b; a-=b; }", msg, 1, 26);
 		testErr("\nint f() { void* a; a-=1; }", msg, 1, 19);
-		String msg2 = "Array cannot be used as an lvalue.";
+		testErr("\nint f() { int (*a)(); a-=1; }", msg, 1, 22);
+		String msg2 = "Array used as an lvalue.";
 		testErr("\nint f() { int a[2]; a-=1; }", msg2, 1, 20);
 	}
 
@@ -342,6 +379,7 @@ public class CompilerTest
 		testErr("\nint f() { int* a; int*b; a |= b; }", msg + "|=.", 1, 25);
 		testErr("\nint f() { int a; int*b; a ^= b; }", msg + "^=.", 1, 24);
 		testErr("\nvoid f() { int a; a &= f(); }", msg + "&=.", 1, 18);
+		testErr("\nvoid f() { void (*a)(); int b; a |= b; }", msg + "|=.", 1, 31);
 	}
 
 	@Test
@@ -354,6 +392,8 @@ public class CompilerTest
 		testErr("\nvoid f() { int a; a /= f(); }", msg + "/=.", 1, 18);
 		testErr("\nvoid f() { int a; int b[2]; a /= b; }", msg + "/=.", 1, 28);
 		testErr("\nvoid f() { int a[2]; int b; a *= b; }", msg + "*=.", 1, 28);
+		testErr("\nvoid f() { int a; void (*b)(); a <<= b; }", msg + "<<=.", 1, 31);
+		testErr("\nvoid f() { void (*a)(); int b; a %= b; }", msg + "%=.", 1, 31);
 	}
 
 	@Test
@@ -363,6 +403,8 @@ public class CompilerTest
 		testErr("\nvoid f() { int* a;   +a;   }", msg, 1, 21);
 		testErr("\nvoid f() { int a[2]; +a;   }", msg, 1, 21);
 		testErr("\nvoid f() { int a[2]; +f(); }", msg, 1, 21);
+		testErr("\nvoid f() { +f;             }", msg, 1, 11);
+		testErr("\nvoid f() { +&f;            }", msg, 1, 11);
 	}
 
 	@Test
@@ -372,6 +414,8 @@ public class CompilerTest
 		testErr("\nvoid f() { int* a;   -a;   }", msg, 1, 21);
 		testErr("\nvoid f() { int a[2]; -a;   }", msg, 1, 21);
 		testErr("\nvoid f() { int a[2]; -f(); }", msg, 1, 21);
+		testErr("\nvoid f() { -f;             }", msg, 1, 11);
+		testErr("\nvoid f() { -&f;            }", msg, 1, 11);
 	}
 
 	@Test
@@ -383,16 +427,22 @@ public class CompilerTest
 	@Test
 	public void errorWhenIllegalOperandForBitwiseNegation() throws IOException
 	{
-		testErr("\nvoid f() { int* a;   ~a;   }", "Operator ~ requires an integer type.", 1, 21);
-		testErr("\nvoid f() { int a[2]; ~a;   }", "Operator ~ requires an integer type.", 1, 21);
-		testErr("\nvoid f() { int a[2]; ~f(); }", "Operator ~ requires an integer type.", 1, 21);
+		String msg = "Operator ~ requires an integer type.";
+		testErr("\nvoid f() { int* a;   ~a;   }", msg, 1, 21);
+		testErr("\nvoid f() { int a[2]; ~a;   }", msg, 1, 21);
+		testErr("\nvoid f() { int a[2]; ~f(); }", msg, 1, 21);
+		testErr("\nvoid f() { ~f;             }", msg, 1, 11);
+		testErr("\nvoid f() { ~&f;            }", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandForAddressOf() throws IOException
 	{
-		testErr("\nvoid f() { &2;   }", "Operation requires an lvalue.", 1, 12);
-		testErr("\nvoid f() { &f(); }", "Operation requires an lvalue.", 1, 12);
+		String msg = "Operation requires an lvalue.";
+		testErr("\nvoid f() { &2;              }", msg, 1, 12);
+		testErr("\nvoid f() { &f();            }", msg, 1, 12);
+		testErr("\nvoid f() { int a; &(a = 1); }", msg, 1, 20);
+		testErr("\nvoid f() { int a; & &a;     }", msg, 1, 20);
 	}
 
 	@Test
@@ -410,10 +460,14 @@ public class CompilerTest
 		testErr("\nvoid f() {                   3[2];       }", msg, 1, 29);
 		testErr("\nvoid f() {                   f()[2];       }", msg, 1, 29);
 		testErr("\nvoid f() {                   2[f()];       }", msg, 1, 29);
+		testErr("\nvoid f() { void (*p)();      p[2];       }", msg, 1, 29);
+		testErr("\nvoid f() { void (*p)();      2[p];       }", msg, 1, 29);
 		String msg2 = "Operator [] requires an integer operand.";
 		testErr("\nvoid f() { int* a; int* b;   a[b];       }", msg2, 1, 29);
 		testErr("\nvoid f() { int* a; int b[2]; b[a];      }", msg2, 1, 29);
 		testErr("\nvoid f() { int* a;           a[f()];  }", msg2, 1, 29);
+		testErr("\nvoid f() { int* a;int(*b)(); a[b];       }", msg2, 1, 29);
+		testErr("\nvoid f() { int* a;int(*b)(); b[a];       }", msg2, 1, 29);
 	}
 
 	@Test
@@ -428,55 +482,68 @@ public class CompilerTest
 	public void errorWhenIllegalOperandsForEqualityOperator() throws IOException
 	{
 		String msg = "Incompatible operands for operator ";
-		testErr("\nvoid f() {                      1 == f(); }", msg + "==.", 1, 32);
-		testErr("\nvoid f() {                      f() != 1; }", msg + "!=.", 1, 32);
-		testErr("\nvoid f() { void * a;            1 == a;   }", msg + "==.", 1, 32);
-		testErr("\nvoid f() { void * a;            a != 1;   }", msg + "!=.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; b == a;   }", msg + "==.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; a != b;   }", msg + "!=.", 1, 32);
+		testErr("\nvoid f() {                            1 == f(); }", msg + "==.", 1, 38);
+		testErr("\nvoid f() {                            f() != 1; }", msg + "!=.", 1, 38);
+		testErr("\nvoid f() { void * a;                  1 == a;   }", msg + "==.", 1, 38);
+		testErr("\nvoid f() { void * a;                  a != 1;   }", msg + "!=.", 1, 38);
+		testErr("\nvoid f() { int* a; int (*b)[2];       b == a;   }", msg + "==.", 1, 38);
+		testErr("\nvoid f() { int* a; int (*b)[2];       a != b;   }", msg + "!=.", 1, 38);
+		testErr("\nvoid f() { void* a; int (*b)();       b == a;   }", msg + "==.", 1, 38);
+		testErr("\nvoid f() { void* a; int (*b)();       a != b;   }", msg + "!=.", 1, 38);
+		testErr("\nvoid f() { void (*a)(); int (*b)();   a != b;   }", msg + "!=.", 1, 38);
+		testErr("\nvoid f() { int (*a)(); int (*b)(int); a == b;   }", msg + "==.", 1, 38);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForRelationalOperator() throws IOException
 	{
 		String msg = "Incompatible operands for operator ";
-		testErr("\nvoid f() {                      1 < f();      }", msg + "<.", 1, 32);
-		testErr("\nvoid f() {                      f() <= 1;     }", msg + "<=.", 1, 32);
-		testErr("\nvoid f() { void * a;            1 > a;        }", msg + ">.", 1, 32);
-		testErr("\nvoid f() { void * a;            a >= 1;       }", msg + ">=.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; b < a;        }", msg + "<.", 1, 32);
-		testErr("\nvoid f() { int* a; int (*b)[2]; a > b;        }", msg + ">.", 1, 32);
-		testErr("\nvoid f() { int a[2];            a[0] < &a[0]; }", msg + "<.", 1, 32);
-		testErr("\nvoid f() { int a[2];            &a[0] > a[0]; }", msg + ">.", 1, 32);
-		testErr("\nvoid f() { int* a; void* b;     b < a;        }", msg + "<.", 1, 32);
-		testErr("\nvoid f() { int* a; void* b;     a > b;        }", msg + ">.", 1, 32);
+		testErr("\nvoid f() {                       1 < f();      }", msg + "<.", 1, 33);
+		testErr("\nvoid f() {                       f() <= 1;     }", msg + "<=.", 1, 33);
+		testErr("\nvoid f() { void * a;             1 > a;        }", msg + ">.", 1, 33);
+		testErr("\nvoid f() { void * a;             a >= 1;       }", msg + ">=.", 1, 33);
+		testErr("\nvoid f() { int* a; int (*b)[2];  b < a;        }", msg + "<.", 1, 33);
+		testErr("\nvoid f() { int* a; int (*b)[2];  a > b;        }", msg + ">.", 1, 33);
+		testErr("\nvoid f() { int a[2];             a[0] < &a[0]; }", msg + "<.", 1, 33);
+		testErr("\nvoid f() { int a[2];             &a[0] > a[0]; }", msg + ">.", 1, 33);
+		testErr("\nvoid f() { int* a; void* b;      b < a;        }", msg + "<.", 1, 33);
+		testErr("\nvoid f() { int* a; void* b;      a > b;        }", msg + ">.", 1, 33);
+		testErr("\nvoid f() { int(*a)(); int(*b)(); b <= a;       }", msg + "<=.", 1, 33);
+		testErr("\nvoid f() { int(*a)(); int(*b)(); a >= b;       }", msg + ">=.", 1, 33);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForAdd() throws IOException
 	{
-		String msg = "Incompatible operands for operator ";
-		testErr("\nvoid f() {                  0 + f(); }", msg + "+.", 1, 28);
-		testErr("\nvoid f() {                  f() + 0; }", msg + "+.", 1, 28);
-		testErr("\nvoid f() { void * a;        0 + a;   }", msg + "+.", 1, 28);
-		testErr("\nvoid f() { void * a;        a + 0;   }", msg + "+.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; b + a;   }", msg + "+.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; a + b;   }", msg + "+.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  a + b;   }", msg + "+.", 1, 28);
+		String msg = "Incompatible operands for operator +.";
+		testErr("\nvoid f() {                  0 + f(); }", msg, 1, 28);
+		testErr("\nvoid f() {                  f() + 0; }", msg, 1, 28);
+		testErr("\nvoid f() { void * a;        0 + a;   }", msg, 1, 28);
+		testErr("\nvoid f() { void * a;        a + 0;   }", msg, 1, 28);
+		testErr("\nvoid f() { void (*a)();     0 + a;   }", msg, 1, 28);
+		testErr("\nvoid f() { void (*a)();     a + 0;   }", msg, 1, 28);
+		testErr("\nvoid f() { int* a; void* b; b + a;   }", msg, 1, 28);
+		testErr("\nvoid f() { int* a; void* b; a + b;   }", msg, 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  a + b;   }", msg, 1, 28);
 	}
 
 	@Test
 	public void errorWhenIllegalOperandsForSubtract() throws IOException
 	{
-		String msg = "Incompatible operands for operator ";
-		testErr("\nvoid f() {                  0 - f();      }", msg + "-.", 1, 28);
-		testErr("\nvoid f() {                  f() - 0;      }", msg + "-.", 1, 28);
-		testErr("\nvoid f() { void * a;        0 - a;        }", msg + "-.", 1, 28);
-		testErr("\nvoid f() { void * a;        a - 0;        }", msg + "-.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; b - a;        }", msg + "-.", 1, 28);
-		testErr("\nvoid f() { int* a; void* b; a - b;        }", msg + "-.", 1, 28);
-		testErr("\nvoid f() { int a[2];        a[0] - &a[0]; }", msg + "-.", 1, 28);
-		testErr("\nvoid f() { int a[2][2];     &a[0] - a[0]; }", msg + "-.", 1, 28);
+		String msg = "Incompatible operands for operator -.";
+		testErr("\nvoid f() {                            0 - f();      }", msg, 1, 38);
+		testErr("\nvoid f() {                            f() - 0;      }", msg, 1, 38);
+		testErr("\nvoid f() { void * a;                  0 - a;        }", msg, 1, 38);
+		testErr("\nvoid f() { void * a;                  a - 0;        }", msg, 1, 38);
+		testErr("\nvoid f() { void (*a)();               0 - a;        }", msg, 1, 38);
+		testErr("\nvoid f() { void (*a)();               a - 0;        }", msg, 1, 38);
+		testErr("\nvoid f() { int* a; void* b;           b - a;        }", msg, 1, 38);
+		testErr("\nvoid f() { int* a; void* b;           a - b;        }", msg, 1, 38);
+		testErr("\nvoid f() { int (*a)(); void (*b)();   a - b;        }", msg, 1, 38);
+		testErr("\nvoid f() { int a[2];                  a[0] - &a[0]; }", msg, 1, 38);
+		testErr("\nvoid f() { int a[2][2];               &a[0] - a[0]; }", msg, 1, 38);
+		testErr("\nvoid f() { void (*a)(); int (*b)();   a - b;        }", msg, 1, 38);
+		testErr("\nvoid f() { int (*a)(); int (*b)(int); a - b;        }", msg, 1, 38);
 	}
 
 	@Test
@@ -491,6 +558,7 @@ public class CompilerTest
 		testErr("\nvoid f() { void * a;        a & 0;   }", msg + "&.", 1, 28);
 		testErr("\nvoid f() { int* a; int* b;  b << a;  }", msg + "<<.", 1, 28);
 		testErr("\nvoid f() { int* a; int* b;  a >> b;  }", msg + ">>.", 1, 28);
+		testErr("\nvoid f() {                  f & 0;   }", msg + "&.", 1, 28);
 	}
 
 	@Test
@@ -503,8 +571,9 @@ public class CompilerTest
 		testErr("\nvoid f() { int a[2];        0 * a;   }", msg + "*.", 1, 28);
 		testErr("\nvoid f() { void * a;        0 % a;   }", msg + "%.", 1, 28);
 		testErr("\nvoid f() { void * a;        a / 0;   }", msg + "/.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  b * a;  }", msg + "*.", 1, 28);
-		testErr("\nvoid f() { int* a; int* b;  a % b;  }", msg + "%.", 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  b * a;   }", msg + "*.", 1, 28);
+		testErr("\nvoid f() { int* a; int* b;  a % b;   }", msg + "%.", 1, 28);
+		testErr("\nvoid f() {                  f / 0;   }", msg + "/.", 1, 28);
 	}
 
 	@Test
@@ -546,5 +615,35 @@ public class CompilerTest
 		String msg = "Continue used outside of loop.";
 		testErr("\nvoid f() { continue; while(1){} }", msg, 1, 11);
 		testErr("\nvoid f() { {for(;;); if (1) ; else { continue; } } }", msg, 1, 37);
+	}
+
+	@Test
+	public void errorWhenUsingCommaOperatorResultAsAnLvalue() throws IOException
+	{
+		String msg = "Operation requires an lvalue.";
+		testErr("\nvoid f() { int a; &(0,a); }", msg, 1, 20);
+		testErr("\nvoid f() { int a; (0,a)++; }", msg, 1, 19);
+		testErr("\nvoid f() { int a; (0,a) = 1; }", msg, 1, 19);
+	}
+
+	@Test
+	public void errorWhenArrayUsedAsAnLvalue() throws IOException
+	{
+		String msg = "Array used as an lvalue.";
+		testErr("\nint f() { int a[2]; ++a; }", msg, 1, 22);
+		testErr("\nint f() { int a[2]; a--; }", msg, 1, 20);
+		testErr("\nint f() { int a[2]; a += 1; }", msg, 1, 20);
+		testErr("\nint f() { int a[2]; a = a; }", msg, 1, 20);
+		testErr("\nint f() { int (*a)[2]; (*a)++; }", msg, 1, 24);
+		testErr("\nint f() { int (*a)[2]; --(*a); }", msg, 1, 26);
+		testErr("\nint f() { int a[2][3]; a[1] -= 1; }", msg, 1, 23);
+	}
+
+	@Test
+	public void errorWhenFunctionUsedAsAnLvalue() throws IOException
+	{
+		String msg = "Function used as an lvalue.";
+		testErr("\nint f() { int (*p)(); f = p; }", msg, 1, 22);
+		testErr("\nint f() { int (*p)(); *f = p; }", msg, 1, 22);
 	}
 }

@@ -109,10 +109,8 @@ public class SubscriptExpression extends Expression
 			return array;
 		else if (subscript.getType(scope).decay().dereference().isObject())
 			return subscript;
-		else {
-			throw new SyntaxException("Operator [] requires an object pointer.",
-					getPosition());
-		}
+		else
+			throw new SyntaxException("Operator [] requires an object pointer.", getPosition());
 	}
 
 	private Expression getActualSubscriptOperand(Scope scope) throws SyntaxException

@@ -3,8 +3,14 @@ This directory contains tests source files for manually testing the compiler. Th
 --- test_basic_features.c ---
 Attempts test basic language features as thorougly as possible. Outputs "1" on success for each test and something else if the test fails.
 
---- test_pointers_and_arrays_features.c ---
-Tets features related to pointers, arrays and lvalues. Outputs "1" on successful tests.
+--- test_pointers_and_arrays.c ---
+Tests features related to pointers, arrays and lvalues. Outputs "1" on successful tests.
+
+--- test_loops.c ---
+Tets for, while and do-while loops, and break/continue statements. Outputs "1" on successful tests.
+
+--- test_function_pointers.c ---
+Tets function declarators and function pointers. Outputs "1" on successful tests.
 
 --- example_random_number_generator.c ---
 Random number generator using WELL512 algorithm. First 5 generated numbers should be:

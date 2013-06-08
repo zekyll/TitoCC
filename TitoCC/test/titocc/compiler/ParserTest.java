@@ -56,6 +56,62 @@ public class ParserTest
 	}
 
 	@Test
+	public void matchFunctionDeclarator() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR f) (PRM_LIST (PRM (DS int)"
+				+ " (DCLTOR a)) (PRM (DS void) (DCLTOR b)))) null))",
+				parse("int f(int a, void b);"));
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR f) (PRM_LIST (PRM (DS int)"
+				+ " (DCLTOR null)) (PRM (DS void) (DCLTOR null)))) null))",
+				parse("int f(int, void);"));
+	}
+
+	@Test
+	public void matchFunctionPointer() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS void) (DCLTOR (DCLTOR (DCLTOR p)) (PRM_LIST (PRM"
+				+ " (DS int) (DCLTOR null)))) null))",
+				parse("void (*p)(int);"));
+	}
+
+	@Test
+	public void matchReturnValueDeclarator() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS void) (DCLTOR (DCLTOR (DCLTOR f) (PRM_LIST)) (PRM_LIST"
+				+ " (PRM (DS int) (DCLTOR null)))) null))",
+				parse("void f()(int);"));
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR (DCLTOR f) (PRM_LIST))"
+				+ " (INT_EXPR 6)) null))",
+				parse("int f()[6];"));
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR (DCLTOR f) (PRM_LIST))) null))",
+				parse("int* f();"));
+	}
+
+	@Test
+	public void matchAbstractFunctionDeclartor() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS void) (DCLTOR (DCLTOR f) (PRM_LIST (PRM (DS int)"
+				+ " (DCLTOR null)))) null))",
+				parse("void f(int());"));
+	}
+
+	@Test
+	public void matchAbstractArrayDeclartor() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS void) (DCLTOR (DCLTOR f) (PRM_LIST (PRM (DS void)"
+				+ " (DCLTOR (DCLTOR null) (INT_EXPR 0))))) null))",
+				parse("void f(void[0]);"));
+	}
+
+	@Test
+	public void matchAbstractPointerDeclartor() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS void) (DCLTOR (DCLTOR f) (PRM_LIST (PRM (DS int)"
+				+ " (DCLTOR (DCLTOR null))))) null))",
+				parse("void f(int*);"));
+	}
+
+	@Test
 	public void matchBraceDeclarator() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR xyz) null))",
@@ -144,22 +200,39 @@ public class ParserTest
 	{
 		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR foo) (PRM_LIST)) (BLK_ST)))",
 				parse("void foo() {}"));
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR f) (BLK_ST)))",
+				parse("void f {}"));
+		assertEquals("(TRUNIT (FUNC (DS int) (DCLTOR (DCLTOR f) (INT_EXPR 7)) (BLK_ST)))",
+				parse("int f[7] {}"));
 	}
 
 	@Test
 	public void matchFunctionWithParameters() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR foo) (PRM_LIST (PRM"
-				+ " (DS int) (DCLTOR a)) (PRM (DS int) (DCLTOR b)))) (BLK_ST)))",
-				parse("void foo(int a, int b) {}"));
+				+ " (DS int) (DCLTOR a)) (PRM (DS int) (DCLTOR null)))) (BLK_ST)))",
+				parse("void foo(int a, int) {}"));
 	}
 
 	@Test
-	public void matchDeclaratorsInParameters() throws IOException, SyntaxException
+	public void matchDeclaratorsInFunctionDefnParameters() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR foo) (PRM_LIST (PRM"
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR f) (PRM_LIST (PRM"
 				+ " (DS int) (DCLTOR (DCLTOR (DCLTOR a) (INT_EXPR 2)))))) (BLK_ST)))",
-				parse("void foo(int *a[2]) {}"));
+				parse("void f(int *a[2]) {}"));
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR f) (PRM_LIST (PRM (DS int)"
+				+ " (DCLTOR null)))) (BLK_ST)))",
+				parse("void f(int()) {}"));
+	}
+
+	@Test
+	public void matchDeclaratorsInFunctionDefnReturnValue() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR (DCLTOR f) (PRM_LIST))) (BLK_ST)))",
+				parse("void* f() {}"));
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR (DCLTOR (DCLTOR f) (PRM_LIST))"
+				+ " (INT_EXPR 5)) (PRM_LIST (PRM (DS int) (DCLTOR null)))) (BLK_ST)))",
+				parse("void f()[5](int) {}"));
 	}
 
 	@Test
@@ -188,6 +261,8 @@ public class ParserTest
 	{
 		assertEquals(inFunc("(DECL_ST (VAR_DECL (DS int) (DCLTOR x) null))"),
 				parse("void f() { int x; }"));
+		assertEquals(inFunc("(DECL_ST (VAR_DECL (DS void) (DCLTOR (DCLTOR a) (PRM_LIST)) null))"),
+				parse("void f() { void a(); }"));
 	}
 
 	@Test
@@ -238,6 +313,9 @@ public class ParserTest
 		assertEquals(inFunc("(FOR (DECL_ST (VAR_DECL (DS int) (DCLTOR i) (INT_EXPR 0)))"
 				+ " (BIN_EXPR < (ID_EXPR i) (ID_EXPR n)) (PRE_EXPR ++ (ID_EXPR i)) (BLK_ST))"),
 				parse("void f() { for(int i = 0; i < n; ++i) {} }"));
+		assertEquals(inFunc("(FOR (EXPR_ST (ASGN_EXPR = (ID_EXPR a) (ID_EXPR b))) null null"
+				+ " (BLK_ST))"),
+				parse("void f() { for(a = b; ; ) {} }"));
 	}
 
 	@Test
@@ -346,11 +424,12 @@ public class ParserTest
 		testFailure("\nvoid foo() { 2 }", "}", 1, 15);
 	}
 
-//	@Test
-//	public void failAtFunctionName() throws IOException, SyntaxException
-//	{
-//		testFailure("\nvoid () { }", "(", 1, 5);
-//	}
+	@Test
+	public void failAtFunctionName() throws IOException, SyntaxException
+	{
+		testFailure("\nvoid () { }", ")", 1, 6); // "(" matches parenthesized declarator
+	}
+
 	@Test
 	public void failAtFunctionParameterList() throws IOException, SyntaxException
 	{

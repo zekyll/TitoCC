@@ -2,7 +2,6 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
@@ -184,15 +183,14 @@ public abstract class Expression extends CodeElement
 	 * Throws if the expression cannot be an lvalue based on its type.
 	 *
 	 * @param scope scope where the expression is evaluated
-	 * @throws SyntaxException if array type
+	 * @throws SyntaxException if array or function type
 	 */
 	protected void requireLvalueType(Scope scope) throws SyntaxException
 	{
-		CType resultType = getType(scope);
+		CType resultType = getType(scope); // No type decay
 		if (resultType instanceof ArrayType)
-			throw new SyntaxException("Array cannot be used as an lvalue.", getPosition());
-		// Functions should never be used as lvalues (except with operator &).
+			throw new SyntaxException("Array used as an lvalue.", getPosition());
 		if (resultType instanceof FunctionType)
-			throw new InternalCompilerException("Function used as an lvalue.");
+			throw new SyntaxException("Function used as an lvalue.", getPosition());
 	}
 }
