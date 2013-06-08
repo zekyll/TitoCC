@@ -296,9 +296,9 @@ public class BinaryExpression extends Expression
 					&& new Integer(0).equals(left.getCompileTimeValue()))
 				return new IntType();
 		} else if (op.type == Type.RELATIONAL) {
-			if (leftType.isArithmetic() && rightType.isArithmetic())
+			if (leftType.isArithmetic() && rightType.isArithmetic()) //TODO arithmetic->real
 				return new IntType();
-			if (leftDeref.equals(rightDeref))
+			if (leftDeref.equals(rightDeref) && (leftDeref.isObject() || leftDeref.isIncomplete()))
 				return new IntType();
 		} else if (operator.equals("+")) {
 			if (leftType.isArithmetic() && rightType.isArithmetic())
