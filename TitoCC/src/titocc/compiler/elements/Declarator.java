@@ -155,7 +155,10 @@ public abstract class Declarator extends CodeElement
 		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 				throws SyntaxException, IOException
 		{
-			boolean funcDefn = paramSymbolsOut != null;
+			// Only recognize the innermost function declarator as function definition, in case
+			// there are several (e.g. a function returning a function pointer).
+			boolean funcDefn = paramSymbolsOut != null
+					&& subDeclarator instanceof IdentifierDeclarator;
 
 			checkReturnType(type);
 
@@ -165,13 +168,10 @@ public abstract class Declarator extends CodeElement
 			for (Symbol sym : paramSymbols)
 				paramTypes.add(sym.getType());
 
-			// Only add parameter symbols from the innermost function
-			// declarator, in case there are several (e.g. a function returning
-			// a function pointer),
-			if (funcDefn) {
-				paramSymbolsOut.clear();
+			// Only add parameter symbols if this is a declarator corresponding to a function
+			// definition.
+			if (funcDefn)
 				paramSymbolsOut.addAll(paramSymbols);
-			}
 
 			return subDeclarator.compile(new FunctionType(type, paramTypes), scope,
 					paramSymbolsOut);
