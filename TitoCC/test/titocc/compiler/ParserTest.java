@@ -337,6 +337,27 @@ public class ParserTest
 	}
 
 	@Test
+	public void matchDeclarationSpecifiers() throws IOException, SyntaxException
+	{
+		// Global var
+		assertEquals("(TRUNIT (VAR_DECL (DS long volatile static static signed) (DCLTOR x) null))",
+				parse("long volatile static static signed x;"));
+		// Function definition
+		assertEquals("(TRUNIT (FUNC (DS void unsigned auto) (DCLTOR (DCLTOR (DCLTOR f)"
+				+ " (PRM_LIST))) (BLK_ST)))",
+				parse("void unsigned auto* f() {}"));
+		// Parameters
+		assertEquals("(TRUNIT (FUNC (DS void) (DCLTOR (DCLTOR f) (PRM_LIST (PRM (DS float double"
+				+ " register inline) (DCLTOR x)))) (BLK_ST)))",
+				parse("void f(float double register inline x) {}"));
+		// Local variable
+		assertEquals("(TRUNIT (FUNC (DS int) (DCLTOR (DCLTOR f) (PRM_LIST)) (BLK_ST (DECL_ST"
+				+ " (VAR_DECL (DS typedef extern char short int _Bool _Complex restrict)"
+				+ " (DCLTOR x) null)))))",
+				parse("int f() { typedef extern char short int _Bool _Complex restrict x; }"));
+	}
+
+	@Test
 	public void throwsOnIllegalSyntax() throws IOException, SyntaxException
 	{
 		try {

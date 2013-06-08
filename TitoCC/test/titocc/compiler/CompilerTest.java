@@ -646,4 +646,54 @@ public class CompilerTest
 		testErr("\nint f() { int (*p)(); f = p; }", msg, 1, 22);
 		testErr("\nint f() { int (*p)(); *f = p; }", msg, 1, 22);
 	}
+
+	@Test
+	public void errorWhenMultipleStorageClassesInDeclarationSpecifiers() throws IOException
+	{
+		String msg = "Multiple storage classes in declaration specifiers.";
+		testErr("\nstatic static int x;", msg, 1, 0);
+		testErr("\nextern extern void foo() { }", msg, 1, 0);
+	}
+
+	@Test
+	public void errorWhenUnsupportedStorageClass() throws IOException
+	{
+		String msg = "Storage classes are not supported yet.";
+		testErr("\nstatic int x;", msg, 1, 0);
+		testErr("\nextern void foo() { }", msg, 1, 0);
+		testErr("\nvoid f() { auto int x; }", msg, 1, 11);
+		testErr("\nvoid f(register int x) { }", msg, 1, 7);
+		testErr("\ntypedef int t;", msg, 1, 0);
+	}
+
+	@Test
+	public void errorWhenUnsupportedInlineSpecifierUsed() throws IOException
+	{
+		String msg = "Inline functions are not supported yet.";
+		testErr("\ninline int x;", msg, 1, 0); //TODO different error
+		testErr("\ninline void f() { }", msg, 1, 0);
+	}
+
+	@Test
+	public void errorWhenUnsupportedTypeQualifier() throws IOException
+	{
+		String msg = "Type qualifiers are not supported yet.";
+		testErr("\nint const x;", msg, 1, 0); //TODO different error
+		testErr("\nvolatile void f() { }", msg, 1, 0);
+		testErr("\nrestrict int x;", msg, 1, 0);
+	}
+
+	@Test
+	public void errorWhenInvalidTypeInDeclarationSpecifiers() throws IOException
+	{
+		String msg = "Invalid type in declaration specifiers.";
+		testErr("\nsigned signed int x;", msg, 1, 0);
+		testErr("\nlong long long void f() {}", msg, 1, 0);
+		testErr("\nunsigned float x;", msg, 1, 0);
+		testErr("\nsigned _Bool x;", msg, 1, 0);
+		testErr("\nlong long double x;", msg, 1, 0);
+		testErr("\nshort char x;", msg, 1, 0);
+		testErr("\nsigned void x;", msg, 1, 0);
+		testErr("\nchar int x;", msg, 1, 0);
+	}
 }
