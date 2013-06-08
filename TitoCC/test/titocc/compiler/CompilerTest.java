@@ -245,8 +245,6 @@ public class CompilerTest
 	@Test
 	public void errorWhenInvalidParameterType() throws IOException
 	{
-		testErr("\nvoid f(int *x[2]) {}", "Array parameters are not supported.", 1, 7);
-		testErr("\nvoid f(int a()) {}", "Parameter must have object type.", 1, 7);
 		testErr("\nvoid f(void a) { }", "Parameter must have object type.", 1, 7);
 	}
 

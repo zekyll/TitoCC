@@ -20,6 +20,17 @@ int (*f4(int (*p)(int)))(int)
 	return p;
 }
 
+// Adjustment of function parameter types
+int f5(int a[2], int b(int))
+{
+	int* a2 = a;
+	int** a3 = &a;
+	int (*b2)(int) = b;
+	int (**b3)(int) = &b;
+
+	return (a[0] == -a[1]) && ((*b)(3) == 6);
+}
+
 // Named and unnamed parameters in function prototypes
 void (*p1)(int);
 void (*p2)(int a, int);
@@ -117,6 +128,16 @@ int main() {
 		out(p1 == 0);
 		out(pa[0] == 0);
 		out(pa[1] == 0);
+	}
+
+	// Parameter type adjustment
+	{
+		int a[2];
+		a[0] = -15;
+		a[1] = 15;
+		int (*b)(int) = &f1;
+		int r = f5(a, b);
+		out(r);
 	}
 
 	// Stack integrity checks.

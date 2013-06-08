@@ -5,7 +5,6 @@ import titocc.compiler.DeclarationType;
 import titocc.compiler.Scope;
 import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
-import titocc.compiler.types.ArrayType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -74,10 +73,11 @@ public class Parameter extends CodeElement
 		DeclarationType declType = declarationSpecifiers.compile(scope);
 		declType.type = declarator.compile(declType.type, scope, null);
 
+		// Adjust parameter type as defined in ($6.7.5.3/7-8).
+		declType.type = declType.type.decay();
+
 		if (!declType.type.isObject())
 			throw new SyntaxException("Parameter must have object type.", getPosition());
-		if (declType.type instanceof ArrayType)
-			throw new SyntaxException("Array parameters are not supported.", getPosition());
 
 		return declType;
 	}
