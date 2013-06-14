@@ -7,7 +7,6 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
-import titocc.compiler.types.IntType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -44,7 +43,7 @@ public class BinaryExpression extends Expression
 {
 	private enum Type
 	{
-		BITWISE, ARITHMETIC, EQUALITY, RELATIONAL, LOGICAL
+		BITWISE, ARITHMETIC, EQUALITY, RELATIONAL, SHIFT, LOGICAL
 	};
 
 	/**
@@ -83,8 +82,8 @@ public class BinaryExpression extends Expression
 			put("<=", new Operator("jngre", Type.RELATIONAL, 8));
 			put(">", new Operator("jgre", Type.RELATIONAL, 8));
 			put(">=", new Operator("jnles", Type.RELATIONAL, 8));
-			put("<<", new Operator("shl", Type.BITWISE, 9));
-			put(">>", new Operator("shr", Type.BITWISE, 9));
+			put("<<", new Operator("shl", Type.SHIFT, 9));
+			put(">>", new Operator("shr", Type.SHIFT, 9));
 			put("+", new Operator("add", Type.ARITHMETIC, 10));
 			put("-", new Operator("sub", Type.ARITHMETIC, 10));
 			put("*", new Operator("mul", Type.ARITHMETIC, 11));
@@ -169,7 +168,7 @@ public class BinaryExpression extends Expression
 
 		// Compile right expression and the operator.
 		Type opType = binaryOperators.get(operator).type;
-		if (opType == Type.BITWISE || opType == Type.ARITHMETIC)
+		if (opType == Type.BITWISE || opType == Type.ARITHMETIC || opType == Type.SHIFT)
 			compileSimpleOperator(asm, scope, regs);
 		else if (opType == Type.LOGICAL)
 			compileLogicalOperator(asm, scope, regs);
@@ -277,50 +276,53 @@ public class BinaryExpression extends Expression
 
 		if (op.type == Type.LOGICAL) {
 			if (leftType.isScalar() && rightType.isScalar())
-				return new IntType();
+				return CType.INT;
 		} else if (op.type == Type.EQUALITY) {
 			if (leftType.isArithmetic() && rightType.isArithmetic())
-				return new IntType();
+				return CType.INT;
 			if (leftDeref.equals(rightDeref))
-				return new IntType();
+				return CType.INT;
 			if (leftDeref instanceof VoidType && (rightDeref.isObject()
 					|| rightDeref.isIncomplete()))
-				return new IntType();
+				return CType.INT;
 			if (rightDeref instanceof VoidType && (leftDeref.isObject()
 					|| leftDeref.isIncomplete()))
-				return new IntType();
+				return CType.INT;
 			if (leftType.isPointer() && rightType.isInteger()
 					&& new Integer(0).equals(right.getCompileTimeValue()))
-				return new IntType();
+				return CType.INT;
 			if (rightType.isPointer() && leftType.isInteger()
 					&& new Integer(0).equals(left.getCompileTimeValue()))
-				return new IntType();
+				return CType.INT;
 		} else if (op.type == Type.RELATIONAL) {
 			if (leftType.isArithmetic() && rightType.isArithmetic()) //TODO arithmetic->real
-				return new IntType();
+				return CType.INT;
 			if (leftDeref.equals(rightDeref) && (leftDeref.isObject() || leftDeref.isIncomplete()))
-				return new IntType();
+				return CType.INT;
 		} else if (operator.equals("+")) {
 			if (leftType.isArithmetic() && rightType.isArithmetic())
-				return new IntType();
+				return CType.getCommonType(leftType, rightType);
 			if (leftDeref.isObject() && rightType.isInteger())
 				return leftType;
 			if (leftType.isInteger() && rightDeref.isObject())
 				return rightType;
 		} else if (operator.equals("-")) {
 			if (leftType.isArithmetic() && rightType.isArithmetic())
-				return new IntType();
+				return CType.getCommonType(leftType, rightType);
 			if (leftDeref.isObject() && rightType.isInteger())
 				return leftType;
 			if (leftDeref.isObject() && rightDeref.equals(leftDeref))
-				return new IntType();
+				return CType.PTRDIFF_T;
 		} else if (op.type == Type.BITWISE) {
 			if (leftType.isInteger() && rightType.isInteger())
-				return new IntType();
+				return CType.getCommonType(leftType, rightType);
+		} else if (op.type == Type.SHIFT) {
+			if (leftType.isInteger() && (rightType.isInteger()))
+				return leftType.promote();
 		} else if (op.type == Type.ARITHMETIC) {
 			if (leftType.isArithmetic() && (rightType.isInteger()
 					|| (!operator.equals("%") && rightType.isArithmetic())))
-				return new IntType();
+				return CType.INT;
 		}
 
 		throw new SyntaxException("Incompatible operands for operator " + operator + ".",

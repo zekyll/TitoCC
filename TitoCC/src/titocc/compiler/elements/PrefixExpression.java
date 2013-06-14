@@ -9,7 +9,6 @@ import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
-import titocc.compiler.types.IntType;
 import titocc.compiler.types.PointerType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -237,10 +236,15 @@ public class PrefixExpression extends Expression
 						getPosition());
 			}
 			return operandType.dereference();
-		} else if (operator.equals("!") || operator.equals("~")) {
-			return new IntType();
-		} else // ++ -- + -
+		} else if (operator.equals("!")) {
+			return CType.INT;
+		} else if (operator.equals("~")) {
+			return operandType.promote();
+		} else if (operator.equals("+") || operator.equals("-")) {
+			return operandType.promote();
+		} else { // ++ --
 			return operandType;
+		}
 	}
 
 	@Override

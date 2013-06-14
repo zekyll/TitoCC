@@ -1,5 +1,9 @@
 package titocc.compiler.types;
 
+import java.util.HashMap;
+import java.util.Map;
+import titocc.compiler.InternalCompilerException;
+
 /**
  * Abstract base class for representing types in C type system. Allows testing equality between
  * types and querying their features.
@@ -128,4 +132,150 @@ public abstract class CType
 	{
 		return this;
 	}
+
+	/**
+	 * Apply integer promotions to the type.
+	 *
+	 * @return the promoted type
+	 */
+	public CType promote()
+	{
+		return this;
+	}
+
+	/**
+	 * Finds the common type for two arithmetic types according to "usual arithmetic conversions".
+	 * ($6.3.1.8/1)
+	 */
+	public static CType getCommonType(CType left, CType right)
+	{
+		if (!left.isArithmetic() || !right.isArithmetic()) {
+			throw new InternalCompilerException("Arithmetic conversion attempted on"
+					+ "non-arithmetic type.");
+		}
+
+		//TODO long double, double, float
+
+		// Both must be integers.
+		IntegerType leftPromoted = (IntegerType) left.promote();
+		IntegerType rightPromoted = (IntegerType) right.promote();
+
+		// If types are same then use that type.
+		if (leftPromoted.equals(rightPromoted))
+			return leftPromoted;
+
+		// If both signed or both unsigned, use type with higher getRank.
+		if (leftPromoted.isSigned() == rightPromoted.isSigned())
+			return leftPromoted.getRank() > rightPromoted.getRank() ? leftPromoted : rightPromoted;
+
+		// Other type is signed and other one unsigned.
+		IntegerType signed = leftPromoted.isSigned() ? leftPromoted : rightPromoted;
+		IntegerType unsigned = !leftPromoted.isSigned() ? leftPromoted : rightPromoted;
+
+		// If unsigned has higher getRank, use the unsigned type.
+		if (unsigned.getRank() > signed.getRank())
+			return unsigned;
+
+		// If unsigned fits the signed, use the signed type.
+		if (unsigned.getSize() < signed.getSize())
+			return signed;
+
+		// Unsigned type corresponding to the signed type.
+		return signed.toUnsigned();
+	}
+
+	/**
+	 * Standard "void" type.
+	 */
+	public static CType VOID = new VoidType();
+
+	/**
+	 * Standard "char" type.
+	 */
+	public static IntegerType CHAR = new Int32Type(0, 0);
+
+	/**
+	 * Standard "signed char" type.
+	 */
+	public static IntegerType SCHAR = new Int32Type(0, 1);
+
+	/**
+	 * Standard "short int" type.
+	 */
+	public static IntegerType SHORT = new Int32Type(1, 0);
+
+	/**
+	 * Standard "int" type.
+	 */
+	public static IntegerType INT = new Int32Type(2, 0);
+
+	/**
+	 * Standard "long int" type.
+	 */
+	public static IntegerType LONG = new Int32Type(3, 0);
+
+	/**
+	 * Standard "long long int" type.
+	 */
+	public static IntegerType LLONG = new Int64Type(4, 0);
+
+	/**
+	 * Standard "unsigned int type" type.
+	 */
+	public static IntegerType UCHAR = new Uint32Type(0, 0);
+
+	/**
+	 * Standard "unsigned short int" type.
+	 */
+	public static IntegerType USHORT = new Uint32Type(1, 0);
+
+	/**
+	 * Standard "unsigned int" type.
+	 */
+	public static IntegerType UINT = new Uint32Type(2, 0);
+
+	/**
+	 * Standard "unsigned long int" type.
+	 */
+	public static IntegerType ULONG = new Uint32Type(3, 0);
+
+	/**
+	 * Standard "unsigned long long int" type.
+	 */
+	public static IntegerType ULLONG = new Uint64Type(4, 0);
+
+	/**
+	 * Result type for subtraction between two pointers (ptrdiff_t).
+	 */
+	public static IntegerType PTRDIFF_T = LONG;
+
+	/**
+	 * Unsigned integer type that is able to hold the size of any object (size_t).
+	 */
+	public static IntegerType SIZE_T = ULONG;
+
+	/**
+	 * Type used for wide characters (wchar_t).
+	 */
+	public static IntegerType WCHAR_T = INT;
+
+	/**
+	 * Canonical names for standard types.
+	 */
+	protected static Map<IntegerType, String> names = new HashMap<IntegerType, String>()
+	{
+		{
+			put(CType.CHAR, "char");
+			put(CType.UCHAR, "unsigned char");
+			put(CType.SCHAR, "signed char");
+			put(CType.SHORT, "short int");
+			put(CType.USHORT, "unsigned short int");
+			put(CType.INT, "int");
+			put(CType.UINT, "unsigned int");
+			put(CType.LONG, "long int");
+			put(CType.ULONG, "unsigned long int");
+			put(CType.LLONG, "long long int");
+			put(CType.ULLONG, "unsigned long long int");
+		}
+	};
 }

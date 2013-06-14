@@ -128,7 +128,7 @@ public class Function extends Declaration
 	private void addInternalSymbols(Scope scope, CType returnType)
 	{
 		// Add symbol for the function end so that return statements can jump to it.
-		endSymbol = new Symbol("__End", new VoidType(), Symbol.Category.Internal,
+		endSymbol = new Symbol("__End", CType.VOID, Symbol.Category.Internal,
 				null, false);
 		scope.add(endSymbol);
 

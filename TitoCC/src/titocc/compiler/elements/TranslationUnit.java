@@ -10,7 +10,6 @@ import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
-import titocc.compiler.types.IntType;
 import titocc.tokenizer.EofToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -132,7 +131,7 @@ public class TranslationUnit extends CodeElement
 
 		// Required main function type: int()
 		List<CType> paramTypes = new ArrayList<CType>();
-		CType requiredType = new FunctionType(new IntType(), paramTypes);
+		CType requiredType = new FunctionType(CType.INT, paramTypes);
 
 		return sym.getType().equals(requiredType);
 	}

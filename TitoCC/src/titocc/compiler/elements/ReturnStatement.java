@@ -5,7 +5,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
-import titocc.compiler.types.VoidType;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -63,7 +63,7 @@ public class ReturnStatement extends Statement
 			expression.compile(asm, scope, regs);
 			asm.emit("store", regs.get(0).toString(), retVal.getReference());
 		} else {
-			if (!retVal.getType().equals(new VoidType()))
+			if (!retVal.getType().equals(CType.VOID))
 				throw new SyntaxException("Function must return a value.", getPosition());
 		}
 

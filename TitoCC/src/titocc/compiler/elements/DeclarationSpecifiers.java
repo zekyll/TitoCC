@@ -13,8 +13,6 @@ import titocc.compiler.DeclarationType;
 import titocc.compiler.Scope;
 import titocc.compiler.StorageClass;
 import titocc.compiler.types.CType;
-import titocc.compiler.types.IntType;
-import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -99,25 +97,25 @@ public class DeclarationSpecifiers extends CodeElement
 		}
 
 		{
-			put(new String[]{"void"}, new VoidType());
-			put(new String[]{"char"}, null);
-			put(new String[]{"signed", "char"}, null);
+			put(new String[]{"void"}, CType.VOID);
+			put(new String[]{"char"}, CType.CHAR);
+			put(new String[]{"signed", "char"}, CType.SCHAR);
 			put(new String[]{"unsigned", "char"}, null);
-			put(new String[]{"short"}, null);
-			put(new String[]{"signed", "short"}, null);
-			put(new String[]{"short", "int"}, null);
-			put(new String[]{"signed", "short", "int"}, null);
+			put(new String[]{"short"}, CType.SHORT);
+			put(new String[]{"signed", "short"}, CType.SHORT);
+			put(new String[]{"short", "int"}, CType.SHORT);
+			put(new String[]{"signed", "short", "int"}, CType.SHORT);
 			put(new String[]{"unsigned", "short"}, null);
 			put(new String[]{"unsigned", "short", "int"}, null);
-			put(new String[]{"int"}, new IntType());
-			put(new String[]{"signed"}, new IntType());
-			put(new String[]{"signed", "int"}, new IntType());
+			put(new String[]{"int"}, CType.INT);
+			put(new String[]{"signed"}, CType.INT);
+			put(new String[]{"signed", "int"}, CType.INT);
 			put(new String[]{"unsigned"}, null);
 			put(new String[]{"unsigned", "int"}, null);
-			put(new String[]{"long"}, null);
-			put(new String[]{"signed", "long"}, null);
-			put(new String[]{"long", "int"}, null);
-			put(new String[]{"signed", "long", "int"}, null);
+			put(new String[]{"long"}, CType.LONG);
+			put(new String[]{"signed", "long"}, CType.LONG);
+			put(new String[]{"long", "int"}, CType.LONG);
+			put(new String[]{"signed", "long", "int"}, CType.LONG);
 			put(new String[]{"unsigned", "long"}, null);
 			put(new String[]{"unsigned", "long", "int"}, null);
 			put(new String[]{"long", "long"}, null);

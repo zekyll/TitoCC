@@ -5,7 +5,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
-import titocc.compiler.types.VoidType;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -72,10 +72,10 @@ public class DoStatement extends Statement
 		scope.addSubScope(loopScope);
 
 		// Symbols for break/continue.
-		Symbol breakSymbol = new Symbol("__Brk", new VoidType(), Symbol.Category.Internal,
+		Symbol breakSymbol = new Symbol("__Brk", CType.VOID, Symbol.Category.Internal,
 				null, false);
 		loopScope.add(breakSymbol);
-		Symbol continueSymbol = new Symbol("__Cont", new VoidType(), Symbol.Category.Internal,
+		Symbol continueSymbol = new Symbol("__Cont", CType.VOID, Symbol.Category.Internal,
 				null, false);
 		loopScope.add(continueSymbol);
 

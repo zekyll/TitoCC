@@ -12,7 +12,7 @@ public class IntTypeTest
 	@Before
 	public void setUp()
 	{
-		t = new IntType();
+		t = CType.INT;
 	}
 
 	@Test
@@ -53,11 +53,11 @@ public class IntTypeTest
 	@Test
 	public void equalsWorksCorrectly()
 	{
-		assertFalse(t.equals(new ArrayType(new ArrayType(new IntType(), 6), 7)));
-		assertTrue(t.equals(new IntType()));
-		assertFalse(t.equals(new VoidType()));
-		assertFalse(t.equals(new PointerType(new ArrayType(new IntType(), 6))));
-		assertFalse(t.equals(new FunctionType(new VoidType(), new ArrayList<CType>())));
+		assertFalse(t.equals(new ArrayType(new ArrayType(CType.INT, 6), 7)));
+		assertTrue(t.equals(CType.INT));
+		assertFalse(t.equals(CType.VOID));
+		assertFalse(t.equals(new PointerType(new ArrayType(CType.INT, 6))));
+		assertFalse(t.equals(new FunctionType(CType.VOID, new ArrayList<CType>())));
 		assertFalse(t.equals(new InvalidType()));
 	}
 }

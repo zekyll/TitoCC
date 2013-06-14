@@ -73,7 +73,7 @@ public class FunctionCallExpression extends Expression
 		FunctionType funcType = getFunctionType(scope);
 
 		// Reserve space for return value.
-		if (!funcType.getReturnType().equals(new VoidType()))
+		if (!funcType.getReturnType().equals(CType.VOID))
 			asm.emit("add", "sp", "=" + funcType.getReturnType().getSize());
 
 		// Push arguments to stack.
@@ -86,7 +86,7 @@ public class FunctionCallExpression extends Expression
 		asm.emit("call", "sp", funcReference);
 
 		// Read the return value.
-		if (!funcType.getReturnType().equals(new VoidType()))
+		if (!funcType.getReturnType().equals(CType.VOID))
 			asm.emit("pop", "sp", regs.get(0).toString());
 	}
 

@@ -83,7 +83,7 @@ public class SubscriptExpression extends Expression
 		// Allocate second register and evaluate subscript in it.
 		regs.allocate(asm);
 		regs.removeFirst();
-		actualSubscriptOperand.compile(asm, scope, regs);
+		actualSubscriptOperand.compile(asm, scope, regs); //TODO conversion to ptrdiff_t?
 		regs.addFirst();
 
 		// If increment size > 1 then multiply subscript.

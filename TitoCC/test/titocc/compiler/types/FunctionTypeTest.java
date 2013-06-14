@@ -16,8 +16,8 @@ public class FunctionTypeTest
 	public void setUp()
 	{
 		params = new ArrayList();
-		params.add(new IntType());
-		t = new FunctionType(new IntType(), params);
+		params.add(CType.INT);
+		t = new FunctionType(CType.INT, params);
 	}
 
 	@Test
@@ -58,15 +58,15 @@ public class FunctionTypeTest
 	@Test
 	public void equalsWorksCorrectly()
 	{
-		assertFalse(t.equals(new ArrayType(new ArrayType(new IntType(), 6), 7)));
-		assertFalse(t.equals(new IntType()));
-		assertFalse(t.equals(new VoidType()));
-		assertFalse(t.equals(new PointerType(new ArrayType(new IntType(), 6))));
-		assertTrue(t.equals(new FunctionType(new IntType(), params)));
+		assertFalse(t.equals(new ArrayType(new ArrayType(CType.INT, 6), 7)));
+		assertFalse(t.equals(CType.INT));
+		assertFalse(t.equals(CType.VOID));
+		assertFalse(t.equals(new PointerType(new ArrayType(CType.INT, 6))));
+		assertTrue(t.equals(new FunctionType(CType.INT, params)));
 		List<CType> params2 = new ArrayList();
-		params2.add(new PointerType(new IntType()));
-		assertFalse(t.equals(new FunctionType(new IntType(), params2)));
-		assertFalse(t.equals(new FunctionType(new VoidType(), params)));
+		params2.add(new PointerType(CType.INT));
+		assertFalse(t.equals(new FunctionType(CType.INT, params2)));
+		assertFalse(t.equals(new FunctionType(CType.VOID, params)));
 		assertFalse(t.equals(new InvalidType()));
 	}
 }
