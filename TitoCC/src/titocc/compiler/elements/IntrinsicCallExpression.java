@@ -3,28 +3,30 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.Arrays;
 import titocc.compiler.Assembler;
+import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
-import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Similar to function call expression but calls an intrinsic function. Currently two instrinsic
- * functions are supported: in() and out(x) that correspond to the in/out instructions in ttk-91.
+ * Similar to function call expression but calls an intrinsic function. Currently four instrinsic
+ * functions are supported: in()/out(x) that correspond to TTK-91 I/O instructions "in Rx, =KBD" /
+ * "out Rx, =CRT" and in2(dev)/out2(dev, x) which allow I/O with arbitrary devices. The device
+ * number must be a compile time integer constant.
  *
  * <p> EBNF definition:
  *
- * <br> INTRINSIC_CALL_EXPRESSION = ("in" | "out") ARGUMENT_LIST
+ * <br> INTRINSIC_CALL_EXPRESSION = ("in" | "out" | "in2" | "out2") ARGUMENT_LIST
  */
 public class IntrinsicCallExpression extends Expression
 {
 	/**
 	 * List of instrinsic function names.
 	 */
-	static final String[] intrinsicFunctions = {"in", "out"};
+	static final String[] intrinsicFunctions = {"in", "out", "in2", "out2"};
 
 	/**
 	 * Name of the intrinsic function to call.
@@ -77,41 +79,74 @@ public class IntrinsicCallExpression extends Expression
 	{
 		if (name.equals("in"))
 			compileIn(asm, scope, regs);
+		else if (name.equals("in2"))
+			compileIn2(asm, scope, regs);
 		else if (name.equals("out"))
 			compileOut(asm, scope, regs);
+		else if (name.equals("out2"))
+			compileOut2(asm, scope, regs);
 	}
 
 	private void compileIn(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		if (!argumentList.getArguments().isEmpty()) {
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
-					getPosition());
-		}
+		checkArgumentCount(0);
 
 		asm.emit("in", regs.get(0).toString(), "=kbd");
+	}
+
+	private void compileIn2(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
+	{
+		checkArgumentCount(1);
+
+		asm.emit("in", regs.get(0).toString(), "=" + getDeviceNumber());
 	}
 
 	private void compileOut(Assembler asm, Scope scope, Registers regs)
 			throws SyntaxException, IOException
 	{
-		if (argumentList.getArguments().size() != 1) {
-			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
-					getPosition());
-		}
+		checkArgumentCount(1);
 
 		argumentList.getArguments().get(0).compile(asm, scope, regs);
 		asm.emit("out", regs.get(0).toString(), "=crt");
 	}
 
+	private void compileOut2(Assembler asm, Scope scope, Registers regs)
+			throws SyntaxException, IOException
+	{
+		checkArgumentCount(2);
+
+		argumentList.getArguments().get(1).compile(asm, scope, regs);
+		asm.emit("out", regs.get(0).toString(), "=" + getDeviceNumber());
+	}
+
+	private int getDeviceNumber() throws SyntaxException
+	{
+		Integer device = argumentList.getArguments().get(0).getCompileTimeValue();
+		if (device == null) {
+			throw new SyntaxException("Invalid device number for input function. Compile time "
+					+ "constant required.", getPosition());
+		}
+		return device;
+	}
+
+	private void checkArgumentCount(int expected) throws SyntaxException
+	{
+		if (argumentList.getArguments().size() != expected) {
+			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
+					getPosition());
+		}
+	}
+
 	@Override
 	public CType getType(Scope scope)
 	{
-		if (name.equals("in"))
+		if (name.equals("in") || name.equals("in2"))
 			return CType.INT;
-		else if (name.equals("out"))
+		else if (name.equals("out") || name.equals("out2"))
 			return CType.VOID;
-		return null;
+		throw new InternalCompilerException("Intrinsic call return value not specified.");
 	}
 
 	@Override
