@@ -113,7 +113,7 @@ int main() {
 		do {
 			if (++i == 2)
 				p = 0;
-		} while(p)	
+		} while(p);
 		out(i == 2);
 	}
 
