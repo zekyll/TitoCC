@@ -150,7 +150,6 @@ public class PrefixExpression extends Expression
 		}
 
 		operand.compile(asm, scope, regs);
-		operand.compile(asm, scope, regs);
 
 		// Negative in two's complement: negate all bits and add 1.
 		if (operator.equals("-")) {
