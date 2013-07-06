@@ -77,16 +77,6 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public Symbol getFunction(Scope scope) throws SyntaxException
-	{
-		Symbol symbol = findSymbol(scope);
-		if (!(symbol.getType() instanceof FunctionType))
-			return null;
-
-		return symbol;
-	}
-
-	@Override
 	public CType getType(Scope scope) throws SyntaxException
 	{
 		return findSymbol(scope).getType(); // No decay since we want to return the original type.

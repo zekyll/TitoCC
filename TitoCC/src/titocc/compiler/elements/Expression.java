@@ -76,19 +76,6 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Attempts to evaluate the expression as a function.
-	 * //TODO combine this functionality in the normal compile function
-	 *
-	 * @param scope in which the expression is evaluated
-	 * @return Symbol object with a function type or null if the expression does not name a function
-	 * @throws SyntaxException if expression contains an error
-	 */
-	public Symbol getFunction(Scope scope) throws SyntaxException
-	{
-		return null;
-	}
-
-	/**
 	 * Returns the type of the expression.
 	 *
 	 * @param scope scope in which the expression is evaluated

@@ -80,14 +80,14 @@ public class FunctionCallExpression extends Expression
 		argumentList.compile(asm, scope, vstack, funcType.getParameterTypes());
 
 		// Evaluate the function pointer.
-		String funcReference = compileFunctionPointer(asm, scope, vstack);
+		functionPointer.compile(asm, scope, vstack);
+		Register funcPtrReg = vstack.loadTopValue(asm); //TODO use @ instead of loading to register
 
 		// Make the call.
-		asm.emit("call", Register.SP, funcReference);
+		asm.emit("call", Register.SP, funcPtrReg.toString());
 
 		// Deallocate the register reserved for function pointer.
-		if (functionPointer.getFunction(scope) == null)
-			vstack.pop();
+		vstack.pop();
 
 		// Read the return value.
 		if (!funcType.getReturnType().equals(CType.VOID)) {
@@ -96,24 +96,8 @@ public class FunctionCallExpression extends Expression
 		}
 	}
 
-	private String compileFunctionPointer(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
-	{
-		Symbol func = functionPointer.getFunction(scope);
-		if (func != null)
-			return func.getReference();
-
-		functionPointer.compile(asm, scope, vstack);
-		Register fptrReg = vstack.loadTopValue(asm); //TODO use @ instead of loading to register
-		return fptrReg.toString();
-	}
-
 	private FunctionType getFunctionType(Scope scope) throws SyntaxException
 	{
-		Symbol func = functionPointer.getFunction(scope);
-		if (func != null)
-			return (FunctionType) func.getType();
-
 		CType funcType = functionPointer.getType(scope).decay().dereference();
 		if (!funcType.isFunction()) {
 			throw new SyntaxException("Expression does not evaluate to a function pointer.",
