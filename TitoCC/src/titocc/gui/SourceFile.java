@@ -13,6 +13,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import titocc.compiler.Compiler;
+import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Parser;
 import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;
@@ -120,8 +121,10 @@ public class SourceFile
 			int character = e.getPosition().column + 1;
 			log.logMessage("Compiler error (line " + line + ", ch " + character + "): "
 					+ e.getMessage());
+		} catch (InternalCompilerException e) {
+			log.logMessage("Internal compiler error: " + e.getMessage());
 		} catch (Exception e) {
-			log.logMessage("Compilation failed: " + e.getMessage());
+			log.logMessage("Unknown internal error: " + e.getMessage());
 		}
 
 		if (createOutputFile && assemblyCode != null && file != null)
