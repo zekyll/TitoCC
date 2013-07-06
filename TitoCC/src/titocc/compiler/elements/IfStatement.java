@@ -10,7 +10,7 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * If statement. Consists of test expression, a "true statement" and optional "else statement".
+ * If statement. Consists of control expression, a "true statement" and optional "else statement".
  *
  * <p> EBNF definition:
  *
@@ -21,7 +21,7 @@ public class IfStatement extends Statement
 	/**
 	 * Test expression.
 	 */
-	private final Expression test;
+	private final Expression controlExpression;
 
 	/**
 	 * Statement executed when test is true.
@@ -36,29 +36,29 @@ public class IfStatement extends Statement
 	/**
 	 * Constructs an IfStatement.
 	 *
-	 * @param test expression used as the test
+	 * @param controlExpression expression used as the test
 	 * @param trueStatement statement evaluated when test is not 0
 	 * @param elseStatement statement evaluated when test is 0; this parameter can be null if there
 	 * is no else statement
 	 * @param position starting position of the if statement
 	 */
-	public IfStatement(Expression test, Statement trueStatement, Statement elseStatement,
-			Position position)
+	public IfStatement(Expression controlExpression, Statement trueStatement,
+			Statement elseStatement, Position position)
 	{
 		super(position);
-		this.test = test;
+		this.controlExpression = controlExpression;
 		this.trueStatement = trueStatement;
 		this.elseStatement = elseStatement;
 	}
 
 	/**
-	 * Returns the test expression.
+	 * Returns the control expression.
 	 *
-	 * @return the test expression
+	 * @return the control expression
 	 */
-	public Expression getTest()
+	public Expression getControlExpression()
 	{
-		return test;
+		return controlExpression;
 	}
 
 	/**
@@ -85,17 +85,10 @@ public class IfStatement extends Statement
 	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
-		if (!test.getType(scope).decay().isScalar())
-			throw new SyntaxException("Scalar expression required.", test.getPosition());
-
-		// Evaluates and loads the test expression in the first register.
-		test.compile(asm, scope, vstack);
-		Register exprReg = vstack.loadTopValue(asm);
-		vstack.pop();
-
-		// Skip true statement if test was false.
 		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jzer", exprReg, skipTrueLabel);
+
+		compileControlExpression(controlExpression, asm, scope, vstack, null, skipTrueLabel,
+				"jzer");
 
 		// True statement.
 		compileInNewScope(asm, scope, vstack, trueStatement);
@@ -114,7 +107,7 @@ public class IfStatement extends Statement
 	@Override
 	public String toString()
 	{
-		return "(IF " + test + " " + trueStatement + " " + elseStatement + ")";
+		return "(IF " + controlExpression + " " + trueStatement + " " + elseStatement + ")";
 	}
 
 	private void compileInNewScope(Assembler asm, Scope scope, Vstack vstack, Statement statement)

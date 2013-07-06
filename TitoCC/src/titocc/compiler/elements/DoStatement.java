@@ -88,27 +88,11 @@ public class DoStatement extends Statement
 		body.compile(asm, loopScope, vstack);
 
 		// Test.
-		compileControlExpression(asm, loopScope, vstack, loopStartLabel,
-				continueSymbol.getReference());
+		compileControlExpression(controlExpression, asm, loopScope, vstack,
+				continueSymbol.getReference(), loopStartLabel, "jnzer");
 
 		// Insert end label to be used by break statements.
 		asm.addLabel(breakSymbol.getReference());
-	}
-
-	private void compileControlExpression(Assembler asm, Scope scope,
-			Vstack vstack, String loopStartLabel, String loopTestLabel)
-			throws IOException, SyntaxException
-	{
-		if (!controlExpression.getType(scope).decay().isScalar()) {
-			throw new SyntaxException("Loop control expression must have a"
-					+ " scalar type.", controlExpression.getPosition());
-		}
-
-		asm.addLabel(loopTestLabel);
-		controlExpression.compile(asm, scope, vstack);
-		Register exprReg = vstack.loadTopValue(asm);
-		asm.emit("jnzer", exprReg, loopStartLabel);
-		vstack.pop();
 	}
 
 	@Override

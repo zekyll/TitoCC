@@ -96,9 +96,9 @@ public class CompilerTest
 		testErr("\nvoid f() { 2 + f(); }", "Incompatible operands for operator +.", 1, 11);
 		testErr("\nvoid f() { !f(); }", "Operator ! requires a scalar type.", 1, 11);
 		testErr("\nvoid f() { int x; x = f(); }", "Incompatible operands for operator =.", 1, 18);
-		testErr("\nvoid f() { if(f()); }", "Scalar expression required.", 1, 14);
+		testErr("\nvoid f() { if(f()); }", "Illegal control expression. Scalar type required.", 1, 14);
 		testErr("\nvoid f() { while(f()); }",
-				"While loop control expression must have scalar type.", 1, 17);
+				"Illegal control expression. Scalar type required.", 1, 17);
 		testErr("\nvoid f() { int x = f(); }",
 				"Initializer type doesn't match variable type.", 1, 11);
 		testErr("\nvoid f(int a) { f(out()); }",
@@ -575,30 +575,37 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenIllegalTestExpressionForIf() throws IOException
+	public void errorWhenIllegalControlExpressionForIf() throws IOException
 	{
-		testErr("\nvoid f() { if(f()); }", "Scalar expression required.", 1, 14);
+		testErr("\nvoid f() { if(f()); }", "Illegal control expression. Scalar type required.", 1, 14);
 	}
 
 	@Test
-	public void errorWhenIllegalTestExpressionForWhile() throws IOException
+	public void errorWhenIllegalControlExpressionForWhile() throws IOException
 	{
 		testErr("\nvoid f() { while(f()); }",
-				"While loop control expression must have scalar type.", 1, 17);
+				"Illegal control expression. Scalar type required.", 1, 17);
 	}
 
 	@Test
-	public void errorWhenIllegalTestExpressionInFor() throws IOException
+	public void errorWhenIllegalControlExpressionForDoWhile() throws IOException
+	{
+		testErr("\nvoid f() { do {} while(f()); }",
+				"Illegal control expression. Scalar type required.", 1, 23);
+	}
+
+	@Test
+	public void errorWhenIllegalControlExpressionInFor() throws IOException
 	{
 		testErr("\nvoid f() { for(;f();); }",
-				"For loop control expression must have scalar type.", 1, 16);
+				"Illegal control expression. Scalar type required.", 1, 16);
 	}
+
 //	@Test
 //	public void errorForLoopVariableRedeclared() throws IOException
 //	{
 //		testErr("\nvoid f() { for(int i,i;;); }", "", 1, 16);
 //	}
-
 	@Test
 	public void errorWhenBreakUsedOutsideLoopOrSwitch() throws IOException
 	{

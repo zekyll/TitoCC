@@ -107,32 +107,11 @@ public class ForStatement extends Statement
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
-		compileControlExpression(asm, loopScope, vstack, loopStartLabel, loopTestLabel);
+		compileControlExpression(controlExpression, asm, loopScope, vstack, loopTestLabel,
+				loopStartLabel, "jnzer");
 
 		// Insert label to be used by break statements.
 		asm.addLabel(breakSymbol.getReference());
-	}
-
-	private void compileControlExpression(Assembler asm, Scope scope,
-			Vstack vstack, String loopStartLabel, String loopTestLabel)
-			throws IOException, SyntaxException
-	{
-		if (controlExpression != null && !controlExpression.getType(scope).decay().isScalar()) {
-			throw new SyntaxException("For loop control expression must have"
-					+ " scalar type.", controlExpression.getPosition());
-		}
-
-		asm.addLabel(loopTestLabel);
-
-		// Jump to loop start if not 0. If there is no control expression then
-		// make unconditional jump.
-		if (controlExpression != null) {
-			controlExpression.compile(asm, scope, vstack);
-			Register exprReg = vstack.loadTopValue(asm);
-			asm.emit("jnzer", exprReg, loopStartLabel);
-			vstack.pop();
-		} else
-			asm.emit("jump", loopStartLabel);
 	}
 
 	@Override
