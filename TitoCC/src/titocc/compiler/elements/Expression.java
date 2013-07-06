@@ -46,6 +46,25 @@ public abstract class Expression extends CodeElement
 			throws SyntaxException, IOException;
 
 	/**
+	 * Generates assembly code for evaluating the expression and converting it to the given target
+	 * type. The resulting value is returned on top of the virtual stack. Requires that the
+	 * conversion is legal.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the expression is evaluated
+	 * @param vstack virtual stack
+	 * @param targetType target type of the conversion
+	 * @throws SyntaxException if expression contains an error
+	 * @throws IOException if assembler throws
+	 */
+	public void compileWithConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
+			throws SyntaxException, IOException
+	{
+		compile(asm, scope, vstack);
+		getType(scope).decay().compileConversion(asm, vstack, targetType);
+	}
+
+	/**
 	 * Evaluates the expression at compile time if possible.
 	 *
 	 * @return value of the expression or null if expression cannot be evaluated at compile time

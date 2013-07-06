@@ -1,5 +1,8 @@
 package titocc.compiler.types;
 
+import titocc.compiler.Assembler;
+import titocc.compiler.Vstack;
+
 /**
  * Corresponds to C pointer type. Is an object and a scalar, but not arithmetic. Equals only to
  * PointerType that has same pointed type.
@@ -52,5 +55,15 @@ public class PointerType extends CType
 	public int getSize()
 	{
 		return 1;
+	}
+
+	@Override
+	public void compileConversion(Assembler asm, Vstack vstack, CType targetType)
+	{
+		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
+				|| targetType instanceof Uint32Type) {
+			// No-op.
+		} else
+			super.compileConversion(asm, vstack, targetType);
 	}
 }

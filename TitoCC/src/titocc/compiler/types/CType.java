@@ -2,7 +2,9 @@ package titocc.compiler.types;
 
 import java.util.HashMap;
 import java.util.Map;
+import titocc.compiler.Assembler;
 import titocc.compiler.InternalCompilerException;
+import titocc.compiler.Vstack;
 
 /**
  * Abstract base class for representing types in C type system. Allows testing equality between
@@ -185,6 +187,18 @@ public abstract class CType
 	}
 
 	/**
+	 * Generates code that converts a value of this type (given on top of the virtual stack) to the
+	 * target type. The resulting value replaces the source value on the virtual stack.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param vstack virtual stack
+	 */
+	public void compileConversion(Assembler asm, Vstack vstack, CType targetType)
+	{
+		throw new InternalCompilerException("Unimplemented type conversion.");
+	}
+
+	/**
 	 * Standard "void" type.
 	 */
 	public static CType VOID = new VoidType();
@@ -258,6 +272,11 @@ public abstract class CType
 	 * Type used for wide characters (wchar_t).
 	 */
 	public static IntegerType WCHAR_T = INT;
+
+	/**
+	 * Dummy type used when converting control expressions.
+	 */
+	public static CType BOOLISH = new BoolishType();
 
 	/**
 	 * Canonical names for standard types.

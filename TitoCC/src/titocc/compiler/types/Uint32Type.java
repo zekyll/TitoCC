@@ -1,5 +1,8 @@
 package titocc.compiler.types;
 
+import titocc.compiler.Assembler;
+import titocc.compiler.Vstack;
+
 /**
  * 32-bit unsigned integer type. Implemented on TTK-91 using one 32-bit machine byte. The standard
  * integer types implemented using this representation are unsigned char, unsigned short int,
@@ -22,5 +25,15 @@ class Uint32Type extends IntegerType
 	public int getSize()
 	{
 		return 1;
+	}
+
+	@Override
+	public void compileConversion(Assembler asm, Vstack vstack, CType targetType)
+	{
+		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
+				|| targetType instanceof Uint32Type) {
+			// No-op.
+		} else
+			super.compileConversion(asm, vstack, targetType);
 	}
 }
