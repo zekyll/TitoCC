@@ -107,7 +107,7 @@ public class DoStatement extends Statement
 		asm.addLabel(loopTestLabel);
 		controlExpression.compile(asm, scope, vstack);
 		Register exprReg = vstack.loadTopValue(asm);
-		asm.emit("jnzer", exprReg.toString(), loopStartLabel);
+		asm.emit("jnzer", exprReg, loopStartLabel);
 		vstack.pop();
 	}
 

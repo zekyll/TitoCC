@@ -95,7 +95,7 @@ public class IfStatement extends Statement
 
 		// Skip true statement if test was false.
 		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jzer", exprReg.toString(), skipTrueLabel);
+		asm.emit("jzer", exprReg, skipTrueLabel);
 
 		// True statement.
 		compileInNewScope(asm, scope, vstack, trueStatement);

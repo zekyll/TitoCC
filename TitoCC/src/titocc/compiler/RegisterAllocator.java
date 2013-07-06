@@ -74,7 +74,7 @@ public class RegisterAllocator
 		while (spillCount > frameStartPositions.peek()) {
 			--spillCount;
 			Register reloadReg = allRegisters[spillCount % allRegisters.length];
-			asm.emit("load", reloadReg.toString(), (1 + spillCount) + "(fp)");
+			asm.emit("load", reloadReg, (1 + spillCount) + "(fp)");
 		}
 	}
 
@@ -109,7 +109,7 @@ public class RegisterAllocator
 		++allocCount;
 
 		if (allocCount - spillCount > allRegisters.length) {
-			asm.emit("store", allocatedReg.toString(), (1 + spillCount) + "(fp)");
+			asm.emit("store", allocatedReg, (1 + spillCount) + "(fp)");
 			++spillCount;
 			maxSpillCount = Math.max(spillCount, maxSpillCount);
 		}

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.Vstack;
@@ -66,9 +67,9 @@ public class TranslationUnit extends CodeElement
 			throws IOException, SyntaxException
 	{
 		// Call main function and then halt.
-		asm.emit("add", "sp", "=1");
-		asm.emit("call", "sp", "main");
-		asm.emit("svc", "sp", "=halt");
+		asm.emit("add", Register.SP, "=1");
+		asm.emit("call", Register.SP, "main");
+		asm.emit("svc", Register.SP, "=halt");
 
 		for (Declaration decl : declarations)
 			decl.compile(asm, scope, vstack);

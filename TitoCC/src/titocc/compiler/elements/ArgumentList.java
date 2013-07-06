@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
@@ -76,7 +77,7 @@ public class ArgumentList extends CodeElement
 			}
 
 			arg.compile(asm, scope, vstack);
-			asm.emit("push", "sp", vstack.top(0));
+			asm.emit("push", Register.SP, vstack.top(0));
 			vstack.pop();
 		}
 	}

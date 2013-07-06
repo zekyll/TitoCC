@@ -32,8 +32,8 @@ public class AssemblerTest
 	@Test
 	public void doubleOperandFormatIsCorrect() throws IOException
 	{
-		asm.emit("abc", "xy", "zv");
-		assertEquals("            abc     xy, zv\n", asm.getWriter().toString());
+		asm.emit("abc", Register.R3, "zv");
+		assertEquals("            abc     R3, zv\n", asm.getWriter().toString());
 	}
 
 	@Test
@@ -55,8 +55,8 @@ public class AssemblerTest
 	public void labelIsAddedToDoubleOperandInstruction() throws IOException
 	{
 		asm.addLabel("lbl2");
-		asm.emit("abc", "xy", "zv");
-		assertEquals("lbl2        abc     xy, zv\n", asm.getWriter().toString());
+		asm.emit("abc", Register.R3, "zv");
+		assertEquals("lbl2        abc     R3, zv\n", asm.getWriter().toString());
 	}
 
 	@Test
@@ -71,8 +71,8 @@ public class AssemblerTest
 	public void longLabelWithDoubleOperandInstruction() throws IOException
 	{
 		asm.addLabel("this_is_a_very_long_label");
-		asm.emit("abc", "xy", "zv");
-		assertEquals("this_is_a_very_long_label abc     xy, zv\n", asm.getWriter().toString());
+		asm.emit("abc", Register.R3, "zv");
+		assertEquals("this_is_a_very_long_label abc     R3, zv\n", asm.getWriter().toString());
 	}
 
 	@Test
@@ -80,26 +80,26 @@ public class AssemblerTest
 	{
 		asm.addLabel("lbl1");
 		asm.addLabel("lbl2");
-		asm.emit("abc", "xy", "zv");
-		assertEquals("lbl1        nop     \nlbl2        abc     xy, zv\n",
+		asm.emit("abc", Register.R3, "zv");
+		assertEquals("lbl1        nop     \nlbl2        abc     R3, zv\n",
 				asm.getWriter().toString());
 	}
 
 	@Test
 	public void finishDoesNothingIfNoLabel() throws IOException
 	{
-		asm.emit("abc", "xy", "zv");
+		asm.emit("abc", Register.R3, "zv");
 		asm.finish();
-		assertEquals("            abc     xy, zv\n", asm.getWriter().toString());
+		assertEquals("            abc     R3, zv\n", asm.getWriter().toString());
 	}
 
 	@Test
 	public void finishAddsNopInstructionIfLabel() throws IOException
 	{
-		asm.emit("abc", "xy", "zv");
+		asm.emit("abc", Register.R4, "zv");
 		asm.addLabel("l");
 		asm.finish();
-		assertEquals("            abc     xy, zv\nl           nop     \n",
+		assertEquals("            abc     R4, zv\nl           nop     \n",
 				asm.getWriter().toString());
 	}
 

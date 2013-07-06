@@ -90,16 +90,16 @@ public class SubscriptExpression extends Expression
 		int incSize = actualArrayOperand.getType(scope).decay().getIncrementSize();
 		if (incSize != 1) {
 			Register subscriptReg = vstack.loadTopValue(asm);
-			asm.emit("mul", subscriptReg.toString(), "=" + incSize);
-			asm.emit("add", arrayReg.toString(), subscriptReg.toString());
+			asm.emit("mul", subscriptReg, "=" + incSize);
+			asm.emit("add", arrayReg, subscriptReg.toString());
 		} else
-			asm.emit("add", arrayReg.toString(), vstack.top(0));
+			asm.emit("add", arrayReg, vstack.top(0));
 
 		// Dereference the result if lvalue is not explicitly requested and result is not an array
 		// or function.
 		CType resultType = getType(scope);
 		if (!lvalue && !(resultType instanceof ArrayType) && !resultType.isFunction())
-			asm.emit("load", arrayReg.toString(), "@" + arrayReg.toString());
+			asm.emit("load", arrayReg, "@" + arrayReg.toString());
 
 		// Deallocate 2nd register.
 		vstack.pop();

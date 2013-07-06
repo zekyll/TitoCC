@@ -198,22 +198,22 @@ public class BinaryExpression extends Expression
 		if (leftIncrSize > 1 && rightIncrSize > 1) {
 			// POINTER - POINTER.
 			compileRight(asm, scope, vstack);
-			asm.emit(mnemonic, leftReg.toString(), vstack.top(0));
-			asm.emit("div", leftReg.toString(), "=" + leftIncrSize);
+			asm.emit(mnemonic, leftReg, vstack.top(0));
+			asm.emit("div", leftReg, "=" + leftIncrSize);
 		} else if (leftIncrSize > 1) {
 			// POINTER + INTEGER or POINTER - INTEGER.
 			compileRight(asm, scope, vstack);
 			Register rightReg = vstack.loadTopValue(asm);
-			asm.emit("mul", rightReg.toString(), "=" + leftIncrSize);
-			asm.emit(mnemonic, leftReg.toString(), rightReg.toString());
+			asm.emit("mul", rightReg, "=" + leftIncrSize);
+			asm.emit(mnemonic, leftReg, rightReg.toString());
 		} else if (rightIncrSize > 1) {
 			// INTEGER + POINTER.
-			asm.emit("mul", leftReg.toString(), "=" + rightIncrSize);
+			asm.emit("mul", leftReg, "=" + rightIncrSize);
 			compileRight(asm, scope, vstack);
-			asm.emit(mnemonic, leftReg.toString(), vstack.top(0));
+			asm.emit(mnemonic, leftReg, vstack.top(0));
 		} else {
 			compileRight(asm, scope, vstack);
-			asm.emit(mnemonic, leftReg.toString(), vstack.top(0));
+			asm.emit(mnemonic, leftReg, vstack.top(0));
 		}
 	}
 
@@ -222,10 +222,10 @@ public class BinaryExpression extends Expression
 	{
 		compileRight(asm, scope, vstack);
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("comp", leftReg.toString(), vstack.top(0));
-		asm.emit("load", leftReg.toString(), "=1");
-		asm.emit(binaryOperators.get(operator).mnemonic, leftReg.toString(), jumpLabel);
-		asm.emit("load", leftReg.toString(), "=0");
+		asm.emit("comp", leftReg, vstack.top(0));
+		asm.emit("load", leftReg, "=1");
+		asm.emit(binaryOperators.get(operator).mnemonic, leftReg, jumpLabel);
+		asm.emit("load", leftReg, "=0");
 		asm.addLabel(jumpLabel);
 	}
 
@@ -235,14 +235,14 @@ public class BinaryExpression extends Expression
 		// Short circuit evaluation; only evaluate RHS if necessary.
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		String jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-		asm.emit(binaryOperators.get(operator).mnemonic, leftReg.toString(), jumpLabel);
+		asm.emit(binaryOperators.get(operator).mnemonic, leftReg, jumpLabel);
 		compileRight(asm, scope, vstack);
 		Register rightReg = vstack.loadTopValue(asm);
-		asm.emit(binaryOperators.get(operator).mnemonic, rightReg.toString(), jumpLabel);
-		asm.emit("load", leftReg.toString(), operator.equals("||") ? "=0" : "=1");
-		asm.emit("jump", leftReg.toString(), jumpLabel2);
+		asm.emit(binaryOperators.get(operator).mnemonic, rightReg, jumpLabel);
+		asm.emit("load", leftReg, operator.equals("||") ? "=0" : "=1");
+		asm.emit("jump", leftReg, jumpLabel2);
 		asm.addLabel(jumpLabel);
-		asm.emit("load", leftReg.toString(), operator.equals("||") ? "=1" : "=0");
+		asm.emit("load", leftReg, operator.equals("||") ? "=1" : "=0");
 		asm.addLabel(jumpLabel2);
 	}
 

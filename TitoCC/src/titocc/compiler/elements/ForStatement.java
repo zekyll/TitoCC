@@ -129,7 +129,7 @@ public class ForStatement extends Statement
 		if (controlExpression != null) {
 			controlExpression.compile(asm, scope, vstack);
 			Register exprReg = vstack.loadTopValue(asm);
-			asm.emit("jnzer", exprReg.toString(), loopStartLabel);
+			asm.emit("jnzer", exprReg, loopStartLabel);
 			vstack.pop();
 		} else
 			asm.emit("jump", loopStartLabel);

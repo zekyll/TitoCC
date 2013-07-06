@@ -88,7 +88,7 @@ public class TmpValue
 
 		if (valueReg == null) {
 			valueReg = addressReg == null ? regs.allocate(asm) : addressReg;
-			asm.emit("load", valueReg.toString(), getRhsOperand());
+			asm.emit("load", valueReg, getRhsOperand());
 			symbolicValue = null;
 			addressReg = null;
 		}

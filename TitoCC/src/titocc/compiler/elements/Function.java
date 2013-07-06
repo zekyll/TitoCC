@@ -7,6 +7,7 @@ import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.DeclarationType;
 import titocc.compiler.InternalCompilerException;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
@@ -183,7 +184,7 @@ public class Function extends Declaration
 
 		// Allocate stack space for local variables.
 		if (varOffset > 0)
-			asm.emit("add", "sp", "=" + varOffset);
+			asm.emit("add", Register.SP, "=" + varOffset);
 
 		// Push registers.
 		asm.emit("pushr", "sp");
@@ -212,10 +213,10 @@ public class Function extends Declaration
 
 		// Pop all function local data from program stack.
 		if (localDataSize > 0)
-			asm.emit("sub", "sp", "=" + localDataSize);
+			asm.emit("sub", Register.SP, "=" + localDataSize);
 
 		// Exit from function.
-		asm.emit("exit", "sp", "=" + paramTotalSize);
+		asm.emit("exit", Register.SP, "=" + paramTotalSize);
 	}
 
 	private List<Symbol> getLocalVariables(Scope scope)

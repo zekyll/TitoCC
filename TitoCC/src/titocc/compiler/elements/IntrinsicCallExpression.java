@@ -94,7 +94,7 @@ public class IntrinsicCallExpression extends Expression
 		checkArgumentCount(0);
 
 		Register retReg = vstack.pushRegisterRvalue(asm);
-		asm.emit("in", retReg.toString(), "=kbd");
+		asm.emit("in", retReg, "=kbd");
 	}
 
 	private void compileIn2(Assembler asm, Scope scope, Vstack vstack)
@@ -103,7 +103,7 @@ public class IntrinsicCallExpression extends Expression
 		checkArgumentCount(1);
 
 		Register retReg = vstack.pushRegisterRvalue(asm);
-		asm.emit("in", retReg.toString(), "=" + getDeviceNumber());
+		asm.emit("in", retReg, "=" + getDeviceNumber());
 	}
 
 	private void compileOut(Assembler asm, Scope scope, Vstack vstack)
@@ -113,7 +113,7 @@ public class IntrinsicCallExpression extends Expression
 
 		argumentList.getArguments().get(0).compile(asm, scope, vstack);
 		Register argReg = vstack.loadTopValue(asm);
-		asm.emit("out", argReg.toString(), "=crt");
+		asm.emit("out", argReg, "=crt");
 		vstack.pop();
 	}
 
@@ -124,7 +124,7 @@ public class IntrinsicCallExpression extends Expression
 
 		argumentList.getArguments().get(1).compile(asm, scope, vstack);
 		Register argReg = vstack.loadTopValue(asm);
-		asm.emit("out", argReg.toString(), "=" + getDeviceNumber());
+		asm.emit("out", argReg, "=" + getDeviceNumber());
 		vstack.pop();
 	}
 

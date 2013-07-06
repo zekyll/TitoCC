@@ -156,7 +156,7 @@ public class AssignmentExpression extends Expression
 		// Evaluate LHS; load address to 2nd register.
 		compileLeft(asm, scope, vstack);
 
-		asm.emit("store", rightReg.toString(), vstack.top(0));
+		asm.emit("store", rightReg, vstack.top(0));
 
 		vstack.pop();
 	}
@@ -171,15 +171,15 @@ public class AssignmentExpression extends Expression
 		// If operation is POINTER += INTEGER, we need to scale the integer value.
 		int incSize = left.getType(scope).decay().getIncrementSize();
 		if (incSize > 1)
-			asm.emit("mul", rightReg.toString(), "=" + incSize);
+			asm.emit("mul", rightReg, "=" + incSize);
 
 		// Evaluate LHS; load address to 2nd register.
 		compileLeft(asm, scope, vstack);
 
 		// Because the operation is symmetric, we can use the left operand
 		// as the right operand in the assembly instruction, saving one register.
-		asm.emit(operator.mnemonic, rightReg.toString(), vstack.top(0));
-		asm.emit("store", rightReg.toString(), vstack.top(0));
+		asm.emit(operator.mnemonic, rightReg, vstack.top(0));
+		asm.emit("store", rightReg, vstack.top(0));
 
 		vstack.pop();
 	}
@@ -202,14 +202,14 @@ public class AssignmentExpression extends Expression
 		// If operation is POINTER -= INTEGER, we need to scale the integer value.
 		int incSize = left.getType(scope).decay().getIncrementSize();
 		if (incSize > 1)
-			asm.emit("mul", rightReg.toString(), "=" + incSize);
+			asm.emit("mul", rightReg, "=" + incSize);
 
 		// Load LHS value to 1st register and operate on it.
-		asm.emit("load", retReg.toString(), vstack.top(0));
-		asm.emit(operator.mnemonic, retReg.toString(), rightReg.toString());
+		asm.emit("load", retReg, vstack.top(0));
+		asm.emit(operator.mnemonic, retReg, rightReg.toString());
 
 		// Store result to LHS variable.
-		asm.emit("store", retReg.toString(), vstack.top(0));
+		asm.emit("store", retReg, vstack.top(0));
 
 		// Deallocate 2nd and 3rd register.
 		vstack.pop();

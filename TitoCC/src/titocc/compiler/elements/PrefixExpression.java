@@ -130,12 +130,12 @@ public class PrefixExpression extends Expression
 		vstack.exitFrame(asm);
 
 		// Load value to 1st register.
-		asm.emit("load", retReg.toString(), vstack.top(0));
+		asm.emit("load", retReg, vstack.top(0));
 
 		// Modify and write back the value.
 		int incSize = operand.getType(scope).decay().getIncrementSize();
-		asm.emit(operator.equals("++") ? "add" : "sub", retReg.toString(), "=" + incSize);
-		asm.emit("store", retReg.toString(), vstack.top(0));
+		asm.emit(operator.equals("++") ? "add" : "sub", retReg, "=" + incSize);
+		asm.emit("store", retReg, vstack.top(0));
 
 		// Deallocate 2nd register.
 		vstack.pop();
@@ -155,8 +155,8 @@ public class PrefixExpression extends Expression
 
 		// Negative in two's complement: negate all bits and add 1. For unary plus do nothing.
 		if (operator.equals("-")) {
-			asm.emit("xor", topReg.toString(), "=-1");
-			asm.emit("add", topReg.toString(), "=1");
+			asm.emit("xor", topReg, "=-1");
+			asm.emit("add", topReg, "=1");
 		}
 	}
 
@@ -173,11 +173,11 @@ public class PrefixExpression extends Expression
 		Register topReg = vstack.loadTopValue(asm);
 
 		// Compares operand to zero and sets register value according to the result.
-		asm.emit("comp", topReg.toString(), "=0");
-		asm.emit("load", topReg.toString(), "=1");
+		asm.emit("comp", topReg, "=0");
+		asm.emit("load", topReg, "=1");
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		asm.emit("jequ", jumpLabel);
-		asm.emit("load", topReg.toString(), "=0");
+		asm.emit("load", topReg, "=0");
 		asm.addLabel(jumpLabel);
 	}
 
@@ -195,7 +195,7 @@ public class PrefixExpression extends Expression
 
 		// -1 has representation of all 1 bits (0xFFFFFFFF), and therefore xoring with it gives
 		// the bitwise negation.
-		asm.emit("xor", topReg.toString(), "=-1");
+		asm.emit("xor", topReg, "=-1");
 	}
 
 	private void compileAddressOf(Assembler asm, Scope scope, Vstack vstack)
@@ -222,7 +222,7 @@ public class PrefixExpression extends Expression
 		// Dereference the pointer unless the result type is an array or function!
 		CType resultType = getType(scope);
 		if (!(resultType instanceof ArrayType) && !resultType.isFunction())
-			asm.emit("load", topReg.toString(), "@" + topReg.toString()); //TODO vstack.top(0)?
+			asm.emit("load", topReg, "@" + topReg.toString()); //TODO vstack.top(0)?
 	}
 
 	@Override

@@ -47,14 +47,14 @@ public class Assembler
 	 * Emits an instruction with two operands.
 	 *
 	 * @param instruction Mnemonic for the intruction.
-	 * @param operand1 First operand (usually register).
+	 * @param reg First operand, i.e. the register operand.
 	 * @param operand2 Second (register or memory operand).
 	 * @throws IOException If thrown by writer.
 	 */
-	public void emit(String instruction, String operand1, String operand2)
-			throws IOException
+	public void emit(String instruction, Register reg, String operand2) throws IOException
 	{
-		writer.append(String.format("%-11s %-7s %s, %s\n", label, instruction, operand1, operand2));
+		String fmt = "%-11s %-7s %s, %s\n";
+		writer.append(String.format(fmt, label, instruction, reg.toString(), operand2));
 		label = "";
 	}
 

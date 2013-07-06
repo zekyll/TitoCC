@@ -91,15 +91,15 @@ public class PostfixExpression extends Expression
 		vstack.exitFrame(asm);
 
 		// Load value to 1st register.
-		asm.emit("load", retReg.toString(), vstack.top(0));
+		asm.emit("load", retReg, vstack.top(0));
 
 		// Modify and write back the value.
 		int incSize = operand.getType(scope).decay().getIncrementSize();
-		asm.emit(operator.equals("++") ? "add" : "sub", retReg.toString(), "=" + incSize);
-		asm.emit("store", retReg.toString(), vstack.top(0));
+		asm.emit(operator.equals("++") ? "add" : "sub", retReg, "=" + incSize);
+		asm.emit("store", retReg, vstack.top(0));
 
 		// Expression must return the old value.
-		asm.emit(operator.equals("++") ? "sub" : "add", retReg.toString(), "=" + incSize);
+		asm.emit(operator.equals("++") ? "sub" : "add", retReg, "=" + incSize);
 
 		// Deallocate 2nd register.
 		vstack.pop();

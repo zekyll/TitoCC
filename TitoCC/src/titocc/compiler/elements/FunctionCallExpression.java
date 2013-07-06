@@ -74,7 +74,7 @@ public class FunctionCallExpression extends Expression
 
 		// Reserve space for return value.
 		if (!funcType.getReturnType().equals(CType.VOID))
-			asm.emit("add", "sp", "=" + funcType.getReturnType().getSize());
+			asm.emit("add", Register.SP, "=" + funcType.getReturnType().getSize());
 
 		// Push arguments to stack.
 		argumentList.compile(asm, scope, vstack, funcType.getParameterTypes());
@@ -83,7 +83,7 @@ public class FunctionCallExpression extends Expression
 		String funcReference = compileFunctionPointer(asm, scope, vstack);
 
 		// Make the call.
-		asm.emit("call", "sp", funcReference);
+		asm.emit("call", Register.SP, funcReference);
 
 		// Deallocate the register reserved for function pointer.
 		if (functionPointer.getFunction(scope) == null)
@@ -92,7 +92,7 @@ public class FunctionCallExpression extends Expression
 		// Read the return value.
 		if (!funcType.getReturnType().equals(CType.VOID)) {
 			Register retReg = vstack.pushRegisterRvalue(asm);
-			asm.emit("pop", "sp", retReg.toString());
+			asm.emit("pop", Register.SP, retReg.toString());
 		}
 	}
 

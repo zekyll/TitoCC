@@ -63,7 +63,7 @@ public class ReturnStatement extends Statement
 			// Load expression to first register and store to the return value.
 			expression.compile(asm, scope, vstack);
 			Register exprReg = vstack.loadTopValue(asm);
-			asm.emit("store", exprReg.toString(), retVal.getReference());
+			asm.emit("store", exprReg, retVal.getReference());
 			vstack.pop();
 		} else {
 			if (!retVal.getType().equals(CType.VOID))
@@ -72,7 +72,7 @@ public class ReturnStatement extends Statement
 
 		// Jump to function end
 		Symbol functionEnd = scope.find("__End");
-		asm.emit("jump", "sp", functionEnd.getReference());
+		asm.emit("jump", Register.SP, functionEnd.getReference());
 	}
 
 	@Override

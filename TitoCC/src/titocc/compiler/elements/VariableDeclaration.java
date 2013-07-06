@@ -142,7 +142,7 @@ public class VariableDeclaration extends Declaration
 		if (initializer != null) {
 			initializer.compile(asm, scope, vstack);
 			Register exprReg = vstack.loadTopValue(asm);
-			asm.emit("store", exprReg.toString(), sym.getReference());
+			asm.emit("store", exprReg, sym.getReference());
 			vstack.pop();
 		}
 	}
