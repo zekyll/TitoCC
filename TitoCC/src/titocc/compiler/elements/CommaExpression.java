@@ -2,8 +2,8 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -45,14 +45,17 @@ public class CommaExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
 		// Evaluate left operand and ignore it.
-		left.compile(asm, scope, regs);
+		left.compile(asm, scope, vstack);
+		if (!left.getType(scope).equals(CType.VOID))
+			vstack.pop();
 
 		// Evaluate right operand in first register.
-		right.compile(asm, scope, regs);
+		right.compile(asm, scope, vstack);
+		// vstack.convertTopToRegisterRvalue(asm); // Not needed here.
 	}
 
 	@Override

@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import titocc.compiler.Assembler;
 import titocc.compiler.InternalCompilerException;
-import titocc.compiler.Registers;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -74,51 +75,57 @@ public class IntrinsicCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		if (name.equals("in"))
-			compileIn(asm, scope, regs);
+			compileIn(asm, scope, vstack);
 		else if (name.equals("in2"))
-			compileIn2(asm, scope, regs);
+			compileIn2(asm, scope, vstack);
 		else if (name.equals("out"))
-			compileOut(asm, scope, regs);
+			compileOut(asm, scope, vstack);
 		else if (name.equals("out2"))
-			compileOut2(asm, scope, regs);
+			compileOut2(asm, scope, vstack);
 	}
 
-	private void compileIn(Assembler asm, Scope scope, Registers regs)
+	private void compileIn(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		checkArgumentCount(0);
 
-		asm.emit("in", regs.get(0).toString(), "=kbd");
+		Register retReg = vstack.pushRegisterRvalue(asm);
+		asm.emit("in", retReg.toString(), "=kbd");
 	}
 
-	private void compileIn2(Assembler asm, Scope scope, Registers regs)
+	private void compileIn2(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		checkArgumentCount(1);
 
-		asm.emit("in", regs.get(0).toString(), "=" + getDeviceNumber());
+		Register retReg = vstack.pushRegisterRvalue(asm);
+		asm.emit("in", retReg.toString(), "=" + getDeviceNumber());
 	}
 
-	private void compileOut(Assembler asm, Scope scope, Registers regs)
+	private void compileOut(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		checkArgumentCount(1);
 
-		argumentList.getArguments().get(0).compile(asm, scope, regs);
-		asm.emit("out", regs.get(0).toString(), "=crt");
+		argumentList.getArguments().get(0).compile(asm, scope, vstack);
+		Register argReg = vstack.loadTopValue(asm);
+		asm.emit("out", argReg.toString(), "=crt");
+		vstack.pop();
 	}
 
-	private void compileOut2(Assembler asm, Scope scope, Registers regs)
+	private void compileOut2(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		checkArgumentCount(2);
 
-		argumentList.getArguments().get(1).compile(asm, scope, regs);
-		asm.emit("out", regs.get(0).toString(), "=" + getDeviceNumber());
+		argumentList.getArguments().get(1).compile(asm, scope, vstack);
+		Register argReg = vstack.loadTopValue(asm);
+		asm.emit("out", argReg.toString(), "=" + getDeviceNumber());
+		vstack.pop();
 	}
 
 	private int getDeviceNumber() throws SyntaxException
@@ -133,6 +140,7 @@ public class IntrinsicCallExpression extends Expression
 
 	private void checkArgumentCount(int expected) throws SyntaxException
 	{
+		//TODO check argument type
 		if (argumentList.getArguments().size() != expected) {
 			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
 					getPosition());

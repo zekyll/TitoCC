@@ -3,10 +3,11 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.DeclarationType;
-import titocc.compiler.Registers;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -66,7 +67,7 @@ public class VariableDeclaration extends Declaration
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		DeclarationType declType = declarationSpecifiers.compile(scope);
@@ -88,7 +89,7 @@ public class VariableDeclaration extends Declaration
 		if (scope.isGlobal())
 			compileGlobalVariable(asm, scope, sym);
 		else
-			compileLocalVariable(asm, scope, sym, regs);
+			compileLocalVariable(asm, scope, sym, vstack);
 	}
 
 	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
@@ -135,12 +136,14 @@ public class VariableDeclaration extends Declaration
 			asm.emit("dc", "" + initValue);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym, Registers regs)
+	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		if (initializer != null) {
-			initializer.compile(asm, scope, regs);
-			asm.emit("store", regs.get(0).toString(), sym.getReference());
+			initializer.compile(asm, scope, vstack);
+			Register exprReg = vstack.loadTopValue(asm);
+			asm.emit("store", exprReg.toString(), sym.getReference());
+			vstack.pop();
 		}
 	}
 

@@ -2,9 +2,9 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Lvalue;
-import titocc.compiler.Registers;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
@@ -53,53 +53,56 @@ public class SubscriptExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
-		compile(asm, scope, regs, false);
+		compile(asm, scope, vstack, false);
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs, boolean addressOf)
+	public void compileAsLvalue(Assembler asm, Scope scope, Vstack vstack, boolean addressOf)
 			throws SyntaxException, IOException
 	{
 		if (!addressOf)
 			requireLvalueType(scope);
 
-		compile(asm, scope, regs, true);
-		return new Lvalue(regs.get(0));
+		compile(asm, scope, vstack, true);
+		vstack.dereferenceTop(asm);
 	}
 
-	private void compile(Assembler asm, Scope scope, Registers regs, boolean lvalue)
+	private void compile(Assembler asm, Scope scope, Vstack vstack, boolean lvalue)
 			throws SyntaxException, IOException
 	{
 		// Standard allows the operands to be switched so get the actual operands.
 		Expression actualArrayOperand = getActualArrayOperand(scope);
 		Expression actualSubscriptOperand = getActualSubscriptOperand(scope);
 
-		// Evaluate array expression in first register.
-		actualArrayOperand.compile(asm, scope, regs);
+		// Evaluate array expression; load in 1st register. Used for result value.
+		actualArrayOperand.compile(asm, scope, vstack);
+		Register arrayReg = vstack.loadTopValue(asm);
 
 		// Allocate second register and evaluate subscript in it.
-		regs.allocate(asm);
-		regs.removeFirst();
-		actualSubscriptOperand.compile(asm, scope, regs); //TODO conversion to ptrdiff_t?
-		regs.addFirst();
+		vstack.enterFrame();
+		actualSubscriptOperand.compile(asm, scope, vstack); //TODO conversion to ptrdiff_t?
+		vstack.exitFrame(asm);
 
-		// If increment size > 1 then multiply subscript.
+		// If increment size > 1 then multiply subscript. Add subscript to the array pointer.
 		int incSize = actualArrayOperand.getType(scope).decay().getIncrementSize();
-		if (incSize != 1)
-			asm.emit("mul", regs.get(1).toString(), "=" + incSize);
+		if (incSize != 1) {
+			Register subscriptReg = vstack.loadTopValue(asm);
+			asm.emit("mul", subscriptReg.toString(), "=" + incSize);
+			asm.emit("add", arrayReg.toString(), subscriptReg.toString());
+		} else
+			asm.emit("add", arrayReg.toString(), vstack.top(0));
 
-		// Add subscript to the array pointer. Dereference the result if lvalue
-		// is not explicitly requested and result is not an array or function.
-		asm.emit("add", regs.get(0).toString(), regs.get(1).toString());
+		// Dereference the result if lvalue is not explicitly requested and result is not an array
+		// or function.
 		CType resultType = getType(scope);
 		if (!lvalue && !(resultType instanceof ArrayType) && !resultType.isFunction())
-			asm.emit("load", regs.get(0).toString(), "@" + regs.get(0).toString());
+			asm.emit("load", arrayReg.toString(), "@" + arrayReg.toString());
 
-		// Deallocate second register.
-		regs.deallocate(asm);
+		// Deallocate 2nd register.
+		vstack.pop();
 	}
 
 	private Expression getActualArrayOperand(Scope scope) throws SyntaxException

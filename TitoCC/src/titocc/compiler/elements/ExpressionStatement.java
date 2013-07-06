@@ -2,8 +2,9 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -45,10 +46,13 @@ public class ExpressionStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
-		expression.compile(asm, scope, regs);
+		// Evaluate expression and ignore result.
+		expression.compile(asm, scope, vstack);
+		if (!expression.getType(scope).equals(CType.VOID))
+			vstack.pop();
 	}
 
 	@Override

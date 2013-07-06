@@ -3,8 +3,8 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -34,11 +34,11 @@ public abstract class Statement extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the statement is evaluated
-	 * @param regs available registers; must have at least one active register
+	 * @param vstack virtual stack
 	 * @throws SyntaxException if statement contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, Registers regs)
+	public abstract void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException;
 
 	/**

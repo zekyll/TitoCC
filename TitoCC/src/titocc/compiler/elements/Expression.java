@@ -2,10 +2,9 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Lvalue;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
@@ -34,17 +33,16 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Generates assembly code for the expression. Value of the expression is returned in the first
-	 * available register.
+	 * Generates assembly code for the expression. For non-void expressions the resulting value is
+	 * returned on top of the virtual stack.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param regs available registers; must have at least one active register and the first one is
-	 * used for return value
+	 * @param vstack virtual stack
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, Registers regs)
+	public abstract void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException;
 
 	/**
@@ -59,28 +57,27 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Generates assembly code for the expression, evaluating it as an lvalue. Either the address of
-	 * the object is returned in the first register or a variable reference is returned. The
-	 * function returns an Lvalue type which is an abstraction of both of these situations.
+	 * Generates assembly code for the expression, evaluating it as an lvalue. The resulting lvalue
+	 * is returned on top of the virtual stack.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param regs available registers; must have at least one active register
+	 * @param vstack virtual stack used for giving the operands to the expression and returning
+	 * its value
 	 * @param addressOf true if the expression appears as the operand of operator &, which disables
 	 * the array->pointer decay and function->pointer decay
-	 * @return an Lvalue object
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs, boolean addressOf)
+	public void compileAsLvalue(Assembler asm, Scope scope, Vstack vstack, boolean addressOf)
 			throws SyntaxException, IOException
 	{
 		throw new SyntaxException("Operation requires an lvalue.", getPosition());
 	}
 
 	/**
-	 * Attempts to evaluate the expression as a function. At the moment there are no function
-	 * pointers/lvalues, so it can always return a named function.
+	 * Attempts to evaluate the expression as a function.
+	 * //TODO combine this functionality in the normal compile function
 	 *
 	 * @param scope in which the expression is evaluated
 	 * @return Symbol object with a function type or null if the expression does not name a function
@@ -114,31 +111,31 @@ public abstract class Expression extends CodeElement
 
 	/**
 	 * Generates code for compile time constant expression. Checks if the expression is compile time
-	 * constant by using getCompileTimeValue() and if it is then generates code that returns the
-	 * value in first available register.
+	 * constant by using getCompileTimeValue() and if it is then returns the value on top of the
+	 * virtual stack.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param regs available registers; must have at least one active register
-	 * and the first one is used for return value
+	 * @param vstack virtual stack used for giving the operands to the expression and returning
+	 * its value
 	 * @return true if compile time constant, otherwise false
 	 * @throws IOException if assembler throws
 	 * @throws SyntaxException if expression contains an error
 	 */
 	protected boolean compileConstantExpression(Assembler asm, Scope scope,
-			Registers regs) throws IOException, SyntaxException
+			Vstack vstack) throws IOException, SyntaxException
 	{
 		Integer value = getCompileTimeValue();
 		if (value != null) {
 			// Use immediate operand if value fits in 16 bits; otherwise allocate a data constant.
 			// Load value in first available register.
 			if (value < 32768 && value >= -32768)
-				asm.emit("load", regs.get(0).toString(), "=" + value);
+				vstack.pushSymbolicValue("=" + value);
 			else {
 				String name = scope.makeGloballyUniqueName("int");
 				asm.addLabel(name);
 				asm.emit("dc", "" + value);
-				asm.emit("load", regs.get(0).toString(), name);
+				vstack.pushSymbolicValue(name);
 			}
 			return true;
 		} else

@@ -2,12 +2,12 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
-import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -67,7 +67,7 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		FunctionType funcType = getFunctionType(scope);
@@ -77,28 +77,35 @@ public class FunctionCallExpression extends Expression
 			asm.emit("add", "sp", "=" + funcType.getReturnType().getSize());
 
 		// Push arguments to stack.
-		argumentList.compile(asm, scope, regs, funcType.getParameterTypes());
+		argumentList.compile(asm, scope, vstack, funcType.getParameterTypes());
 
 		// Evaluate the function pointer.
-		String funcReference = compileFunctionPointer(asm, scope, regs);
+		String funcReference = compileFunctionPointer(asm, scope, vstack);
 
 		// Make the call.
 		asm.emit("call", "sp", funcReference);
 
+		// Deallocate the register reserved for function pointer.
+		if (functionPointer.getFunction(scope) == null)
+			vstack.pop();
+
 		// Read the return value.
-		if (!funcType.getReturnType().equals(CType.VOID))
-			asm.emit("pop", "sp", regs.get(0).toString());
+		if (!funcType.getReturnType().equals(CType.VOID)) {
+			Register retReg = vstack.pushRegisterRvalue(asm);
+			asm.emit("pop", "sp", retReg.toString());
+		}
 	}
 
-	private String compileFunctionPointer(Assembler asm, Scope scope, Registers regs)
+	private String compileFunctionPointer(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		Symbol func = functionPointer.getFunction(scope);
 		if (func != null)
 			return func.getReference();
 
-		functionPointer.compile(asm, scope, regs);
-		return regs.get(0).toString();
+		functionPointer.compile(asm, scope, vstack);
+		Register fptrReg = vstack.loadTopValue(asm); //TODO use @ instead of loading to register
+		return fptrReg.toString();
 	}
 
 	private FunctionType getFunctionType(Scope scope) throws SyntaxException

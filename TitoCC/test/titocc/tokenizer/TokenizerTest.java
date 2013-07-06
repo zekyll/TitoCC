@@ -3,8 +3,8 @@ package titocc.tokenizer;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 import titocc.util.Position;
 
 public class TokenizerTest

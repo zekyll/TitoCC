@@ -2,8 +2,9 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -81,28 +82,30 @@ public class IfStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
 		if (!test.getType(scope).decay().isScalar())
 			throw new SyntaxException("Scalar expression required.", test.getPosition());
 
 		// Evaluates and loads the test expression in the first register.
-		test.compile(asm, scope, regs);
+		test.compile(asm, scope, vstack);
+		Register exprReg = vstack.loadTopValue(asm);
+		vstack.pop();
 
 		// Skip true statement if test was false.
 		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jzer", regs.get(0).toString(), skipTrueLabel);
+		asm.emit("jzer", exprReg.toString(), skipTrueLabel);
 
 		// True statement.
-		compileInNewScope(asm, scope, regs, trueStatement);
+		compileInNewScope(asm, scope, vstack, trueStatement);
 
 		// Else statement.
 		if (elseStatement != null) {
 			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
 			asm.emit("jump", skipElseLabel);
 			asm.addLabel(skipTrueLabel);
-			compileInNewScope(asm, scope, regs, elseStatement);
+			compileInNewScope(asm, scope, vstack, elseStatement);
 			asm.addLabel(skipElseLabel);
 		} else
 			asm.addLabel(skipTrueLabel);
@@ -114,12 +117,12 @@ public class IfStatement extends Statement
 		return "(IF " + test + " " + trueStatement + " " + elseStatement + ")";
 	}
 
-	private void compileInNewScope(Assembler asm, Scope scope, Registers registers,
-			Statement statement) throws IOException, SyntaxException
+	private void compileInNewScope(Assembler asm, Scope scope, Vstack vstack, Statement statement)
+			throws IOException, SyntaxException
 	{
 		Scope subScope = new Scope(scope, "");
 		scope.addSubScope(subScope);
-		statement.compile(asm, subScope, registers);
+		statement.compile(asm, subScope, vstack);
 	}
 
 	/**

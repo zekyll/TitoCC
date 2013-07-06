@@ -2,8 +2,8 @@ package titocc.tokenizer;
 
 import java.io.IOException;
 import java.io.StringReader;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class WordTokenTest
 {

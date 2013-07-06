@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.EofToken;
@@ -58,11 +58,11 @@ public class TranslationUnit extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the translation unit is compiled (should be global scope)
-	 * @param regs available registers; must have at least one active register
+	 * @param vstack virtual stack
 	 * @throws SyntaxException if translation unit contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
 		// Call main function and then halt.
@@ -71,7 +71,7 @@ public class TranslationUnit extends CodeElement
 		asm.emit("svc", "sp", "=halt");
 
 		for (Declaration decl : declarations)
-			decl.compile(asm, scope, regs);
+			decl.compile(asm, scope, vstack);
 
 		if (!mainFunctionExists(scope))
 			throw new SyntaxException("Function \"int main()\" was not found.", getPosition());

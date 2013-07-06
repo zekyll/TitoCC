@@ -2,8 +2,8 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -45,10 +45,10 @@ public class DeclarationStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
-		declaration.compile(asm, scope, regs);
+		declaration.compile(asm, scope, vstack);
 	}
 
 	@Override

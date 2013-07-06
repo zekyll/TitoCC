@@ -3,9 +3,10 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -66,7 +67,7 @@ public class ForStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
 		// The whole for statement creates a new scope.
@@ -86,32 +87,34 @@ public class ForStatement extends Statement
 		String loopTestLabel = loopScope.makeGloballyUniqueName("lbl");
 
 		// Loop initialization code.
-		initStatement.compile(asm, loopScope, regs);
+		initStatement.compile(asm, loopScope, vstack);
 
 		// Loop start; jump to the test.
 		asm.emit("jump", loopTestLabel);
 		asm.addLabel(loopStartLabel);
 
 		// Body.
-		body.compile(asm, loopScope, regs);
+		body.compile(asm, loopScope, vstack);
 		//TODO implement block-item-list so body can't be a single declaration
 
 		// Evaluate the increment expression and ignore return value.
 		asm.addLabel(continueSymbol.getReference());
-		if (incrementExpression != null)
-			incrementExpression.compile(asm, loopScope, regs);
+		if (incrementExpression != null) {
+			incrementExpression.compile(asm, loopScope, vstack);
+			if (!incrementExpression.getType(loopScope).equals(CType.VOID))
+				vstack.pop();
+		}
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
-		compileControlExpression(asm, loopScope, regs, loopStartLabel,
-				loopTestLabel);
+		compileControlExpression(asm, loopScope, vstack, loopStartLabel, loopTestLabel);
 
 		// Insert label to be used by break statements.
 		asm.addLabel(breakSymbol.getReference());
 	}
 
 	private void compileControlExpression(Assembler asm, Scope scope,
-			Registers regs, String loopStartLabel, String loopTestLabel)
+			Vstack vstack, String loopStartLabel, String loopTestLabel)
 			throws IOException, SyntaxException
 	{
 		if (controlExpression != null && !controlExpression.getType(scope).decay().isScalar()) {
@@ -124,8 +127,10 @@ public class ForStatement extends Statement
 		// Jump to loop start if not 0. If there is no control expression then
 		// make unconditional jump.
 		if (controlExpression != null) {
-			controlExpression.compile(asm, scope, regs);
-			asm.emit("jnzer", regs.get(0).toString(), loopStartLabel);
+			controlExpression.compile(asm, scope, vstack);
+			Register exprReg = vstack.loadTopValue(asm);
+			asm.emit("jnzer", exprReg.toString(), loopStartLabel);
+			vstack.pop();
 		} else
 			asm.emit("jump", loopStartLabel);
 	}

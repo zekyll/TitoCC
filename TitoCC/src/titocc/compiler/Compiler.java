@@ -68,7 +68,7 @@ public class Compiler
 		Scope scope = new Scope(null, "");
 		reserveNames(scope);
 		Assembler asm = new Assembler(writer);
-		translationUnit.compile(asm, scope, new Registers());
+		translationUnit.compile(asm, scope, new Vstack(new RegisterAllocator()));
 		asm.finish();
 	}
 

@@ -2,8 +2,8 @@ package titocc.compiler;
 
 import java.io.IOException;
 import java.io.StringReader;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 import titocc.compiler.elements.Expression;
 import titocc.compiler.elements.PrimaryExpression;
 import titocc.tokenizer.EofToken;

@@ -2,10 +2,9 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Lvalue;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
@@ -49,7 +48,7 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
@@ -60,13 +59,13 @@ public class IdentifierExpression extends Expression
 
 		// Load value to first register (or address if we have an array/function).
 		if (symbol.getType() instanceof ArrayType || symbol.getType().isFunction())
-			asm.emit("load", regs.get(0).toString(), "=" + symbol.getReference());
+			vstack.pushSymbolicValue("=" + symbol.getReference());
 		else
-			asm.emit("load", regs.get(0).toString(), symbol.getReference());
+			vstack.pushSymbolicValue(symbol.getReference());
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(Assembler asm, Scope scope, Registers regs, boolean addressOf)
+	public void compileAsLvalue(Assembler asm, Scope scope, Vstack vstack, boolean addressOf)
 			throws SyntaxException, IOException
 	{
 		Symbol symbol = findSymbol(scope);
@@ -74,7 +73,7 @@ public class IdentifierExpression extends Expression
 		if (!addressOf)
 			requireLvalueType(scope);
 
-		return new Lvalue(regs.get(0), symbol.getReference());
+		vstack.pushSymbolicValue(symbol.getReference());
 	}
 
 	@Override

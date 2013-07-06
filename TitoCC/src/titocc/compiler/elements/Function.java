@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.DeclarationType;
-import titocc.compiler.Registers;
+import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Scope;
 import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
-import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -74,10 +74,13 @@ public class Function extends Declaration
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
 		asm.addEmptyLines(1);
+
+		// Reset register spill counter.
+		vstack.getRegisterAllocator().resetMaxSpillCount();
 
 		// Create new scope.
 		Scope functionScope = new Scope(scope, declarator.getName() + "_");
@@ -106,13 +109,16 @@ public class Function extends Declaration
 		// variables in the prologue.
 		StringWriter bodyWriter = new StringWriter();
 		Assembler bodyAsm = new Assembler(bodyWriter);
-		compileBody(bodyAsm, functionScope, regs);
+		compileBody(bodyAsm, functionScope, vstack);
 		List<Symbol> localVariables = getLocalVariables(functionScope);
 		bodyAsm.finish();
 
-		compilePrologue(asm, localVariables, sym.getReference());
+		compilePrologue(asm, localVariables, vstack, sym.getReference());
 		asm.getWriter().append(bodyWriter.toString());
-		compileEpilogue(asm, localVariables, paramTotalSize);
+		compileEpilogue(asm, localVariables, vstack, paramTotalSize);
+
+		if (vstack.size() != 0)
+			throw new InternalCompilerException("Undeallocated entries in vstack.");
 	}
 
 	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
@@ -139,7 +145,7 @@ public class Function extends Declaration
 	}
 
 	/**
-	 * Emit constants for return value and parameters. Returs total size of tha parameters.
+	 * Emit constants for return value and parameters. Returs total size of the parameters.
 	 */
 	private int addParameterConstants(Assembler asm, List<Symbol> parameters) throws IOException
 	{
@@ -160,11 +166,12 @@ public class Function extends Declaration
 		return paramTotalSize;
 	}
 
-	private void compilePrologue(Assembler asm, List<Symbol> localVariables, String startLabel)
-			throws IOException, SyntaxException
+	private void compilePrologue(Assembler asm, List<Symbol> localVariables, Vstack vstack,
+			String startLabel) throws IOException, SyntaxException
 	{
-		// Define constants for local variables.
-		int varOffset = 0;
+		// Define constants for local variables, which are placed after register spill locations.
+		// 0(fp) is old program counter and local data starts from 1(fp).
+		int varOffset = vstack.getRegisterAllocator().getMaxSpillCount();
 		for (Symbol var : localVariables) {
 			asm.addLabel(var.getGlobalName());
 			asm.emit("equ", "" + (1 + varOffset));
@@ -182,28 +189,30 @@ public class Function extends Declaration
 		asm.emit("pushr", "sp");
 	}
 
-	private void compileBody(Assembler asm, Scope scope, Registers registers)
+	private void compileBody(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
 		// Compile statements directly, so that CompoundStatement doesn't create
 		// new scope, and the statements are in the same scope as parameters.
 		for (Statement st : body.getStatements())
-			st.compile(asm, scope, registers);
+			st.compile(asm, scope, vstack);
 	}
 
-	private void compileEpilogue(Assembler asm, List<Symbol> localVariables,
+	private void compileEpilogue(Assembler asm, List<Symbol> localVariables, Vstack vstack,
 			int paramTotalSize) throws IOException, SyntaxException
 	{
 		// Pop registers from stack.
 		asm.addLabel(endSymbol.getReference());
 		asm.emit("popr", "sp");
 
-		// Remove local variables from stack.
-		int localVarTotalSize = 0;
+		// Calculate total size of local variables and register spill locations on stack.
+		int localDataSize = vstack.getRegisterAllocator().getMaxSpillCount();
 		for (Symbol var : localVariables)
-			localVarTotalSize += var.getType().getSize();
-		if (localVarTotalSize > 0)
-			asm.emit("sub", "sp", "=" + localVarTotalSize);
+			localDataSize += var.getType().getSize();
+
+		// Pop all function local data from program stack.
+		if (localDataSize > 0)
+			asm.emit("sub", "sp", "=" + localDataSize);
 
 		// Exit from function.
 		asm.emit("exit", "sp", "=" + paramTotalSize);

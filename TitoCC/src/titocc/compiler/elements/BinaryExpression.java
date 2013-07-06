@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
@@ -155,95 +156,93 @@ public class BinaryExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Registers regs)
+	public void compile(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
 		checkTypes(scope);
 
-		// Evaluate LHS; load value to 1st register.
-		left.compile(asm, scope, regs);
-
-		// Allocate a second register for right operand.
-		regs.allocate(asm);
+		// Evaluate LHS; load value to 1st register. Convert to register value because we use
+		// as left side operand in instructions and also use the register for the result value.
+		left.compile(asm, scope, vstack);
+		Register leftReg = vstack.loadTopValue(asm);
 
 		// Compile right expression and the operator.
 		Type opType = binaryOperators.get(operator).type;
 		if (opType == Type.BITWISE || opType == Type.ARITHMETIC || opType == Type.SHIFT)
-			compileSimpleOperator(asm, scope, regs);
+			compileSimpleOperator(asm, scope, vstack, leftReg);
 		else if (opType == Type.LOGICAL)
-			compileLogicalOperator(asm, scope, regs);
+			compileLogicalOperator(asm, scope, vstack, leftReg);
 		else if (opType == Type.RELATIONAL || opType == Type.EQUALITY)
-			compileComparisonOperator(asm, scope, regs);
+			compileComparisonOperator(asm, scope, vstack, leftReg);
 
-		// Deallocate the second register.
-		regs.deallocate(asm);
+		// Deallocate 2nd register.
+		vstack.pop();
 	}
 
-	private void compileRight(Assembler asm, Scope scope, Registers regs)
+	private void compileRight(Assembler asm, Scope scope, Vstack vstack)
 			throws SyntaxException, IOException
 	{
-		// Evaluate RHS; load to second register;
-		regs.removeFirst();
-		right.compile(asm, scope, regs);
-		regs.addFirst();
+		// Evaluate RHS; load to 2nd register;
+		vstack.enterFrame();
+		right.compile(asm, scope, vstack);
+		vstack.exitFrame(asm);
 	}
 
-	private void compileSimpleOperator(Assembler asm, Scope scope, Registers regs)
+	private void compileSimpleOperator(Assembler asm, Scope scope, Vstack vstack, Register leftReg)
 			throws IOException, SyntaxException
 	{
 		int leftIncrSize = left.getType(scope).decay().getIncrementSize();
 		int rightIncrSize = right.getType(scope).decay().getIncrementSize();
+		String mnemonic = binaryOperators.get(operator).mnemonic;
 
 		if (leftIncrSize > 1 && rightIncrSize > 1) {
 			// POINTER - POINTER.
-			compileRight(asm, scope, regs);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
-					regs.get(1).toString());
-			asm.emit("div", regs.get(0).toString(), "=" + leftIncrSize);
+			compileRight(asm, scope, vstack);
+			asm.emit(mnemonic, leftReg.toString(), vstack.top(0));
+			asm.emit("div", leftReg.toString(), "=" + leftIncrSize);
 		} else if (leftIncrSize > 1) {
 			// POINTER + INTEGER or POINTER - INTEGER.
-			compileRight(asm, scope, regs);
-			asm.emit("mul", regs.get(1).toString(), "=" + leftIncrSize);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
-					regs.get(1).toString());
+			compileRight(asm, scope, vstack);
+			Register rightReg = vstack.loadTopValue(asm);
+			asm.emit("mul", rightReg.toString(), "=" + leftIncrSize);
+			asm.emit(mnemonic, leftReg.toString(), rightReg.toString());
 		} else if (rightIncrSize > 1) {
 			// INTEGER + POINTER.
-			asm.emit("mul", regs.get(0).toString(), "=" + rightIncrSize);
-			compileRight(asm, scope, regs);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
-					regs.get(1).toString());
+			asm.emit("mul", leftReg.toString(), "=" + rightIncrSize);
+			compileRight(asm, scope, vstack);
+			asm.emit(mnemonic, leftReg.toString(), vstack.top(0));
 		} else {
-			compileRight(asm, scope, regs);
-			asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(),
-					regs.get(1).toString());
+			compileRight(asm, scope, vstack);
+			asm.emit(mnemonic, leftReg.toString(), vstack.top(0));
 		}
 	}
 
-	private void compileComparisonOperator(Assembler asm, Scope scope, Registers regs)
-			throws IOException, SyntaxException
+	private void compileComparisonOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg) throws IOException, SyntaxException
 	{
-		compileRight(asm, scope, regs);
+		compileRight(asm, scope, vstack);
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("comp", regs.get(0).toString(), regs.get(1).toString());
-		asm.emit("load", regs.get(0).toString(), "=1");
-		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), jumpLabel);
-		asm.emit("load", regs.get(0).toString(), "=0");
+		asm.emit("comp", leftReg.toString(), vstack.top(0));
+		asm.emit("load", leftReg.toString(), "=1");
+		asm.emit(binaryOperators.get(operator).mnemonic, leftReg.toString(), jumpLabel);
+		asm.emit("load", leftReg.toString(), "=0");
 		asm.addLabel(jumpLabel);
 	}
 
-	private void compileLogicalOperator(Assembler asm, Scope scope, Registers regs)
+	private void compileLogicalOperator(Assembler asm, Scope scope, Vstack vstack, Register leftReg)
 			throws IOException, SyntaxException
 	{
 		// Short circuit evaluation; only evaluate RHS if necessary.
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		String jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(0).toString(), jumpLabel);
-		compileRight(asm, scope, regs);
-		asm.emit(binaryOperators.get(operator).mnemonic, regs.get(1).toString(), jumpLabel);
-		asm.emit("load", regs.get(0).toString(), operator.equals("||") ? "=0" : "=1");
-		asm.emit("jump", regs.get(0).toString(), jumpLabel2);
+		asm.emit(binaryOperators.get(operator).mnemonic, leftReg.toString(), jumpLabel);
+		compileRight(asm, scope, vstack);
+		Register rightReg = vstack.loadTopValue(asm);
+		asm.emit(binaryOperators.get(operator).mnemonic, rightReg.toString(), jumpLabel);
+		asm.emit("load", leftReg.toString(), operator.equals("||") ? "=0" : "=1");
+		asm.emit("jump", leftReg.toString(), jumpLabel2);
 		asm.addLabel(jumpLabel);
-		asm.emit("load", regs.get(0).toString(), operator.equals("||") ? "=1" : "=0");
+		asm.emit("load", leftReg.toString(), operator.equals("||") ? "=1" : "=0");
 		asm.addLabel(jumpLabel2);
 	}
 

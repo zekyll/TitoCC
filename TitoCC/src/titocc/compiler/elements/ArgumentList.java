@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
-import titocc.compiler.Registers;
 import titocc.compiler.Scope;
+import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -50,16 +50,16 @@ public class ArgumentList extends CodeElement
 
 	/**
 	 * Generates assembly code to evaluate the arguments from left to right and push the values to
-	 * stack.
+	 * program stack.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the arguments are evaluated
-	 * @param regs available registers; must have at least one active register
+	 * @param vstack virtual stack
 	 * @param paramTypes parameter types for the called function
 	 * @throws SyntaxException if argument list contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Registers regs, List<CType> paramTypes)
+	public void compile(Assembler asm, Scope scope, Vstack vstack, List<CType> paramTypes)
 			throws SyntaxException, IOException
 	{
 		if (paramTypes.size() != arguments.size()) {
@@ -75,8 +75,9 @@ public class ArgumentList extends CodeElement
 						arg.getPosition());
 			}
 
-			arg.compile(asm, scope, regs);
-			asm.emit("push", "sp", regs.get(0).toString());
+			arg.compile(asm, scope, vstack);
+			asm.emit("push", "sp", vstack.top(0));
+			vstack.pop();
 		}
 	}
 
