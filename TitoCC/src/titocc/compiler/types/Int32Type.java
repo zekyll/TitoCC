@@ -73,6 +73,7 @@ class Int32Type extends IntegerType
 			super.compileConversion(asm, scope, vstack, targetType);
 	}
 
+	@Override
 	public void compileBinaryBitwiseOperator(Assembler asm, Scope scope, Vstack vstack,
 			Register leftReg, String operator) throws IOException
 	{
@@ -80,6 +81,7 @@ class Int32Type extends IntegerType
 		vstack.pop();
 	}
 
+	@Override
 	public void compileBinaryComparisonOperator(Assembler asm, Scope scope, Vstack vstack,
 			Register leftReg, String operator) throws IOException
 	{
@@ -92,6 +94,7 @@ class Int32Type extends IntegerType
 		vstack.pop();
 	}
 
+	@Override
 	public void compileBinaryShiftOperator(Assembler asm, Scope scope, Vstack vstack,
 			Register leftReg, String operator) throws IOException
 	{
@@ -99,6 +102,7 @@ class Int32Type extends IntegerType
 		vstack.pop();
 	}
 
+	@Override
 	public void compileBinaryArithmeticOperator(Assembler asm, Scope scope, Vstack vstack,
 			Register leftReg, String operator) throws IOException
 	{
@@ -106,6 +110,7 @@ class Int32Type extends IntegerType
 		vstack.pop();
 	}
 
+	@Override
 	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
 			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
 	{

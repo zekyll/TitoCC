@@ -71,6 +71,7 @@ public class PointerType extends CType
 			super.compileConversion(asm, scope, vstack, targetType);
 	}
 
+	@Override
 	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
 			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
 	{

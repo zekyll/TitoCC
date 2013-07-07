@@ -23,6 +23,7 @@ public class VoidType extends CType
 		return obj instanceof VoidType;
 	}
 
+	@Override
 	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
 			throws IOException
 	{
