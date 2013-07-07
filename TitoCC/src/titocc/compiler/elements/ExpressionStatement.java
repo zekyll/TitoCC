@@ -50,9 +50,7 @@ public class ExpressionStatement extends Statement
 			throws IOException, SyntaxException
 	{
 		// Evaluate expression and ignore result.
-		expression.compile(asm, scope, vstack);
-		if (!expression.getType(scope).equals(CType.VOID))
-			vstack.pop();
+		expression.compileWithConversion(asm, scope, vstack, CType.VOID);
 	}
 
 	@Override

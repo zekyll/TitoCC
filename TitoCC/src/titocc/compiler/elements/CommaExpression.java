@@ -49,9 +49,7 @@ public class CommaExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		// Evaluate left operand and ignore it.
-		left.compile(asm, scope, vstack);
-		if (!left.getType(scope).equals(CType.VOID))
-			vstack.pop();
+		left.compileWithConversion(asm, scope, vstack, CType.VOID);
 
 		// Evaluate right operand in first register.
 		right.compile(asm, scope, vstack);

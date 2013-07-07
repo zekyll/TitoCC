@@ -3,7 +3,6 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import java.util.LinkedList;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.Vstack;
@@ -99,11 +98,8 @@ public class ForStatement extends Statement
 
 		// Evaluate the increment expression and ignore return value.
 		asm.addLabel(continueSymbol.getReference());
-		if (incrementExpression != null) {
-			incrementExpression.compile(asm, loopScope, vstack);
-			if (!incrementExpression.getType(loopScope).equals(CType.VOID))
-				vstack.pop();
-		}
+		if (incrementExpression != null)
+			incrementExpression.compileWithConversion(asm, loopScope, vstack, CType.VOID);
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.

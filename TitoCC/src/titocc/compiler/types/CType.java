@@ -201,7 +201,10 @@ public abstract class CType
 	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
 			throws IOException
 	{
-		throw new InternalCompilerException("Unimplemented type conversion.");
+		if (targetType.equals(CType.VOID))
+			vstack.pop();
+		else
+			throw new InternalCompilerException("Unimplemented type conversion.");
 	}
 
 	/**
