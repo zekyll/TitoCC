@@ -169,7 +169,8 @@ public class PrefixExpression extends Expression
 					+ " requires a scalar type.", getPosition());
 		}
 
-		operand.compile(asm, scope, vstack);
+		// Evaluate operand, push to vstack and convert to boolish.
+		operand.compileWithConversion(asm, scope, vstack, CType.BOOLISH);
 		Register topReg = vstack.loadTopValue(asm);
 
 		// Compares operand to zero and sets register value according to the result.

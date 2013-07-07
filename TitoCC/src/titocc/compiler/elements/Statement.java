@@ -6,6 +6,7 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -68,8 +69,8 @@ public abstract class Statement extends CodeElement
 		// Only generate code for the test if there is a control expression. Otherwise make
 		// unconditional jump (only allowed in for loops).
 		if (controlExpr != null) {
-			// Evaluate control expression and push result onto vstack.
-			controlExpr.compile(asm, scope, vstack);
+			// Evaluate control expression, push result onto vstack and convert to boolish.
+			controlExpr.compileWithConversion(asm, scope, vstack, CType.BOOLISH);
 			Register exprReg = vstack.loadTopValue(asm);
 
 			// Jump if test was false/true (depending on jump instruction).
