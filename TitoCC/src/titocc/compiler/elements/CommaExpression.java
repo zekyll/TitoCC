@@ -53,7 +53,7 @@ public class CommaExpression extends Expression
 
 		// Evaluate right operand in first register.
 		right.compile(asm, scope, vstack);
-		// vstack.convertTopToRegisterRvalue(asm); // Not needed here.
+		// vstack.loadTopValue(asm); // Not needed here.
 	}
 
 	@Override

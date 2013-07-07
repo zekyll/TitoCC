@@ -61,7 +61,7 @@ public class ReturnStatement extends Statement
 			}
 
 			// Load expression to first register and store to the return value.
-			expression.compile(asm, scope, vstack);
+			expression.compileWithConversion(asm, scope, vstack, retVal.getType());
 			Register exprReg = vstack.loadTopValue(asm);
 			asm.emit("store", exprReg, retVal.getReference());
 			vstack.pop();

@@ -76,7 +76,7 @@ public class ArgumentList extends CodeElement
 						arg.getPosition());
 			}
 
-			arg.compile(asm, scope, vstack);
+			arg.compileWithConversion(asm, scope, vstack, paramType);
 			asm.emit("push", Register.SP, vstack.top(0));
 			vstack.pop();
 		}

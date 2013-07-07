@@ -9,6 +9,7 @@ import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
 import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
+import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -89,7 +90,7 @@ public class VariableDeclaration extends Declaration
 		if (scope.isGlobal())
 			compileGlobalVariable(asm, scope, sym);
 		else
-			compileLocalVariable(asm, scope, sym, vstack);
+			compileLocalVariable(asm, scope, sym, vstack, declType.type);
 	}
 
 	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
@@ -136,11 +137,11 @@ public class VariableDeclaration extends Declaration
 			asm.emit("dc", "" + initValue);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym, Vstack vstack)
-			throws SyntaxException, IOException
+	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym, Vstack vstack,
+			CType variableType) throws SyntaxException, IOException
 	{
 		if (initializer != null) {
-			initializer.compile(asm, scope, vstack);
+			initializer.compileWithConversion(asm, scope, vstack, variableType);
 			Register exprReg = vstack.loadTopValue(asm);
 			asm.emit("store", exprReg, sym.getReference());
 			vstack.pop();
