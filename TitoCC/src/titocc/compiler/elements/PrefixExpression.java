@@ -143,7 +143,8 @@ public class PrefixExpression extends Expression
 					+ " requires an arithmetic type.", getPosition());
 		}
 
-		operand.compile(asm, scope, vstack);
+		operandType = operandType.promote();
+		operand.compileWithConversion(asm, scope, vstack, operandType);
 		operandType.compileUnaryPlusMinusOperator(asm, scope, vstack, operator.equals("+"));
 	}
 
@@ -173,17 +174,15 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		// ($6.5.3.3/1)
-		if (!operand.getType(scope).decay().isInteger()) {
+		CType operandType = operand.getType(scope).decay();
+		if (!operandType.isInteger()) {
 			throw new SyntaxException("Operator " + operator
 					+ " requires an integer type.", getPosition());
 		}
 
-		operand.compile(asm, scope, vstack);
-		Register topReg = vstack.loadTopValue(asm);
-
-		// -1 has representation of all 1 bits (0xFFFFFFFF), and therefore xoring with it gives
-		// the bitwise negation.
-		asm.emit("xor", topReg, "=-1");
+		operandType = operandType.promote();
+		operand.compileWithConversion(asm, scope, vstack, operandType);
+		operandType.compileUnaryBitwiseNegationOperator(asm, scope, vstack);
 	}
 
 	private void compileAddressOf(Assembler asm, Scope scope, Vstack vstack)

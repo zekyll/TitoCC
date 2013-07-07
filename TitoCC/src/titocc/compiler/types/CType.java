@@ -311,6 +311,20 @@ public abstract class CType
 	}
 
 	/**
+	 * Generates code for unary bitwise negation operator for this type. Operand is given on top of
+	 * the vstack and replaced by the result value.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
+	 * @param vstack virtual stack
+	 */
+	public void compileUnaryBitwiseNegationOperator(Assembler asm, Scope scope, Vstack vstack)
+			throws IOException
+	{
+		throw new InternalCompilerException("Unimplemented unary bitwise negation operator.");
+	}
+
+	/**
 	 * Standard "void" type.
 	 */
 	public static CType VOID = new VoidType();

@@ -145,4 +145,15 @@ class Int32Type extends IntegerType
 		asm.emit("xor", topReg, "=-1");
 		asm.emit("add", topReg, "=1");
 	}
+
+	@Override
+	public void compileUnaryBitwiseNegationOperator(Assembler asm, Scope scope, Vstack vstack)
+			throws IOException
+	{
+		Register topReg = vstack.loadTopValue(asm);
+
+		// -1 has representation of all 1 bits (0xFFFFFFFF), and therefore xoring with it gives
+		// the bitwise negation.
+		asm.emit("xor", topReg, "=-1");
+	}
 }
