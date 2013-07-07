@@ -296,6 +296,21 @@ public abstract class CType
 	}
 
 	/**
+	 * Generates code for unary plus/minus operator for this type. Operand is given on top of the
+	 * vstack and replaced by the result value.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
+	 * @param vstack virtual stack
+	 * @param plus true if unary plus, false if unary minus
+	 */
+	public void compileUnaryPlusMinusOperator(Assembler asm, Scope scope, Vstack vstack,
+			boolean plus) throws IOException
+	{
+		throw new InternalCompilerException("Unimplemented unary plus/minus operator.");
+	}
+
+	/**
 	 * Standard "void" type.
 	 */
 	public static CType VOID = new VoidType();

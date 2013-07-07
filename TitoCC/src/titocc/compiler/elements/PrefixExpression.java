@@ -137,19 +137,14 @@ public class PrefixExpression extends Expression
 			throws IOException, SyntaxException
 	{
 		// ($6.5.3.3/1)
-		if (!operand.getType(scope).decay().isArithmetic()) {
+		CType operandType = operand.getType(scope).decay();
+		if (!operandType.isArithmetic()) {
 			throw new SyntaxException("Operator " + operator
 					+ " requires an arithmetic type.", getPosition());
 		}
 
 		operand.compile(asm, scope, vstack);
-		Register topReg = vstack.loadTopValue(asm);
-
-		// Negative in two's complement: negate all bits and add 1. For unary plus do nothing.
-		if (operator.equals("-")) {
-			asm.emit("xor", topReg, "=-1");
-			asm.emit("add", topReg, "=1");
-		}
+		operandType.compileUnaryPlusMinusOperator(asm, scope, vstack, operator.equals("+"));
 	}
 
 	private void compileLogicalNegation(Assembler asm, Scope scope, Vstack vstack)

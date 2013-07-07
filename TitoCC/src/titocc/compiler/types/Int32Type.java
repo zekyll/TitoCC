@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import titocc.compiler.Assembler;
+import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
@@ -127,5 +128,21 @@ class Int32Type extends IntegerType
 		// Postfix operator must return the old value.
 		if (postfix)
 			asm.emit(inc ? "sub" : "add", retReg, "=" + incSize);
+	}
+
+	@Override
+	public void compileUnaryPlusMinusOperator(Assembler asm, Scope scope, Vstack vstack,
+			boolean plus) throws IOException
+	{
+		// Unary minus is no-op;
+		if (plus)
+			return;
+
+		// Load operand to register.
+		Register topReg = vstack.loadTopValue(asm);
+
+		// Negative in two's complement: negate all bits and add 1. For unary plus do nothing.
+		asm.emit("xor", topReg, "=-1");
+		asm.emit("add", topReg, "=1");
 	}
 }
