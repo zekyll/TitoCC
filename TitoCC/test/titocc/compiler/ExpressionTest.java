@@ -364,6 +364,20 @@ public class ExpressionTest
 	}
 
 	@Test
+	public void multiplicativeExpressionType() throws IOException, SyntaxException
+	{
+		testType("c * c", CType.INT);
+		testType("c / i", CType.INT);
+		testType("s % s", CType.INT);
+		testType("i * i", CType.INT);
+		testType("c / u", CType.UINT);
+		testType("i % l", CType.LONG);
+		testType("l * u", CType.ULONG);
+		testType("ul / ll", CType.LLONG);
+		testType("ll * ull", CType.ULLONG);
+	}
+
+	@Test
 	public void parenthesizedExpressionType() throws IOException, SyntaxException
 	{
 		testType("(c)", CType.CHAR);

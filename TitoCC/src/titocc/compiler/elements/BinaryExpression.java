@@ -321,7 +321,7 @@ public class BinaryExpression extends Expression
 		} else if (op.type == Type.ARITHMETIC) {
 			if (leftType.isArithmetic() && (rightType.isInteger()
 					|| (!operator.equals("%") && rightType.isArithmetic())))
-				return CType.INT;
+				return CType.getCommonType(leftType, rightType);
 		}
 
 		throw new SyntaxException("Incompatible operands for operator " + operator + ".",
