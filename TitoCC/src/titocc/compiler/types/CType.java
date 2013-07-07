@@ -1,9 +1,12 @@
 package titocc.compiler.types;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import titocc.compiler.Assembler;
 import titocc.compiler.InternalCompilerException;
+import titocc.compiler.Register;
+import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
 
 /**
@@ -191,11 +194,83 @@ public abstract class CType
 	 * target type. The resulting value replaces the source value on the virtual stack.
 	 *
 	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param vstack virtual stack
+	 * @param targetType target type of the conversion
 	 */
-	public void compileConversion(Assembler asm, Vstack vstack, CType targetType)
+	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
+			throws IOException
 	{
 		throw new InternalCompilerException("Unimplemented type conversion.");
+	}
+
+	/**
+	 * Generates code for binary bitwise operator with two operands of this type. The operands are
+	 * given on top of the vstack, left operand being a register rvalue in leftReg. The result
+	 * value (same type as operands) replaces the operands on the vstack.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
+	 * @param vstack virtual stack
+	 * @param leftReg register where left operand is loaded
+	 * @param operator operator as a string
+	 */
+	public void compileBinaryBitwiseOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		throw new InternalCompilerException("Unimplemented binary bitwise operator.");
+	}
+
+	/**
+	 * Generates code for binary comparison operator with two operands of this type. The operands
+	 * are given on top of the vstack, left operand being a register rvalue in leftReg. The result
+	 * value (32-bit int) replaces the operands on the vstack.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
+	 * @param vstack virtual stack
+	 * @param leftReg register where left operand is loaded
+	 * @param operator operator as a string
+	 */
+	public void compileBinaryComparisonOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		throw new InternalCompilerException("Unimplemented binary comparison operator.");
+	}
+
+	/**
+	 * Generates code for binary shift operator, where left operand has this type and right
+	 * operand has "int" type. The operands are given on top of the vstack, left operand being a
+	 * register rvalue in leftReg. The result value (same as left operand type) replaces the
+	 * operands on the vstack.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
+	 * @param vstack virtual stack
+	 * @param leftReg register where left operand is loaded
+	 * @param operator operator as a string
+	 */
+	public void compileBinaryShiftOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		throw new InternalCompilerException("Unimplemented binary shift operator.");
+	}
+
+	/**
+	 * Generates code for binary arithmetic operator with two operands of this type. The operands
+	 * are given on top of the vstack, left operand being a register rvalue in leftReg. The result
+	 * value (same type as operands) replaces the operands on the vstack.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
+	 * @param vstack virtual stack
+	 * @param leftReg register where left operand is loaded
+	 * @param operator operator as a string
+	 */
+	public void compileBinaryArithmeticOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		throw new InternalCompilerException("Unimplemented binary shift operator.");
 	}
 
 	/**
@@ -267,6 +342,16 @@ public abstract class CType
 	 * Unsigned integer type that is able to hold the size of any object (size_t).
 	 */
 	public static IntegerType SIZE_T = ULONG;
+
+	/**
+	 * Signed integer type with one-to-one mapping with void*.
+	 */
+	public static IntegerType INTPTR_T = LONG;
+
+	/**
+	 * Unsigned integer type with one-to-one mapping with void*.
+	 */
+	public static IntegerType UINTPTR_T = ULONG;
 
 	/**
 	 * Type used for wide characters (wchar_t).

@@ -8,6 +8,7 @@ import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.PointerType;
 import titocc.compiler.types.VoidType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -161,82 +162,64 @@ public class BinaryExpression extends Expression
 	{
 		checkTypes(scope);
 
-		// Evaluate LHS; load value to 1st register. Convert to register value because we use
-		// as left side operand in instructions and also use the register for the result value.
-		left.compile(asm, scope, vstack);
-		Register leftReg = vstack.loadTopValue(asm);
-
-		// Compile right expression and the operator.
 		Type opType = binaryOperators.get(operator).type;
-		if (opType == Type.BITWISE || opType == Type.ARITHMETIC || opType == Type.SHIFT)
-			compileSimpleOperator(asm, scope, vstack, leftReg);
-		else if (opType == Type.LOGICAL)
-			compileLogicalOperator(asm, scope, vstack, leftReg);
+		if (opType == Type.LOGICAL)
+			compileLogicalOperator(asm, scope, vstack);
+		else if (opType == Type.BITWISE)
+			compileBitwiseOperator(asm, scope, vstack);
 		else if (opType == Type.RELATIONAL || opType == Type.EQUALITY)
-			compileComparisonOperator(asm, scope, vstack, leftReg);
-
-		// Deallocate 2nd register.
-		vstack.pop();
+			compileComparisonOperator(asm, scope, vstack);
+		else if (opType == Type.SHIFT)
+			compileShiftOperator(asm, scope, vstack);
+		else if (opType == Type.ARITHMETIC)
+			compileArithmeticOperator(asm, scope, vstack);
 	}
 
-	private void compileRight(Assembler asm, Scope scope, Vstack vstack)
+	private Register compileLeft(Assembler asm, Scope scope, Vstack vstack, CType targetType)
+			throws SyntaxException, IOException
+	{
+		// Evaluate LHS; load value to 1st register. Convert to register value because we use
+		// as left side operand in instructions and also use the register for the result value.
+		left.compileWithConversion(asm, scope, vstack, targetType);
+		return vstack.loadTopValue(asm);
+	}
+
+	private void compileRight(Assembler asm, Scope scope, Vstack vstack, CType targetType)
 			throws SyntaxException, IOException
 	{
 		// Evaluate RHS; load to 2nd register;
 		vstack.enterFrame();
-		right.compile(asm, scope, vstack);
+		right.compileWithConversion(asm, scope, vstack, targetType);
 		vstack.exitFrame(asm);
 	}
 
-	private void compileSimpleOperator(Assembler asm, Scope scope, Vstack vstack, Register leftReg)
-			throws IOException, SyntaxException
+	private CType getCommonType(Scope scope) throws SyntaxException
 	{
-		int leftIncrSize = left.getType(scope).decay().getIncrementSize();
-		int rightIncrSize = right.getType(scope).decay().getIncrementSize();
-		String mnemonic = binaryOperators.get(operator).mnemonic;
+		return CType.getCommonType(left.getType(scope).decay(), right.getType(scope).decay());
+	}
 
-		if (leftIncrSize > 1 && rightIncrSize > 1) {
-			// POINTER - POINTER.
-			compileRight(asm, scope, vstack);
-			asm.emit(mnemonic, leftReg, vstack.top(0));
-			asm.emit("div", leftReg, "=" + leftIncrSize);
-		} else if (leftIncrSize > 1) {
-			// POINTER + INTEGER or POINTER - INTEGER.
-			compileRight(asm, scope, vstack);
-			Register rightReg = vstack.loadTopValue(asm);
-			asm.emit("mul", rightReg, "=" + leftIncrSize);
-			asm.emit(mnemonic, leftReg, rightReg.toString());
-		} else if (rightIncrSize > 1) {
-			// INTEGER + POINTER.
-			asm.emit("mul", leftReg, "=" + rightIncrSize);
-			compileRight(asm, scope, vstack);
-			asm.emit(mnemonic, leftReg, vstack.top(0));
-		} else {
-			compileRight(asm, scope, vstack);
-			asm.emit(mnemonic, leftReg, vstack.top(0));
+	private Register compileBothIfArithmetic(Assembler asm, Scope scope, Vstack vstack)
+			throws SyntaxException, IOException
+	{
+		Register leftReg = null;
+		if (left.getType(scope).decay().isArithmetic()
+				&& right.getType(scope).decay().isArithmetic()) {
+			CType commonType = getCommonType(scope);
+			leftReg = compileLeft(asm, scope, vstack, commonType);
+			compileRight(asm, scope, vstack, commonType);
 		}
+		return leftReg;
 	}
 
-	private void compileComparisonOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg) throws IOException, SyntaxException
-	{
-		compileRight(asm, scope, vstack);
-		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("comp", leftReg, vstack.top(0));
-		asm.emit("load", leftReg, "=1");
-		asm.emit(binaryOperators.get(operator).mnemonic, leftReg, jumpLabel);
-		asm.emit("load", leftReg, "=0");
-		asm.addLabel(jumpLabel);
-	}
-
-	private void compileLogicalOperator(Assembler asm, Scope scope, Vstack vstack, Register leftReg)
+	private void compileLogicalOperator(Assembler asm, Scope scope, Vstack vstack)
 			throws IOException, SyntaxException
 	{
+		Register leftReg = compileLeft(asm, scope, vstack, CType.BOOLISH);
 		// Short circuit evaluation; only evaluate RHS if necessary.
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		String jumpLabel2 = scope.makeGloballyUniqueName("lbl");
 		asm.emit(binaryOperators.get(operator).mnemonic, leftReg, jumpLabel);
-		compileRight(asm, scope, vstack);
+		compileRight(asm, scope, vstack, CType.BOOLISH);
 		Register rightReg = vstack.loadTopValue(asm);
 		asm.emit(binaryOperators.get(operator).mnemonic, rightReg, jumpLabel);
 		asm.emit("load", leftReg, operator.equals("||") ? "=0" : "=1");
@@ -244,6 +227,91 @@ public class BinaryExpression extends Expression
 		asm.addLabel(jumpLabel);
 		asm.emit("load", leftReg, operator.equals("||") ? "=1" : "=0");
 		asm.addLabel(jumpLabel2);
+		vstack.pop();
+	}
+
+	private void compileBitwiseOperator(Assembler asm, Scope scope, Vstack vstack)
+			throws IOException, SyntaxException
+	{
+		Register leftReg = compileBothIfArithmetic(asm, scope, vstack);
+		getCommonType(scope).compileBinaryBitwiseOperator(asm, scope, vstack, leftReg, operator);
+	}
+
+	private void compileComparisonOperator(Assembler asm, Scope scope, Vstack vstack)
+			throws IOException, SyntaxException
+	{
+		Register leftReg = compileBothIfArithmetic(asm, scope, vstack);
+		if (leftReg != null) {
+			getCommonType(scope).compileBinaryComparisonOperator(asm, scope, vstack, leftReg,
+					operator);
+		} else {
+			// POINTER < > <= >= == != POINTER
+			leftReg = compileLeft(asm, scope, vstack, CType.INTPTR_T);
+			compileRight(asm, scope, vstack, CType.INTPTR_T);
+			CType.INTPTR_T.compileBinaryComparisonOperator(asm, scope, vstack, leftReg, operator);
+		}
+	}
+
+	private void compileShiftOperator(Assembler asm, Scope scope, Vstack vstack)
+			throws IOException, SyntaxException
+	{
+		// Both operators are only promoted ($6.5.7/3); no "usual arithmetic conversions" take
+		// place. However we may simply convert the right operand to int, since using larger values
+		// is undefined behavior anyway.
+		CType leftType = left.getType(scope).decay().promote();
+		CType rightType = CType.INT;
+
+		Register leftReg = compileLeft(asm, scope, vstack, leftType);
+		compileRight(asm, scope, vstack, rightType);
+		leftType.compileBinaryBitwiseOperator(asm, scope, vstack, leftReg, operator);
+	}
+
+	private void compileArithmeticOperator(Assembler asm, Scope scope, Vstack vstack)
+			throws IOException, SyntaxException
+	{
+		Register leftReg = compileBothIfArithmetic(asm, scope, vstack);
+		if (leftReg != null) {
+			getCommonType(scope).compileBinaryArithmeticOperator(asm, scope, vstack, leftReg,
+					operator);
+		} else
+			compilePointerArithmeticOperator(asm, scope, vstack);
+	}
+
+	private void compilePointerArithmeticOperator(Assembler asm, Scope scope, Vstack vstack)
+			throws IOException, SyntaxException
+	{
+		int leftIncrSize = left.getType(scope).decay().getIncrementSize();
+		int rightIncrSize = right.getType(scope).decay().getIncrementSize();
+		String mnemonic = binaryOperators.get(operator).mnemonic;
+
+		// Standard doesn't specify conversion for the integer operand in pointer arithmetic.
+		// However, any values that don't fit ptrdiff_t would be undefined behavior, so we may do a
+		// conversion to ptrdiff_t.
+		CType leftType = leftIncrSize > 1 ? new PointerType(CType.CHAR) : CType.PTRDIFF_T;
+		CType rightType = rightIncrSize > 1 ? new PointerType(CType.CHAR) : CType.PTRDIFF_T;
+
+		Register leftReg = compileLeft(asm, scope, vstack, leftType);
+
+		if (leftIncrSize == rightIncrSize) {
+			// POINTER - POINTER or POINTERTO32BIT +- INTEGER
+			compileRight(asm, scope, vstack, rightType);
+			asm.emit(mnemonic, leftReg, vstack.top(0));
+			if (leftIncrSize > 1)
+				asm.emit("div", leftReg, "=" + leftIncrSize);
+		} else if (leftIncrSize > 1) {
+			// POINTER + INTEGER or POINTER - INTEGER.
+			compileRight(asm, scope, vstack, rightType);
+			Register rightReg = vstack.loadTopValue(asm);
+			asm.emit("mul", rightReg, "=" + leftIncrSize);
+			asm.emit(mnemonic, leftReg, rightReg.toString());
+		} else if (rightIncrSize > 1) {
+			// INTEGER + POINTER.
+			asm.emit("mul", leftReg, "=" + rightIncrSize);
+			compileRight(asm, scope, vstack, rightType);
+			asm.emit(mnemonic, leftReg, vstack.top(0));
+		}
+
+		vstack.pop();
 	}
 
 	@Override

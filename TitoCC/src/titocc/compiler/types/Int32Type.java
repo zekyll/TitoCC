@@ -1,6 +1,11 @@
 package titocc.compiler.types;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
+import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
 
 /**
@@ -10,6 +15,30 @@ import titocc.compiler.Vstack;
  */
 class Int32Type extends IntegerType
 {
+	static final Map<String, String> instructions = new HashMap<String, String>()
+	{
+		{
+			put("||", "jnzer");
+			put("&&", "jzer");
+			put("|", "or");
+			put("^", "xor");
+			put("&", "and");
+			put("==", "jequ");
+			put("!=", "jnequ");
+			put("<", "jles");
+			put("<=", "jngre");
+			put(">", "jgre");
+			put(">=", "jnles");
+			put("<<", "shl");
+			put(">>", "shr");
+			put("+", "add");
+			put("-", "sub");
+			put("*", "mul");
+			put("/", "div");
+			put("%", "mod");
+		}
+	};
+
 	/**
 	 * Constructs an Int32Type.
 	 *
@@ -34,12 +63,46 @@ class Int32Type extends IntegerType
 	}
 
 	@Override
-	public void compileConversion(Assembler asm, Vstack vstack, CType targetType)
+	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
+			throws IOException
 	{
 		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
-				|| targetType instanceof Uint32Type) {
+				|| targetType instanceof Uint32Type || targetType instanceof PointerType) {
 			// No-op.
 		} else
-			super.compileConversion(asm, vstack, targetType);
+			super.compileConversion(asm, scope, vstack, targetType);
+	}
+
+	public void compileBinaryBitwiseOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		asm.emit(instructions.get(operator), leftReg, vstack.top(0));
+		vstack.pop();
+	}
+
+	public void compileBinaryComparisonOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		String jumpLabel = scope.makeGloballyUniqueName("lbl");
+		asm.emit("comp", leftReg, vstack.top(0));
+		asm.emit("load", leftReg, "=1");
+		asm.emit(instructions.get(operator), leftReg, jumpLabel);
+		asm.emit("load", leftReg, "=0");
+		asm.addLabel(jumpLabel);
+		vstack.pop();
+	}
+
+	public void compileBinaryShiftOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		asm.emit(instructions.get(operator), leftReg, vstack.top(0));
+		vstack.pop();
+	}
+
+	public void compileBinaryArithmeticOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register leftReg, String operator) throws IOException
+	{
+		asm.emit(instructions.get(operator), leftReg, vstack.top(0));
+		vstack.pop();
 	}
 }

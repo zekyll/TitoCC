@@ -1,6 +1,8 @@
 package titocc.compiler.types;
 
+import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
 
 /**
@@ -58,12 +60,13 @@ public class PointerType extends CType
 	}
 
 	@Override
-	public void compileConversion(Assembler asm, Vstack vstack, CType targetType)
+	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
+			throws IOException
 	{
 		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
-				|| targetType instanceof Uint32Type) {
+				|| targetType instanceof Uint32Type || targetType instanceof PointerType) {
 			// No-op.
 		} else
-			super.compileConversion(asm, vstack, targetType);
+			super.compileConversion(asm, scope, vstack, targetType);
 	}
 }

@@ -3,7 +3,6 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
-import titocc.compiler.Symbol;
 import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
@@ -61,7 +60,7 @@ public abstract class Expression extends CodeElement
 			throws SyntaxException, IOException
 	{
 		compile(asm, scope, vstack);
-		getType(scope).decay().compileConversion(asm, vstack, targetType);
+		getType(scope).decay().compileConversion(asm, scope, vstack, targetType);
 	}
 
 	/**
