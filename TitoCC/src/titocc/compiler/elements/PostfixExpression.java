@@ -90,19 +90,8 @@ public class PostfixExpression extends Expression
 		operand.compileAsLvalue(asm, scope, vstack, false);
 		vstack.exitFrame(asm);
 
-		// Load value to 1st register.
-		asm.emit("load", retReg, vstack.top(0));
-
-		// Modify and write back the value.
-		int incSize = operand.getType(scope).decay().getIncrementSize();
-		asm.emit(operator.equals("++") ? "add" : "sub", retReg, "=" + incSize);
-		asm.emit("store", retReg, vstack.top(0));
-
-		// Expression must return the old value.
-		asm.emit(operator.equals("++") ? "sub" : "add", retReg, "=" + incSize);
-
-		// Deallocate 2nd register.
-		vstack.pop();
+		boolean inc = operator.equals("++");
+		operandType.compileIncDecOperator(asm, scope, vstack, retReg, inc, true, 1);
 	}
 
 	@Override

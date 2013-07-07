@@ -2,6 +2,7 @@ package titocc.compiler.types;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Vstack;
 
@@ -68,5 +69,12 @@ public class PointerType extends CType
 			// No-op.
 		} else
 			super.compileConversion(asm, scope, vstack, targetType);
+	}
+
+	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
+	{
+		incSize *= getIncrementSize();
+		INTPTR_T.compileIncDecOperator(asm, scope, vstack, retReg, inc, postfix, incSize);
 	}
 }

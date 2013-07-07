@@ -273,7 +273,26 @@ public abstract class CType
 	public void compileBinaryArithmeticOperator(Assembler asm, Scope scope, Vstack vstack,
 			Register leftReg, String operator) throws IOException
 	{
-		throw new InternalCompilerException("Unimplemented binary shift operator.");
+		throw new InternalCompilerException("Unimplemented binary arithmetic operator.");
+	}
+
+	/**
+	 * Generates code for unary increment/decrement operator for this type. Return value register
+	 * and the lvalue to modify are given on top of vstack. The lvalue is popped from vstack
+	 * by this operation.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the compilation takes place; only used for adding labels
+	 * @param vstack virtual stack
+	 * @param retReg register where the resulting value is loaded
+	 * @param inc true if increment operator, false if decrement
+	 * @param postfix true if postfix operator, false if prefix operator
+	 * @param incSize how many steps are incremented/decrement
+	 */
+	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
+	{
+		throw new InternalCompilerException("Unimplemented increment/decrement operator.");
 	}
 
 	/**

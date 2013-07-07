@@ -105,4 +105,22 @@ class Int32Type extends IntegerType
 		asm.emit(instructions.get(operator), leftReg, vstack.top(0));
 		vstack.pop();
 	}
+
+	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
+			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
+	{
+		// Load value to 1st register.
+		asm.emit("load", retReg, vstack.top(0));
+
+		// Modify and write back the value.
+		asm.emit(inc ? "add" : "sub", retReg, "=" + incSize);
+		asm.emit("store", retReg, vstack.top(0));
+
+		// Deallocate 2nd register.
+		vstack.pop();
+
+		// Postfix operator must return the old value.
+		if (postfix)
+			asm.emit(inc ? "sub" : "add", retReg, "=" + incSize);
+	}
 }
