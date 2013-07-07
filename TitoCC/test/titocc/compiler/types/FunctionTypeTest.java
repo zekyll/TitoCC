@@ -15,7 +15,7 @@ public class FunctionTypeTest
 	@Before
 	public void setUp()
 	{
-		params = new ArrayList();
+		params = new ArrayList<CType>();
 		params.add(CType.INT);
 		t = new FunctionType(CType.INT, params);
 	}
@@ -63,7 +63,7 @@ public class FunctionTypeTest
 		assertFalse(t.equals(CType.VOID));
 		assertFalse(t.equals(new PointerType(new ArrayType(CType.INT, 6))));
 		assertTrue(t.equals(new FunctionType(CType.INT, params)));
-		List<CType> params2 = new ArrayList();
+		List<CType> params2 = new ArrayList<CType>();
 		params2.add(new PointerType(CType.INT));
 		assertFalse(t.equals(new FunctionType(CType.INT, params2)));
 		assertFalse(t.equals(new FunctionType(CType.VOID, params)));
