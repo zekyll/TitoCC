@@ -162,12 +162,11 @@ public class PrefixExpression extends Expression
 		Register topReg = vstack.loadTopValue(asm);
 
 		// Compares operand to zero and sets register value according to the result.
-		asm.emit("comp", topReg, "=0");
-		asm.emit("load", topReg, "=1");
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jequ", jumpLabel);
-		asm.emit("load", topReg, "=0");
+		asm.emit("jzer", topReg, jumpLabel);
+		asm.emit("load", topReg, "=1");
 		asm.addLabel(jumpLabel);
+		asm.emit("xor", topReg, "=1");
 	}
 
 	private void compileBitwiseNegation(Assembler asm, Scope scope, Vstack vstack)
