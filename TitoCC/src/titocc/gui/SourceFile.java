@@ -125,6 +125,7 @@ public class SourceFile
 			log.logMessage("Internal compiler error: " + e.getMessage());
 		} catch (Exception e) {
 			log.logMessage("Unknown internal error: " + e.getMessage());
+			throw e;
 		}
 
 		if (createOutputFile && assemblyCode != null && file != null)
