@@ -19,6 +19,16 @@ import java.util.TreeSet;
 public class ExpressionAssembler
 {
 	/**
+	 * Auxiliary register for temporarily loading spilled register that is used as LHS operand.
+	 */
+	static final VirtualRegister AUX_REG1 = VirtualRegister.R0;
+
+	/**
+	 * Auxiliary register for temporarily loading spilled register that is used as RHS operand.
+	 */
+	static final VirtualRegister AUX_REG2 = VirtualRegister.R5;
+
+	/**
 	 * Label to add to the next instruction.
 	 */
 	private String label = null;
@@ -201,17 +211,20 @@ public class ExpressionAssembler
 			if (instr.leftReg != null && instr.leftReg.realRegister == null) {
 				lhsSpillIdx = instr.leftReg.spillIdx;
 				if (!instr.discardsLhs())
-					newInstructions.add(new Instruction(instr.label, "load", VirtualRegister.R0,
+					newInstructions.add(new Instruction(instr.label, "load", AUX_REG1,
 							Integer.toString(lhsSpillIdx), VirtualRegister.FP));
-				instr.leftReg = VirtualRegister.R0;
+				instr.leftReg = AUX_REG1;
 				instr.label = null;
 			}
 
 			// If RHS is spilled, load from stack.
+			int rhsSpillIdx = 0;
 			if (instr.rightReg != null && instr.rightReg.realRegister == null) {
-				newInstructions.add(new Instruction(instr.label, "load", VirtualRegister.R5,
-						Integer.toString(instr.rightReg.spillIdx), VirtualRegister.FP));
-				instr.rightReg = VirtualRegister.R5;
+				rhsSpillIdx = instr.rightReg.spillIdx;
+				if (!instr.discardsLhs())
+					newInstructions.add(new Instruction(instr.label, "load", AUX_REG2,
+							Integer.toString(rhsSpillIdx), VirtualRegister.FP));
+				instr.rightReg = AUX_REG2;
 				instr.label = null;
 			}
 
@@ -219,9 +232,12 @@ public class ExpressionAssembler
 			newInstructions.add(instr);
 
 			// Write back modified value if necessary.
-			if (instr.modifiesLhs() && instr.leftReg == VirtualRegister.R0) {
-				newInstructions.add(new Instruction(null, "store", VirtualRegister.R0,
-						Integer.toString(lhsSpillIdx), VirtualRegister.FP));
+			VirtualRegister modifiedRegister = instr.getModifiedRegister();
+			if (modifiedRegister != null && (instr.leftReg == AUX_REG1
+					|| instr.leftReg == AUX_REG2)) {
+				int spillIdx = modifiedRegister == AUX_REG1 ? lhsSpillIdx : rhsSpillIdx;
+				newInstructions.add(new Instruction(null, "store", modifiedRegister,
+						Integer.toString(spillIdx), VirtualRegister.FP));
 			}
 		}
 

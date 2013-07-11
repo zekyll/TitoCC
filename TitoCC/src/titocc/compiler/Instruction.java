@@ -88,39 +88,69 @@ class Instruction
 	Instruction(String label, String mnemonic, VirtualRegister leftReg,
 			String immediateOperand, VirtualRegister rightReg)
 	{
-		if (mnemonic == null || pseudoInstructions.contains(mnemonic) || leftReg == null
-				|| (immediateOperand == null && rightReg == null))
-			throw new InternalCompilerException("Constructing an illegal instruction.");
 		this.label = label;
 		this.mnemonic = mnemonic;
 		this.leftReg = leftReg;
 		this.rightReg = rightReg;
 		this.immediateOperand = immediateOperand;
+
+		if (mnemonic == null)
+			throw new InternalCompilerException("Missing mnemonic for instruction.");
+		if (pseudoInstructions.contains(mnemonic))
+			throw new InternalCompilerException("Too many operands for pseudo instruction.");
+		if (leftReg == null || (immediateOperand == null && rightReg == null))
+			throw new InternalCompilerException("Missing operand for instruction.");
+		// Only allow SP as LHS for pop.
+		if (mnemonic.equals("pop") && (rightReg == null || leftReg != VirtualRegister.SP))
+			throw new InternalCompilerException("Invalid pop instruction.");
+		// Prevent jumps to non-const addresses to make flow analysis possible.
+		if (isJumpInstruction() && (rightReg != null || immediateOperand.startsWith("@")))
+			throw new InternalCompilerException("Non-constant address in jump instruction.");
 	}
 
 	/**
-	 * Checks whether the instruction modifies the left register. Note that RHS register can never
-	 * ne modified.
+	 * Get the register that is modified by this instructions.
 	 *
-	 * @return true if modifies LHS
+	 * @return modified register or null if doesn't modify any registers.
 	 */
-	public boolean modifiesLhs()
+	public VirtualRegister getModifiedRegister()
 	{
-		if (mnemonic.equals("store") || mnemonic.equals("out")
-				|| mnemonic.equals("comp") || mnemonic.charAt(0) == 'j')
-			return false;
-		return leftReg != null;
+		if (mnemonic.equals("pop"))
+			return rightReg;
+		if (mnemonic.equals("store") || mnemonic.equals("out") || mnemonic.equals("comp")
+				|| isJumpInstruction())
+			return null;
+		return leftReg;
 	}
 
 	/**
-	 * Checks the behavior of this instruction depends on earlier value of the left hand side
-	 * register.
+	 * Checks if the behavior of this instruction depends on earlier value of the LHS register.
 	 *
 	 * @return true if the earlier value of LHS register is ignored
 	 */
 	public boolean discardsLhs()
 	{
 		return mnemonic.equals("load") || mnemonic.equals("in");
+	}
+
+	/**
+	 * Checks id the behavior of this instruction depends on earlier value of the RHS register.
+	 *
+	 * @return true if the earlier value of RHS register is ignored
+	 */
+	public boolean discardsRhs()
+	{
+		return mnemonic.equals("load") || mnemonic.equals("in");
+	}
+
+	/**
+	 * Checks whether the instruction is a jump instruction.
+	 *
+	 * @return true if jump instruction
+	 */
+	public boolean isJumpInstruction()
+	{
+		return mnemonic.charAt(0) == 'j';
 	}
 
 	/**
