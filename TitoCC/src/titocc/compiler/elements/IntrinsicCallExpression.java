@@ -1,12 +1,11 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.Arrays;
-import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
 import titocc.compiler.InternalCompilerException;
-import titocc.compiler.Register;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -75,57 +74,56 @@ public class IntrinsicCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		if (name.equals("in"))
-			compileIn(asm, scope, vstack);
+			return compileIn(asm, scope);
 		else if (name.equals("in2"))
-			compileIn2(asm, scope, vstack);
+			return compileIn2(asm, scope);
 		else if (name.equals("out"))
-			compileOut(asm, scope, vstack);
-		else if (name.equals("out2"))
-			compileOut2(asm, scope, vstack);
+			return compileOut(asm, scope);
+		else //if (name.equals("out2"))
+			return compileOut2(asm, scope);
 	}
 
-	private void compileIn(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	private Rvalue compileIn(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(0);
 
-		Register retReg = vstack.pushRegisterRvalue(asm);
+		VirtualRegister retReg = new VirtualRegister();
 		asm.emit("in", retReg, "=kbd");
+
+		return new Rvalue(retReg);
 	}
 
-	private void compileIn2(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	private Rvalue compileIn2(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(1);
 
-		Register retReg = vstack.pushRegisterRvalue(asm);
+		VirtualRegister retReg = new VirtualRegister();
 		asm.emit("in", retReg, "=" + getDeviceNumber());
+
+		return new Rvalue(retReg);
 	}
 
-	private void compileOut(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	private Rvalue compileOut(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(1);
 
-		argumentList.getArguments().get(0).compile(asm, scope, vstack);
-		Register argReg = vstack.loadTopValue(asm);
-		asm.emit("out", argReg, "=crt");
-		vstack.pop();
+		Rvalue argVal = argumentList.getArguments().get(0).compile(asm, scope);
+		asm.emit("out", argVal.getRegister(), "=crt");
+
+		return new Rvalue(null);
 	}
 
-	private void compileOut2(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	private Rvalue compileOut2(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(2);
 
-		argumentList.getArguments().get(1).compile(asm, scope, vstack);
-		Register argReg = vstack.loadTopValue(asm);
-		asm.emit("out", argReg, "=" + getDeviceNumber());
-		vstack.pop();
+		Rvalue argVal = argumentList.getArguments().get(1).compile(asm, scope);
+		asm.emit("out", argVal.getRegister(), "=" + getDeviceNumber());
+
+		return new Rvalue(null);
 	}
 
 	private int getDeviceNumber() throws SyntaxException

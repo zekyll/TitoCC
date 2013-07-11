@@ -1,9 +1,8 @@
 package titocc.compiler.types;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 
 /**
  * Corresponds to C void type. Is not an object, scalar, arithmetic or integer type. Equals only to
@@ -24,12 +23,12 @@ public class VoidType extends CType
 	}
 
 	@Override
-	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws IOException
+	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+			CType targetType)
 	{
 		if (targetType.equals(CType.VOID))
-			; // No-op.
+			return value; // No-op.
 		else
-			super.compileConversion(asm, scope, vstack, targetType);
+			return super.compileConversion(asm, scope, value, targetType);
 	}
 }

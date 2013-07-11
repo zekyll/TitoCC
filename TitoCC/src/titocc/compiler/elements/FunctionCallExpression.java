@@ -1,11 +1,9 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Symbol;
-import titocc.compiler.Vstack;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.SyntaxException;
@@ -67,33 +65,31 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		FunctionType funcType = getFunctionType(scope);
 
 		// Reserve space for return value.
 		if (!funcType.getReturnType().equals(CType.VOID))
-			asm.emit("add", Register.SP, "=" + funcType.getReturnType().getSize());
+			asm.emit("add", VirtualRegister.SP, "=" + funcType.getReturnType().getSize());
 
 		// Push arguments to stack.
-		argumentList.compile(asm, scope, vstack, funcType.getParameterTypes());
+		argumentList.compile(asm, scope, funcType.getParameterTypes());
 
 		// Evaluate the function pointer.
-		functionPointer.compile(asm, scope, vstack);
-		Register funcPtrReg = vstack.loadTopValue(asm); //TODO use @ instead of loading to register
+		Rvalue funcPtrVal = functionPointer.compile(asm, scope);
 
 		// Make the call.
-		asm.emit("call", Register.SP, funcPtrReg.toString());
-
-		// Deallocate the register reserved for function pointer.
-		vstack.pop();
+		asm.emit("call", VirtualRegister.SP, funcPtrVal.getRegister());
 
 		// Read the return value.
+		VirtualRegister retReg = null;
 		if (!funcType.getReturnType().equals(CType.VOID)) {
-			Register retReg = vstack.pushRegisterRvalue(asm);
-			asm.emit("pop", Register.SP, retReg.toString());
+			retReg = new VirtualRegister();
+			asm.emit("pop", VirtualRegister.SP, retReg);
 		}
+
+		return new Rvalue(retReg);
 	}
 
 	private FunctionType getFunctionType(Scope scope) throws SyntaxException

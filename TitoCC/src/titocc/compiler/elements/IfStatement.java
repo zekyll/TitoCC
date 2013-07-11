@@ -2,9 +2,8 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.StackAllocator;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -82,23 +81,23 @@ public class IfStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
+	public void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException
 	{
 		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
 
-		compileControlExpression(controlExpression, asm, scope, vstack, null, skipTrueLabel,
+		compileControlExpression(controlExpression, asm, scope, stack, null, skipTrueLabel,
 				"jzer");
 
 		// True statement.
-		compileInNewScope(asm, scope, vstack, trueStatement);
+		compileInNewScope(asm, scope, stack, trueStatement);
 
 		// Else statement.
 		if (elseStatement != null) {
 			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
 			asm.emit("jump", skipElseLabel);
 			asm.addLabel(skipTrueLabel);
-			compileInNewScope(asm, scope, vstack, elseStatement);
+			compileInNewScope(asm, scope, stack, elseStatement);
 			asm.addLabel(skipElseLabel);
 		} else
 			asm.addLabel(skipTrueLabel);
@@ -110,12 +109,12 @@ public class IfStatement extends Statement
 		return "(IF " + controlExpression + " " + trueStatement + " " + elseStatement + ")";
 	}
 
-	private void compileInNewScope(Assembler asm, Scope scope, Vstack vstack, Statement statement)
-			throws IOException, SyntaxException
+	private void compileInNewScope(Assembler asm, Scope scope, StackAllocator stack,
+			Statement statement) throws IOException, SyntaxException
 	{
 		Scope subScope = new Scope(scope, "");
 		scope.addSubScope(subScope);
-		statement.compile(asm, subScope, vstack);
+		statement.compile(asm, subScope, stack);
 	}
 
 	/**

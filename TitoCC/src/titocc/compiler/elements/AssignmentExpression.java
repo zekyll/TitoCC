@@ -1,12 +1,12 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -123,97 +123,68 @@ public class AssignmentExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		checkTypes(scope);
 
 		// Compile Operator.
 		if (operator.type == Type.SIMPLE)
-			compileSimple(asm, scope, vstack);
+			return compileSimple(asm, scope);
 		else if (operator.type == Type.COMMUTATIVE)
-			compileCommutative(asm, scope, vstack);
+			return compileCommutative(asm, scope);
 		else
-			compileNoncommutative(asm, scope, vstack);
+			return compileNoncommutative(asm, scope);
 	}
 
-	private void compileLeft(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	private Rvalue compileSimple(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		// Evaluate RHS; load to 2nd register;
-		vstack.enterFrame();
-		left.compileAsLvalue(asm, scope, vstack, false);
-		vstack.exitFrame(asm);
+		Rvalue rhs = right.compileWithConversion(asm, scope, left.getType(scope).decay());
+		Lvalue lhs = left.compileAsLvalue(asm, scope, false);
+		asm.emit("store", rhs.getRegister(), "0", lhs.getRegister());
+		return rhs;
 	}
 
-	private void compileSimple(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	private Rvalue compileCommutative(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		// Evaluate RHS; load to 1st register.
-		right.compile(asm, scope, vstack);
-		Register rightReg = vstack.loadTopValue(asm);
-
-		// Evaluate LHS; load address to 2nd register.
-		compileLeft(asm, scope, vstack);
-
-		asm.emit("store", rightReg, vstack.top(0));
-
-		vstack.pop();
-	}
-
-	private void compileCommutative(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
-	{
-		// Evaluate RHS; load value to 1st register.
-		right.compile(asm, scope, vstack);
-		Register rightReg = vstack.loadTopValue(asm);
+		Rvalue rhs = right.compile(asm, scope);
 
 		// If operation is POINTER += INTEGER, we need to scale the integer value.
 		int incSize = left.getType(scope).decay().getIncrementSize();
 		if (incSize > 1)
-			asm.emit("mul", rightReg, "=" + incSize);
+			asm.emit("mul", rhs.getRegister(), "=" + incSize);
 
-		// Evaluate LHS; load address to 2nd register.
-		compileLeft(asm, scope, vstack);
+		Lvalue lhs = left.compileAsLvalue(asm, scope, false);
 
 		// Because the operation is symmetric, we can use the left operand
 		// as the right operand in the assembly instruction, saving one register.
-		asm.emit(operator.mnemonic, rightReg, vstack.top(0));
-		asm.emit("store", rightReg, vstack.top(0));
+		asm.emit(operator.mnemonic, rhs.getRegister(), "0", lhs.getRegister());
+		asm.emit("store", rhs.getRegister(), "0", lhs.getRegister());
 
-		vstack.pop();
+		return rhs;
 	}
 
-	private void compileNoncommutative(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	private Rvalue compileNoncommutative(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		// Allocate 1st register for return value;
-		Register retReg = vstack.pushRegisterRvalue(asm);
-
-		// Evaluate RHS; load value to 2nd register.
-		vstack.enterFrame();
-		right.compile(asm, scope, vstack);
-		Register rightReg = vstack.loadTopValue(asm);
-
-		// Evaluate LHS; load address to 3rd register.
-		compileLeft(asm, scope, vstack);
-		vstack.exitFrame(asm);
+		Rvalue rhs = right.compile(asm, scope);
+		Lvalue lhs = left.compileAsLvalue(asm, scope, false);
 
 		// If operation is POINTER -= INTEGER, we need to scale the integer value.
 		int incSize = left.getType(scope).decay().getIncrementSize();
 		if (incSize > 1)
-			asm.emit("mul", rightReg, "=" + incSize);
+			asm.emit("mul", rhs.getRegister(), "=" + incSize);
 
-		// Load LHS value to 1st register and operate on it.
-		asm.emit("load", retReg, vstack.top(0));
-		asm.emit(operator.mnemonic, retReg, rightReg.toString());
+		// Load LHS value to new register and operate on it.
+		VirtualRegister retReg = new VirtualRegister();
+		asm.emit("load", retReg, "0", lhs.getRegister());
+		asm.emit(operator.mnemonic, retReg, rhs.getRegister());
 
-		// Store result to LHS variable.
-		asm.emit("store", retReg, vstack.top(0));
+		// Store result back to LHS variable.
+		asm.emit("store", retReg, "0", lhs.getRegister());
 
-		// Deallocate 2nd and 3rd register.
-		vstack.pop();
-		vstack.pop();
+		return new Rvalue(retReg);
 	}
 
 	private void checkTypes(Scope scope) throws SyntaxException

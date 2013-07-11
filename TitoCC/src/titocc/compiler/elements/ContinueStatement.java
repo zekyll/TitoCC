@@ -4,8 +4,8 @@ import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
-import titocc.compiler.Vstack;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -30,7 +30,7 @@ public class ContinueStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
+	public void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException
 	{
 		Symbol jumpPosition = scope.find("__Cont");

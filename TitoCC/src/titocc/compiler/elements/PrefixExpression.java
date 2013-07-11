@@ -1,12 +1,12 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.InternalCompilerException;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.PointerType;
@@ -74,29 +74,31 @@ public class PrefixExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
-		if (compileConstantExpression(asm, scope, vstack))
-			return;
+		Rvalue constVal = compileConstantExpression(asm, scope);
+		if (constVal != null)
+			return constVal;
 
 		if (operator.equals("++") || operator.equals("--"))
-			compileIncDec(asm, scope, vstack);
+			return compileIncDec(asm, scope);
 		else if (operator.equals("+") || operator.equals("-"))
-			compileUnaryPlusMinus(asm, scope, vstack);
+			return compileUnaryPlusMinus(asm, scope);
 		else if (operator.equals("!"))
-			compileLogicalNegation(asm, scope, vstack);
+			return compileLogicalNegation(asm, scope);
 		else if (operator.equals("~"))
-			compileBitwiseNegation(asm, scope, vstack);
+			return compileBitwiseNegation(asm, scope);
 		else if (operator.equals("&"))
-			compileAddressOf(asm, scope, vstack);
+			return compileAddressOf(asm, scope);
 		else if (operator.equals("*"))
-			compileDereference(asm, scope, vstack);
+			return compileDereference(asm, scope);
+		else
+			throw new InternalCompilerException("Unknown prefix operator.");
 	}
 
 	@Override
-	public void compileAsLvalue(Assembler asm, Scope scope, Vstack vstack, boolean addressOf)
-			throws IOException, SyntaxException
+	public Lvalue compileAsLvalue(ExpressionAssembler asm, Scope scope, boolean addressOf)
+			throws SyntaxException
 	{
 		// Dereference operator is the only one that can return an lvalue.
 		if (!operator.equals("*"))
@@ -106,12 +108,12 @@ public class PrefixExpression extends Expression
 			requireLvalueType(scope);
 
 		// Operand for * must be a pointer so we just load its value.
-		operand.compile(asm, scope, vstack);
-		vstack.dereferenceTop(asm);
+		Rvalue ptrVal = operand.compile(asm, scope);
+		return new Lvalue(ptrVal.getRegister());
 	}
 
-	private void compileIncDec(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileIncDec(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		// ($6.5.3.1)
 		CType operandType = operand.getType(scope).decay();
@@ -121,20 +123,13 @@ public class PrefixExpression extends Expression
 					+ " requires an arithmetic or object pointer type.", getPosition());
 		}
 
-		// Allocate 1st register for result value.
-		Register retReg = vstack.pushRegisterRvalue(asm);
-
-		// Evaluate operand; load address to 2nd register.
-		vstack.enterFrame(); //TODO is this necessary? (retReg not used yet)
-		operand.compileAsLvalue(asm, scope, vstack, false);
-		vstack.exitFrame(asm);
-
+		Lvalue val = operand.compileAsLvalue(asm, scope, false);
 		boolean inc = operator.equals("++");
-		operandType.compileIncDecOperator(asm, scope, vstack, retReg, inc, false, 1);
+		return operandType.compileIncDecOperator(asm, scope, val, inc, false, 1);
 	}
 
-	private void compileUnaryPlusMinus(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileUnaryPlusMinus(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		// ($6.5.3.3/1)
 		CType operandType = operand.getType(scope).decay();
@@ -144,12 +139,12 @@ public class PrefixExpression extends Expression
 		}
 
 		operandType = operandType.promote();
-		operand.compileWithConversion(asm, scope, vstack, operandType);
-		operandType.compileUnaryPlusMinusOperator(asm, scope, vstack, operator.equals("+"));
+		Rvalue val = operand.compileWithConversion(asm, scope, operandType);
+		return operandType.compileUnaryPlusMinusOperator(asm, scope, val, operator.equals("+"));
 	}
 
-	private void compileLogicalNegation(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileLogicalNegation(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		// ($6.5.3.3/1)
 		if (!operand.getType(scope).decay().isScalar()) {
@@ -157,20 +152,20 @@ public class PrefixExpression extends Expression
 					+ " requires a scalar type.", getPosition());
 		}
 
-		// Evaluate operand, push to vstack and convert to boolish.
-		operand.compileWithConversion(asm, scope, vstack, CType.BOOLISH);
-		Register topReg = vstack.loadTopValue(asm);
+		Rvalue val = operand.compileWithConversion(asm, scope, CType.BOOLISH);
 
 		// Compares operand to zero and sets register value according to the result.
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jzer", topReg, jumpLabel);
-		asm.emit("load", topReg, "=1");
+		asm.emit("jzer", val.getRegister(), jumpLabel);
+		asm.emit("load", val.getRegister(), "=1");
 		asm.addLabel(jumpLabel);
-		asm.emit("xor", topReg, "=1");
+		asm.emit("xor", val.getRegister(), "=1");
+
+		return val;
 	}
 
-	private void compileBitwiseNegation(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileBitwiseNegation(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		// ($6.5.3.3/1)
 		CType operandType = operand.getType(scope).decay();
@@ -180,20 +175,20 @@ public class PrefixExpression extends Expression
 		}
 
 		operandType = operandType.promote();
-		operand.compileWithConversion(asm, scope, vstack, operandType);
-		operandType.compileUnaryBitwiseNegationOperator(asm, scope, vstack);
+		Rvalue val = operand.compileWithConversion(asm, scope, operandType);
+		return operandType.compileUnaryBitwiseNegationOperator(asm, scope, val);
 	}
 
-	private void compileAddressOf(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileAddressOf(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		// Load the address of the operand in the first register.
-		operand.compileAsLvalue(asm, scope, vstack, true);
-		vstack.replaceTopWithAddress(asm);
+		// Load the address of the operand a register.
+		Lvalue lvalue = operand.compileAsLvalue(asm, scope, true);
+		return new Rvalue(lvalue.getRegister());
 	}
 
-	private void compileDereference(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileDereference(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		// ($6.5.3.2/2)
 		if (!operand.getType(scope).decay().isPointer()) {
@@ -202,13 +197,14 @@ public class PrefixExpression extends Expression
 		}
 
 		// Operand must be a pointer; load into register.
-		operand.compile(asm, scope, vstack);
-		Register topReg = vstack.loadTopValue(asm);
+		Rvalue val = operand.compile(asm, scope);
 
 		// Dereference the pointer unless the result type is an array or function!
 		CType resultType = getType(scope);
 		if (!(resultType instanceof ArrayType) && !resultType.isFunction())
-			asm.emit("load", topReg, "@" + topReg.toString()); //TODO vstack.top(0)?
+			asm.emit("load", val.getRegister(), "0", val.getRegister());
+
+		return val;
 	}
 
 	@Override

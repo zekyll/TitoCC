@@ -2,8 +2,14 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.InternalCompilerException;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Register;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.StackAllocator;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
@@ -32,35 +38,57 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Generates assembly code for the expression. For non-void expressions the resulting value is
-	 * returned on top of the virtual stack.
+	 * Generates assembly code for the expression.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param asm intermediate expression assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param vstack virtual stack
+	 * @return Rvalue object describing the result value
 	 * @throws SyntaxException if expression contains an error
-	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException;
+	public abstract Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException;
 
 	/**
 	 * Generates assembly code for evaluating the expression and converting it to the given target
-	 * type. The resulting value is returned on top of the virtual stack. Requires that the
-	 * conversion is legal.
+	 * type. Requires that the conversion is legal.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param vstack virtual stack
 	 * @param targetType target type of the conversion
+	 * @return Rvalue object describing the result value
+	 * @throws SyntaxException if expression contains an error
+	 */
+	public Rvalue compileWithConversion(ExpressionAssembler asm, Scope scope, CType targetType)
+			throws SyntaxException
+	{
+		Rvalue val = compile(asm, scope);
+		return getType(scope).decay().compileConversion(asm, scope, val, targetType);
+	}
+
+	/**
+	 * Calls compileWithConversion and also runs the second stage of the compilation that allocates
+	 * physical registers to the virtual ones.
+	 *
+	 * @param asm assembler used for code generation
+	 * @param scope scope in which the expression is evaluated
+	 * @param stack stack allocator
+	 * @param targetType target type of the conversion
+	 * @return the physical register of the result value
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compileWithConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws SyntaxException, IOException
+	public Register compileAndAllocateRegisters(Assembler asm, Scope scope,
+			StackAllocator stack, CType targetType) throws SyntaxException, IOException
 	{
-		compile(asm, scope, vstack);
-		getType(scope).decay().compileConversion(asm, scope, vstack, targetType);
+		ExpressionAssembler exprAsm = new ExpressionAssembler();
+		Rvalue val = compileWithConversion(exprAsm, scope, targetType);
+		exprAsm.optimize();
+		exprAsm.allocateRegisters(stack);
+		exprAsm.sendToAssembler(asm);
+		if (val.getRegister() == null)
+			return null;
+		if (val.getRegister().realRegister == null)
+			throw new InternalCompilerException("Unassigned virtual register.");
+		return val.getRegister().realRegister;
 	}
 
 	/**
@@ -75,20 +103,18 @@ public abstract class Expression extends CodeElement
 	}
 
 	/**
-	 * Generates assembly code for the expression, evaluating it as an lvalue. The resulting lvalue
-	 * is returned on top of the virtual stack.
+	 * Generates assembly code for the expression, evaluating it as an lvalue.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param vstack virtual stack used for giving the operands to the expression and returning
-	 * its value
 	 * @param addressOf true if the expression appears as the operand of operator &, which disables
 	 * the array->pointer decay and function->pointer decay
+	 * @return Lvalue object describing the result value
 	 * @throws SyntaxException if expression contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compileAsLvalue(Assembler asm, Scope scope, Vstack vstack, boolean addressOf)
-			throws SyntaxException, IOException
+	public Lvalue compileAsLvalue(ExpressionAssembler asm, Scope scope, boolean addressOf)
+			throws SyntaxException
 	{
 		throw new SyntaxException("Operation requires an lvalue.", getPosition());
 	}
@@ -116,35 +142,33 @@ public abstract class Expression extends CodeElement
 
 	/**
 	 * Generates code for compile time constant expression. Checks if the expression is compile time
-	 * constant by using getCompileTimeValue() and if it is then returns the value on top of the
-	 * virtual stack.
+	 * constant by using getCompileTimeValue() and if it is then generates code for the constant
+	 * value.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the expression is evaluated
-	 * @param vstack virtual stack used for giving the operands to the expression and returning
-	 * its value
-	 * @return true if compile time constant, otherwise false
-	 * @throws IOException if assembler throws
+	 * @return Rvalue object describing the result value or null if not compile time constant
 	 * @throws SyntaxException if expression contains an error
 	 */
-	protected boolean compileConstantExpression(Assembler asm, Scope scope,
-			Vstack vstack) throws IOException, SyntaxException
+	protected Rvalue compileConstantExpression(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		Integer value = getCompileTimeValue();
 		if (value != null) {
 			// Use immediate operand if value fits in 16 bits; otherwise allocate a data constant.
 			// Load value in first available register.
+			VirtualRegister retReg = new VirtualRegister();
 			if (value < 32768 && value >= -32768)
-				vstack.pushSymbolicValue("=" + value);
+				asm.emit("load", retReg, "=" + value);
 			else {
 				String name = scope.makeGloballyUniqueName("int");
 				asm.addLabel(name);
-				asm.emit("dc", "" + value);
-				vstack.pushSymbolicValue(name);
+				asm.emit("dc", value);
+				asm.emit("load", retReg, name);
 			}
-			return true;
+			return new Rvalue(retReg);
 		} else
-			return false;
+			return null;
 	}
 
 	/**

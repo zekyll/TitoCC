@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -45,15 +44,13 @@ public class CommaExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		// Evaluate left operand and ignore it.
-		left.compileWithConversion(asm, scope, vstack, CType.VOID);
+		left.compileWithConversion(asm, scope, CType.VOID);
 
 		// Evaluate right operand in first register.
-		right.compile(asm, scope, vstack);
-		// vstack.loadTopValue(asm); // Not needed here.
+		return right.compile(asm, scope);
 	}
 
 	@Override

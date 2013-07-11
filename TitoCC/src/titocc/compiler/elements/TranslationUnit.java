@@ -8,7 +8,6 @@ import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.EofToken;
@@ -59,12 +58,10 @@ public class TranslationUnit extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the translation unit is compiled (should be global scope)
-	 * @param vstack virtual stack
 	 * @throws SyntaxException if translation unit contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	public void compile(Assembler asm, Scope scope) throws IOException, SyntaxException
 	{
 		// Call main function and then halt.
 		asm.emit("add", Register.SP, "=1");
@@ -72,7 +69,7 @@ public class TranslationUnit extends CodeElement
 		asm.emit("svc", Register.SP, "=halt");
 
 		for (Declaration decl : declarations)
-			decl.compile(asm, scope, vstack);
+			decl.compile(asm, scope, null);
 
 		if (!mainFunctionExists(scope))
 			throw new SyntaxException("Function \"int main()\" was not found.", getPosition());

@@ -1,13 +1,13 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
-import titocc.compiler.Vstack;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
-import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.IdentifierToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -48,8 +48,7 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
 		if (!symbol.getType().isObject() && !symbol.getType().isFunction()) {
@@ -57,23 +56,29 @@ public class IdentifierExpression extends Expression
 					+ "\" is not an object or function.", getPosition());
 		}
 
-		// Load value to first register (or address if we have an array/function).
+		// Load value to register (or address if we have an array/function).
+		VirtualRegister retReg = new VirtualRegister();
 		if (symbol.getType() instanceof ArrayType || symbol.getType().isFunction())
-			vstack.pushSymbolicValue("=" + symbol.getReference());
+			asm.emit("load", retReg, "=" + symbol.getReference());
 		else
-			vstack.pushSymbolicValue(symbol.getReference());
+			asm.emit("load", retReg, symbol.getReference());
+
+		return new Rvalue(retReg);
 	}
 
 	@Override
-	public void compileAsLvalue(Assembler asm, Scope scope, Vstack vstack, boolean addressOf)
-			throws SyntaxException, IOException
+	public Lvalue compileAsLvalue(ExpressionAssembler asm, Scope scope, boolean addressOf)
+			throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
 
 		if (!addressOf)
 			requireLvalueType(scope);
 
-		vstack.pushSymbolicValue(symbol.getReference());
+		VirtualRegister retReg = new VirtualRegister();
+		asm.emit("load", retReg, "=" + symbol.getReference());
+
+		return new Lvalue(retReg);
 	}
 
 	@Override

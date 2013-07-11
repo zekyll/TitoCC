@@ -1,13 +1,12 @@
 package titocc.compiler.types;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import titocc.compiler.Assembler;
-import titocc.compiler.InternalCompilerException;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.VirtualRegister;
 
 /**
  * 32-bit signed integer type. Implemented on TTK-91 using one 32-bit machine byte. The standard
@@ -64,96 +63,94 @@ class Int32Type extends IntegerType
 	}
 
 	@Override
-	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws IOException
+	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+			CType targetType)
 	{
 		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
 				|| targetType instanceof Uint32Type || targetType instanceof PointerType) {
-			// No-op.
+			return value; // No-op.
 		} else
-			super.compileConversion(asm, scope, vstack, targetType);
+			return super.compileConversion(asm, scope, value, targetType);
 	}
 
 	@Override
-	public void compileBinaryBitwiseOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryBitwiseOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
-		asm.emit(instructions.get(operator), leftReg, vstack.top(0));
-		vstack.pop();
+		asm.emit(instructions.get(operator), lhs.getRegister(), rhs.getRegister());
+		return lhs;
 	}
 
 	@Override
-	public void compileBinaryComparisonOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryComparisonOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("comp", leftReg, vstack.top(0));
-		asm.emit("load", leftReg, "=1");
-		asm.emit(instructions.get(operator), leftReg, jumpLabel);
-		asm.emit("load", leftReg, "=0");
+		asm.emit("comp", lhs.getRegister(), rhs.getRegister());
+		asm.emit("load", lhs.getRegister(), "=1");
+		asm.emit(instructions.get(operator), lhs.getRegister(), jumpLabel);
+		asm.emit("load", lhs.getRegister(), "=0");
 		asm.addLabel(jumpLabel);
-		vstack.pop();
+		return lhs;
 	}
 
 	@Override
-	public void compileBinaryShiftOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryShiftOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
-		asm.emit(instructions.get(operator), leftReg, vstack.top(0));
-		vstack.pop();
+		asm.emit(instructions.get(operator), lhs.getRegister(), rhs.getRegister());
+		return lhs;
 	}
 
 	@Override
-	public void compileBinaryArithmeticOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryArithmeticOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
-		asm.emit(instructions.get(operator), leftReg, vstack.top(0));
-		vstack.pop();
+		asm.emit(instructions.get(operator), lhs.getRegister(), rhs.getRegister());
+		return lhs;
 	}
 
 	@Override
-	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
+	public Rvalue compileIncDecOperator(ExpressionAssembler asm, Scope scope, Lvalue operand,
+			boolean inc, boolean postfix, int incSize)
 	{
-		// Load value to 1st register.
-		asm.emit("load", retReg, vstack.top(0));
+		// Load value to new register.
+		VirtualRegister retReg = new VirtualRegister();
+		asm.emit("load", retReg, "0", operand.getRegister());
 
 		// Modify and write back the value.
 		asm.emit(inc ? "add" : "sub", retReg, "=" + incSize);
-		asm.emit("store", retReg, vstack.top(0));
-
-		// Deallocate 2nd register.
-		vstack.pop();
+		asm.emit("store", retReg, "0", operand.getRegister());
 
 		// Postfix operator must return the old value.
 		if (postfix)
 			asm.emit(inc ? "sub" : "add", retReg, "=" + incSize);
+
+		return new Rvalue(retReg);
 	}
 
 	@Override
-	public void compileUnaryPlusMinusOperator(Assembler asm, Scope scope, Vstack vstack,
-			boolean plus) throws IOException
+	public Rvalue compileUnaryPlusMinusOperator(ExpressionAssembler asm, Scope scope,
+			Rvalue operand, boolean plus)
 	{
-		// Unary minus is no-op;
+		// Unary plus is no-op;
 		if (plus)
-			return;
+			return operand;
 
-		// Load operand to register.
-		Register topReg = vstack.loadTopValue(asm);
+		// Negative in two's complement: negate all bits and add 1.
+		asm.emit("xor", operand.getRegister(), "=-1");
+		asm.emit("add", operand.getRegister(), "=1");
 
-		// Negative in two's complement: negate all bits and add 1. For unary plus do nothing.
-		asm.emit("xor", topReg, "=-1");
-		asm.emit("add", topReg, "=1");
+		return operand;
 	}
 
 	@Override
-	public void compileUnaryBitwiseNegationOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException
+	public Rvalue compileUnaryBitwiseNegationOperator(ExpressionAssembler asm, Scope scope,
+			Rvalue operand)
 	{
-		Register topReg = vstack.loadTopValue(asm);
-
 		// -1 has representation of all 1 bits (0xFFFFFFFF), and therefore xoring with it gives
 		// the bitwise negation.
-		asm.emit("xor", topReg, "=-1");
+		asm.emit("xor", operand.getRegister(), "=-1");
+		return operand;
 	}
 }

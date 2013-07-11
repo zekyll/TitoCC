@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.StackAllocator;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -36,11 +36,11 @@ public abstract class Statement extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the statement is evaluated
-	 * @param vstack virtual stack
+	 * @param stack allocator for local stack data
 	 * @throws SyntaxException if statement contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, Vstack vstack)
+	public abstract void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException;
 
 	/**
@@ -49,14 +49,14 @@ public abstract class Statement extends CodeElement
 	 * @param controlExpr control expression, if null then unconditional jump is generated
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the control expression is evaluated
-	 * @param vstack virtual stack
+	 * @param stack allocator for local stack data
 	 * @param testLabel label added just before the test
 	 * @param jumpLabel jump target label when test is true
 	 * @param jumpInstr mnemonic for the jump/test instruction
 	 */
 	protected static void compileControlExpression(Expression controlExpr, Assembler asm,
-			Scope scope, Vstack vstack, String testLabel, String jumpLabel, String jumpInstr)
-			throws IOException, SyntaxException
+			Scope scope, StackAllocator stack, String testLabel, String jumpLabel,
+			String jumpInstr) throws IOException, SyntaxException
 	{
 		if (controlExpr != null && !controlExpr.getType(scope).decay().isScalar()) {
 			throw new SyntaxException("Illegal control expression. Scalar type required.",
@@ -69,13 +69,11 @@ public abstract class Statement extends CodeElement
 		// Only generate code for the test if there is a control expression. Otherwise make
 		// unconditional jump (only allowed in for loops).
 		if (controlExpr != null) {
-			// Evaluate control expression, push result onto vstack and convert to boolish.
-			controlExpr.compileWithConversion(asm, scope, vstack, CType.BOOLISH);
-			Register exprReg = vstack.loadTopValue(asm);
+			Register valReg = controlExpr.compileAndAllocateRegisters(asm, scope, stack,
+					CType.BOOLISH);
 
 			// Jump if test was false/true (depending on jump instruction).
-			asm.emit(jumpInstr, exprReg, jumpLabel); // jnzer/jzer
-			vstack.pop();
+			asm.emit(jumpInstr, valReg, jumpLabel); // jnzer/jzer
 		} else
 			asm.emit("jump", jumpLabel);
 	}

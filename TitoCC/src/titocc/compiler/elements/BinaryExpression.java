@@ -1,12 +1,10 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.PointerType;
 import titocc.compiler.types.VoidType;
@@ -157,103 +155,71 @@ public class BinaryExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		checkTypes(scope);
 
 		Type opType = binaryOperators.get(operator).type;
 		if (opType == Type.LOGICAL)
-			compileLogicalOperator(asm, scope, vstack);
+			return compileLogicalOperator(asm, scope);
 		else if (opType == Type.BITWISE)
-			compileBitwiseOperator(asm, scope, vstack);
+			return compileBitwiseOperator(asm, scope);
 		else if (opType == Type.RELATIONAL || opType == Type.EQUALITY)
-			compileComparisonOperator(asm, scope, vstack);
+			return compileComparisonOperator(asm, scope);
 		else if (opType == Type.SHIFT)
-			compileShiftOperator(asm, scope, vstack);
-		else if (opType == Type.ARITHMETIC)
-			compileArithmeticOperator(asm, scope, vstack);
+			return compileShiftOperator(asm, scope);
+		else //if (opType == Type.ARITHMETIC)
+			return compileArithmeticOperator(asm, scope);
 	}
 
-	private Register compileLeft(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws SyntaxException, IOException
+	private CType getCommonTypeIfArithmetic(Scope scope) throws SyntaxException
 	{
-		// Evaluate LHS; load value to 1st register. Convert to register value because we use
-		// as left side operand in instructions and also use the register for the result value.
-		left.compileWithConversion(asm, scope, vstack, targetType);
-		return vstack.loadTopValue(asm);
-	}
-
-	private void compileRight(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws SyntaxException, IOException
-	{
-		// Evaluate RHS; load to 2nd register;
-		vstack.enterFrame();
-		right.compileWithConversion(asm, scope, vstack, targetType);
-		vstack.exitFrame(asm);
-	}
-
-	private CType getCommonType(Scope scope) throws SyntaxException
-	{
-		return CType.getCommonType(left.getType(scope).decay(), right.getType(scope).decay());
-	}
-
-	private Register compileBothIfArithmetic(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
-	{
-		Register leftReg = null;
 		if (left.getType(scope).decay().isArithmetic()
-				&& right.getType(scope).decay().isArithmetic()) {
-			CType commonType = getCommonType(scope);
-			leftReg = compileLeft(asm, scope, vstack, commonType);
-			compileRight(asm, scope, vstack, commonType);
-		}
-		return leftReg;
+				&& right.getType(scope).decay().isArithmetic())
+			return CType.getCommonType(left.getType(scope).decay(), right.getType(scope).decay());
+		else
+			return null;
 	}
 
-	private void compileLogicalOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileLogicalOperator(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		Register leftReg = compileLeft(asm, scope, vstack, CType.BOOLISH);
+		Rvalue lhs = left.compileWithConversion(asm, scope, CType.BOOLISH);
 		// Short circuit evaluation; only evaluate RHS if necessary.
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		String jumpLabel2 = scope.makeGloballyUniqueName("lbl");
-		asm.emit(binaryOperators.get(operator).mnemonic, leftReg, jumpLabel);
-		compileRight(asm, scope, vstack, CType.BOOLISH);
-		Register rightReg = vstack.loadTopValue(asm);
-		asm.emit(binaryOperators.get(operator).mnemonic, rightReg, jumpLabel);
-		asm.emit("load", leftReg, operator.equals("||") ? "=0" : "=1");
-		asm.emit("jump", leftReg, jumpLabel2);
+		asm.emit(binaryOperators.get(operator).mnemonic, lhs.getRegister(), jumpLabel);
+		Rvalue rhs = right.compileWithConversion(asm, scope, CType.BOOLISH);
+		asm.emit(binaryOperators.get(operator).mnemonic, rhs.getRegister(), jumpLabel);
+		asm.emit("load", lhs.getRegister(), operator.equals("||") ? "=0" : "=1");
+		asm.emit("jump", lhs.getRegister(), jumpLabel2);
 		asm.addLabel(jumpLabel);
-		asm.emit("load", leftReg, operator.equals("||") ? "=1" : "=0");
+		asm.emit("load", lhs.getRegister(), operator.equals("||") ? "=1" : "=0");
 		asm.addLabel(jumpLabel2);
-		vstack.pop();
+		return lhs;
 	}
 
-	private void compileBitwiseOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileBitwiseOperator(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		Register leftReg = compileBothIfArithmetic(asm, scope, vstack);
-		getCommonType(scope).compileBinaryBitwiseOperator(asm, scope, vstack, leftReg, operator);
+		CType commonType = getCommonTypeIfArithmetic(scope);
+		Rvalue lhs = left.compileWithConversion(asm, scope, commonType);
+		Rvalue rhs = right.compileWithConversion(asm, scope, commonType);
+		return commonType.compileBinaryBitwiseOperator(asm, scope, lhs, rhs, operator);
 	}
 
-	private void compileComparisonOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileComparisonOperator(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		Register leftReg = compileBothIfArithmetic(asm, scope, vstack);
-		if (leftReg != null) {
-			getCommonType(scope).compileBinaryComparisonOperator(asm, scope, vstack, leftReg,
-					operator);
-		} else {
-			// POINTER < > <= >= == != POINTER
-			leftReg = compileLeft(asm, scope, vstack, CType.INTPTR_T);
-			compileRight(asm, scope, vstack, CType.INTPTR_T);
-			CType.INTPTR_T.compileBinaryComparisonOperator(asm, scope, vstack, leftReg, operator);
-		}
+		CType commonType = getCommonTypeIfArithmetic(scope);
+		CType targetType = commonType != null ? commonType : CType.INTPTR_T;
+		Rvalue lhs = left.compileWithConversion(asm, scope, targetType);
+		Rvalue rhs = right.compileWithConversion(asm, scope, targetType);
+		return targetType.compileBinaryComparisonOperator(asm, scope, lhs, rhs, operator);
 	}
 
-	private void compileShiftOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileShiftOperator(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		// Both operators are only promoted ($6.5.7/3); no "usual arithmetic conversions" take
 		// place. However we may simply convert the right operand to int, since using larger values
@@ -261,24 +227,25 @@ public class BinaryExpression extends Expression
 		CType leftType = left.getType(scope).decay().promote();
 		CType rightType = CType.INT;
 
-		Register leftReg = compileLeft(asm, scope, vstack, leftType);
-		compileRight(asm, scope, vstack, rightType);
-		leftType.compileBinaryBitwiseOperator(asm, scope, vstack, leftReg, operator);
+		Rvalue lhs = left.compileWithConversion(asm, scope, leftType);
+		Rvalue rhs = right.compileWithConversion(asm, scope, rightType);
+		return leftType.compileBinaryBitwiseOperator(asm, scope, lhs, rhs, operator);
 	}
 
-	private void compileArithmeticOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compileArithmeticOperator(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
-		Register leftReg = compileBothIfArithmetic(asm, scope, vstack);
-		if (leftReg != null) {
-			getCommonType(scope).compileBinaryArithmeticOperator(asm, scope, vstack, leftReg,
-					operator);
+		CType commonType = getCommonTypeIfArithmetic(scope);
+		if (commonType != null) {
+			Rvalue lhs = left.compileWithConversion(asm, scope, commonType);
+			Rvalue rhs = right.compileWithConversion(asm, scope, commonType);
+			return commonType.compileBinaryArithmeticOperator(asm, scope, lhs, rhs, operator);
 		} else
-			compilePointerArithmeticOperator(asm, scope, vstack);
+			return compilePointerArithmeticOperator(asm, scope);
 	}
 
-	private void compilePointerArithmeticOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	private Rvalue compilePointerArithmeticOperator(ExpressionAssembler asm, Scope scope)
+			throws SyntaxException
 	{
 		int leftIncrSize = left.getType(scope).decay().getIncrementSize();
 		int rightIncrSize = right.getType(scope).decay().getIncrementSize();
@@ -290,28 +257,27 @@ public class BinaryExpression extends Expression
 		CType leftType = leftIncrSize > 1 ? new PointerType(CType.CHAR) : CType.PTRDIFF_T;
 		CType rightType = rightIncrSize > 1 ? new PointerType(CType.CHAR) : CType.PTRDIFF_T;
 
-		Register leftReg = compileLeft(asm, scope, vstack, leftType);
+		Rvalue lhs = left.compileWithConversion(asm, scope, leftType);
 
 		if (leftIncrSize == rightIncrSize) {
 			// POINTER - POINTER or POINTERTO32BIT +- INTEGER
-			compileRight(asm, scope, vstack, rightType);
-			asm.emit(mnemonic, leftReg, vstack.top(0));
+			Rvalue rhs = right.compileWithConversion(asm, scope, rightType);
+			asm.emit(mnemonic, lhs.getRegister(), rhs.getRegister());
 			if (leftIncrSize > 1)
-				asm.emit("div", leftReg, "=" + leftIncrSize);
+				asm.emit("div", lhs.getRegister(), "=" + leftIncrSize);
 		} else if (leftIncrSize > 1) {
 			// POINTER + INTEGER or POINTER - INTEGER.
-			compileRight(asm, scope, vstack, rightType);
-			Register rightReg = vstack.loadTopValue(asm);
-			asm.emit("mul", rightReg, "=" + leftIncrSize);
-			asm.emit(mnemonic, leftReg, rightReg.toString());
+			Rvalue rhs = right.compileWithConversion(asm, scope, rightType);
+			asm.emit("mul", rhs.getRegister(), "=" + leftIncrSize);
+			asm.emit(mnemonic, lhs.getRegister(), rhs.getRegister());
 		} else if (rightIncrSize > 1) {
 			// INTEGER + POINTER.
-			asm.emit("mul", leftReg, "=" + rightIncrSize);
-			compileRight(asm, scope, vstack, rightType);
-			asm.emit(mnemonic, leftReg, vstack.top(0));
+			asm.emit("mul", lhs.getRegister(), "=" + rightIncrSize);
+			Rvalue rhs = right.compileWithConversion(asm, scope, rightType);
+			asm.emit(mnemonic, lhs.getRegister(), rhs.getRegister());
 		}
 
-		vstack.pop();
+		return lhs;
 	}
 
 	@Override

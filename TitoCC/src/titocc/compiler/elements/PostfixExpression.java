@@ -1,11 +1,10 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.Arrays;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -71,8 +70,7 @@ public class PostfixExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws SyntaxException, IOException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
 		// ($6.5.2.4)
 		CType operandType = operand.getType(scope).decay();
@@ -82,16 +80,9 @@ public class PostfixExpression extends Expression
 					+ " requires an arithmetic or object pointer type.", getPosition());
 		}
 
-		// Allocate 1st register for result value.
-		Register retReg = vstack.pushRegisterRvalue(asm);
-
-		// Evaluate operand; load address to 2nd register.
-		vstack.enterFrame(); //TODO is this necessary? (retReg not used yet)
-		operand.compileAsLvalue(asm, scope, vstack, false);
-		vstack.exitFrame(asm);
-
+		Lvalue val = operand.compileAsLvalue(asm, scope, false);
 		boolean inc = operator.equals("++");
-		operandType.compileIncDecOperator(asm, scope, vstack, retReg, inc, true, 1);
+		return operandType.compileIncDecOperator(asm, scope, val, inc, true, 1);
 	}
 
 	@Override

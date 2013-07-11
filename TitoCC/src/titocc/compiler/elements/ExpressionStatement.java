@@ -3,7 +3,7 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.StackAllocator;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -35,7 +35,7 @@ public class ExpressionStatement extends Statement
 		this.expression = expression;
 	}
 
-	/**
+	/**scope
 	 * Returns the expression.
 	 *
 	 * @return the expression
@@ -46,11 +46,11 @@ public class ExpressionStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
+	public void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException
 	{
 		// Evaluate expression and ignore result.
-		expression.compileWithConversion(asm, scope, vstack, CType.VOID);
+		expression.compileAndAllocateRegisters(asm, scope, stack, CType.VOID);
 	}
 
 	@Override

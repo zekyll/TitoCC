@@ -1,9 +1,8 @@
 package titocc.compiler.types;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 
 /**
  * 32-bit unsigned integer type. Implemented on TTK-91 using one 32-bit machine byte. The standard
@@ -30,13 +29,13 @@ class Uint32Type extends IntegerType
 	}
 
 	@Override
-	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws IOException
+	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+			CType targetType)
 	{
 		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
 				|| targetType instanceof Uint32Type || targetType instanceof PointerType) {
-			// No-op.
+			return value; // No-op.
 		} else
-			super.compileConversion(asm, scope, vstack, targetType);
+			return super.compileConversion(asm, scope, value, targetType);
 	}
 }

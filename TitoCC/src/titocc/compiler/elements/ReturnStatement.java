@@ -4,8 +4,8 @@ import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -48,7 +48,7 @@ public class ReturnStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
+	public void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException
 	{
 		Symbol retVal = scope.find("__Ret");
@@ -61,10 +61,9 @@ public class ReturnStatement extends Statement
 			}
 
 			// Load expression to first register and store to the return value.
-			expression.compileWithConversion(asm, scope, vstack, retVal.getType());
-			Register exprReg = vstack.loadTopValue(asm);
+			Register exprReg = expression.compileAndAllocateRegisters(asm, scope, stack,
+					retVal.getType());
 			asm.emit("store", exprReg, retVal.getReference());
-			vstack.pop();
 		} else {
 			if (!retVal.getType().equals(CType.VOID))
 				throw new SyntaxException("Function must return a value.", getPosition());

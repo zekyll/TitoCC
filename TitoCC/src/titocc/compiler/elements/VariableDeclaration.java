@@ -5,9 +5,9 @@ import titocc.compiler.Assembler;
 import titocc.compiler.DeclarationType;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.StackAllocator;
 import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
@@ -68,7 +68,7 @@ public class VariableDeclaration extends Declaration
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
+	public void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws SyntaxException, IOException
 	{
 		DeclarationType declType = declarationSpecifiers.compile(scope);
@@ -90,7 +90,7 @@ public class VariableDeclaration extends Declaration
 		if (scope.isGlobal())
 			compileGlobalVariable(asm, scope, sym);
 		else
-			compileLocalVariable(asm, scope, sym, vstack, declType.type);
+			compileLocalVariable(asm, scope, stack, sym, declType.type);
 	}
 
 	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
@@ -137,14 +137,13 @@ public class VariableDeclaration extends Declaration
 			asm.emit("dc", "" + initValue);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope, Symbol sym, Vstack vstack,
-			CType variableType) throws SyntaxException, IOException
+	private void compileLocalVariable(Assembler asm, Scope scope, StackAllocator stack,
+			Symbol sym, CType variableType) throws SyntaxException, IOException
 	{
 		if (initializer != null) {
-			initializer.compileWithConversion(asm, scope, vstack, variableType);
-			Register exprReg = vstack.loadTopValue(asm);
-			asm.emit("store", exprReg, sym.getReference());
-			vstack.pop();
+			Register valReg = initializer.compileAndAllocateRegisters(asm, scope, stack,
+					variableType);
+			asm.emit("store", valReg, sym.getReference());
 		}
 	}
 

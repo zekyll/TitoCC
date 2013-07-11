@@ -2,10 +2,9 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
 import titocc.compiler.Scope;
+import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -65,7 +64,7 @@ public class WhileStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
+	public void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException
 	{
 		// While statement creates a new scope.
@@ -86,11 +85,11 @@ public class WhileStatement extends Statement
 		asm.addLabel(loopStartLabel);
 
 		// Body.
-		body.compile(asm, loopScope, vstack);
+		body.compile(asm, loopScope, stack);
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
-		compileControlExpression(controlExpression, asm, loopScope, vstack,
+		compileControlExpression(controlExpression, asm, loopScope, stack,
 				continueSymbol.getReference(), loopStartLabel, "jnzer");
 
 		// Insert label to be used by break statements.

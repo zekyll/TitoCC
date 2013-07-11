@@ -1,10 +1,9 @@
 package titocc.compiler.types;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 
 /**
  * Corresponds to C pointer type. Is an object and a scalar, but not arithmetic. Equals only to
@@ -61,21 +60,21 @@ public class PointerType extends CType
 	}
 
 	@Override
-	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws IOException
+	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+			CType targetType)
 	{
 		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
 				|| targetType instanceof Uint32Type || targetType instanceof PointerType) {
-			// No-op.
+			return value; // No-op.
 		} else
-			super.compileConversion(asm, scope, vstack, targetType);
+			return super.compileConversion(asm, scope, value, targetType);
 	}
 
 	@Override
-	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
+	public Rvalue compileIncDecOperator(ExpressionAssembler asm, Scope scope, Lvalue operand,
+			boolean inc, boolean postfix, int incSize)
 	{
 		incSize *= getIncrementSize();
-		INTPTR_T.compileIncDecOperator(asm, scope, vstack, retReg, inc, postfix, incSize);
+		return INTPTR_T.compileIncDecOperator(asm, scope, operand, inc, postfix, incSize);
 	}
 }

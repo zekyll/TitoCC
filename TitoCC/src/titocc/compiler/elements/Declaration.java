@@ -3,7 +3,7 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.StackAllocator;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -32,11 +32,11 @@ public abstract class Declaration extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the declaration is evaluated
-	 * @param vstack current virtual stack
+	 * @param stack allocator for local stack data (not used for global declarations)
 	 * @throws SyntaxException if the declaration contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, Vstack vstack)
+	public abstract void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException;
 
 	/**

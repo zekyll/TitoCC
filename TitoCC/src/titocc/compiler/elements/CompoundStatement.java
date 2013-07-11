@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.StackAllocator;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -47,7 +47,7 @@ public class CompoundStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
+	public void compile(Assembler asm, Scope scope, StackAllocator stack)
 			throws IOException, SyntaxException
 	{
 		// Create new scope for the block.
@@ -56,7 +56,7 @@ public class CompoundStatement extends Statement
 
 		// Compile statements.
 		for (Statement st : statements)
-			st.compile(asm, blockScope, vstack);
+			st.compile(asm, blockScope, stack);
 	}
 
 	@Override

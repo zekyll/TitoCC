@@ -1,10 +1,9 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.math.BigInteger;
-import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.IntegerLiteralToken;
 import titocc.tokenizer.SyntaxException;
@@ -66,10 +65,9 @@ public class IntegerLiteralExpression extends Expression
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException, SyntaxException
+	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
 	{
-		compileConstantExpression(asm, scope, vstack);
+		return compileConstantExpression(asm, scope);
 	}
 
 	@Override

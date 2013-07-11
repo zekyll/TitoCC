@@ -1,13 +1,12 @@
 package titocc.compiler.types;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import titocc.compiler.Assembler;
+import titocc.compiler.ExpressionAssembler;
 import titocc.compiler.InternalCompilerException;
-import titocc.compiler.Register;
+import titocc.compiler.Lvalue;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
 
 /**
  * Abstract base class for representing types in C type system. Allows testing equality between
@@ -151,6 +150,9 @@ public abstract class CType
 	/**
 	 * Finds the common type for two arithmetic types according to "usual arithmetic conversions".
 	 * ($6.3.1.8/1)
+	 *
+	 * @param left type of first operand
+	 * @param left type of second operand
 	 */
 	public static CType getCommonType(CType left, CType right)
 	{
@@ -190,136 +192,130 @@ public abstract class CType
 	}
 
 	/**
-	 * Generates code that converts a value of this type (given on top of the virtual stack) to the
-	 * target type. The resulting value replaces the source value on the virtual stack.
+	 * Generates code that converts a value of this type to the target type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
+	 * @param value operand value
 	 * @param targetType target type of the conversion
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileConversion(Assembler asm, Scope scope, Vstack vstack, CType targetType)
-			throws IOException
+	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+			CType targetType)
 	{
 		if (targetType.equals(CType.VOID))
-			vstack.pop();
+			return new Rvalue(null);
 		else
 			throw new InternalCompilerException("Unimplemented type conversion.");
 	}
 
 	/**
-	 * Generates code for binary bitwise operator with two operands of this type. The operands are
-	 * given on top of the vstack, left operand being a register rvalue in leftReg. The result
-	 * value (same type as operands) replaces the operands on the vstack.
+	 * Generates code for binary bitwise operator with two operands of this type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
-	 * @param leftReg register where left operand is loaded
+	 * @param lhs LHS value
+	 * @param rhs RHS value
 	 * @param operator operator as a string
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileBinaryBitwiseOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryBitwiseOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary bitwise operator.");
 	}
 
 	/**
-	 * Generates code for binary comparison operator with two operands of this type. The operands
-	 * are given on top of the vstack, left operand being a register rvalue in leftReg. The result
-	 * value (32-bit int) replaces the operands on the vstack.
+	 * Generates code for binary comparison operator with two operands of this type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
-	 * @param leftReg register where left operand is loaded
+	 * @param lhs LHS value
+	 * @param rhs RHS value
 	 * @param operator operator as a string
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileBinaryComparisonOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryComparisonOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary comparison operator.");
 	}
 
 	/**
 	 * Generates code for binary shift operator, where left operand has this type and right
-	 * operand has "int" type. The operands are given on top of the vstack, left operand being a
-	 * register rvalue in leftReg. The result value (same as left operand type) replaces the
-	 * operands on the vstack.
+	 * operand has "int" type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
-	 * @param leftReg register where left operand is loaded
+	 * @param lhs LHS value
+	 * @param rhs RHS value
 	 * @param operator operator as a string
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileBinaryShiftOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryShiftOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary shift operator.");
 	}
 
 	/**
-	 * Generates code for binary arithmetic operator with two operands of this type. The operands
-	 * are given on top of the vstack, left operand being a register rvalue in leftReg. The result
-	 * value (same type as operands) replaces the operands on the vstack.
+	 * Generates code for binary arithmetic operator with two operands of this type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
-	 * @param leftReg register where left operand is loaded
+	 * @param lhs LHS value
+	 * @param rhs RHS value
 	 * @param operator operator as a string
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileBinaryArithmeticOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register leftReg, String operator) throws IOException
+	public Rvalue compileBinaryArithmeticOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary arithmetic operator.");
 	}
 
 	/**
-	 * Generates code for unary increment/decrement operator for this type. Return value register
-	 * and the lvalue to modify are given on top of vstack. The lvalue is popped from vstack
-	 * by this operation.
+	 * Generates code for unary increment/decrement operator for this type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
-	 * @param retReg register where the resulting value is loaded
+	 * @param operand modifiable lvalue operand
 	 * @param inc true if increment operator, false if decrement
 	 * @param postfix true if postfix operator, false if prefix operator
 	 * @param incSize how many steps are incremented/decrement
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileIncDecOperator(Assembler asm, Scope scope, Vstack vstack,
-			Register retReg, boolean inc, boolean postfix, int incSize) throws IOException
+	public Rvalue compileIncDecOperator(ExpressionAssembler asm, Scope scope, Lvalue operand,
+			boolean inc, boolean postfix, int incSize)
 	{
 		throw new InternalCompilerException("Unimplemented increment/decrement operator.");
 	}
 
 	/**
-	 * Generates code for unary plus/minus operator for this type. Operand is given on top of the
-	 * vstack and replaced by the result value.
+	 * Generates code for unary plus/minus operator for this type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
+	 * @param operand operand value
 	 * @param plus true if unary plus, false if unary minus
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileUnaryPlusMinusOperator(Assembler asm, Scope scope, Vstack vstack,
-			boolean plus) throws IOException
+	public Rvalue compileUnaryPlusMinusOperator(ExpressionAssembler asm, Scope scope,
+			Rvalue operand, boolean plus)
 	{
 		throw new InternalCompilerException("Unimplemented unary plus/minus operator.");
 	}
 
 	/**
-	 * Generates code for unary bitwise negation operator for this type. Operand is given on top of
-	 * the vstack and replaced by the result value.
+	 * Generates code for unary bitwise negation operator for this type.
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
-	 * @param vstack virtual stack
+	 * @param operand operand value
+	 * @return Rvalue object describing the result value
 	 */
-	public void compileUnaryBitwiseNegationOperator(Assembler asm, Scope scope, Vstack vstack)
-			throws IOException
+	public Rvalue compileUnaryBitwiseNegationOperator(ExpressionAssembler asm, Scope scope,
+			Rvalue operand)
 	{
 		throw new InternalCompilerException("Unimplemented unary bitwise negation operator.");
 	}

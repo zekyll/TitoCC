@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.Vstack;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -55,13 +55,12 @@ public class ArgumentList extends CodeElement
 	 *
 	 * @param asm assembler used for code generation
 	 * @param scope scope in which the arguments are evaluated
-	 * @param vstack virtual stack
 	 * @param paramTypes parameter types for the called function
 	 * @throws SyntaxException if argument list contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public void compile(Assembler asm, Scope scope, Vstack vstack, List<CType> paramTypes)
-			throws SyntaxException, IOException
+	public void compile(ExpressionAssembler asm, Scope scope, List<CType> paramTypes)
+			throws SyntaxException
 	{
 		if (paramTypes.size() != arguments.size()) {
 			throw new SyntaxException("Number of arguments doesn't match the number of parameters.",
@@ -76,9 +75,8 @@ public class ArgumentList extends CodeElement
 						arg.getPosition());
 			}
 
-			arg.compileWithConversion(asm, scope, vstack, paramType);
-			asm.emit("push", Register.SP, vstack.top(0));
-			vstack.pop();
+			Rvalue val = arg.compileWithConversion(asm, scope, paramType);
+			asm.emit("push", VirtualRegister.SP, val.getRegister());
 		}
 	}
 
