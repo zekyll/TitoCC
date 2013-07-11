@@ -88,7 +88,7 @@ class Int32Type extends IntegerType
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
 		asm.emit("comp", lhs.getRegister(), rhs.getRegister());
 		asm.emit("load", lhs.getRegister(), "=1");
-		asm.emit(instructions.get(operator), lhs.getRegister(), jumpLabel);
+		asm.emit(instructions.get(operator), VirtualRegister.NONE, jumpLabel);
 		asm.emit("load", lhs.getRegister(), "=0");
 		asm.addLabel(jumpLabel);
 		return lhs;

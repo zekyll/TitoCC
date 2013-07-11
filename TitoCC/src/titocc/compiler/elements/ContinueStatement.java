@@ -2,7 +2,6 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
@@ -39,7 +38,7 @@ public class ContinueStatement extends Statement
 			throw new SyntaxException("Continue used outside of loop.", getPosition());
 
 		// Jump to next iteration.
-		asm.emit("jump", Register.SP, jumpPosition.getReference());
+		asm.emit("jump", jumpPosition.getReference());
 	}
 
 	@Override

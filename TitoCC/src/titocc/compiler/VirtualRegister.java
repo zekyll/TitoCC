@@ -31,6 +31,11 @@ public class VirtualRegister
 	public static final VirtualRegister R5 = new VirtualRegister(Register.R5);
 
 	/**
+	 * Virtual register used for instructions that ignore a register operand.
+	 */
+	public static final VirtualRegister NONE = new VirtualRegister(Register.NONE);
+
+	/**
 	 * Physical register used by this virtual register or null if not mapped yet.
 	 */
 	public Register realRegister;

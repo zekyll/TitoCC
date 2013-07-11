@@ -31,12 +31,18 @@ class Instruction
 	int pseudoOperand = 0;
 
 	/**
-	 * Left operand
+	 * Left operand.
 	 */
 	VirtualRegister leftReg = null;
 
+	/**
+	 * Right register operand.
+	 */
 	VirtualRegister rightReg = null;
 
+	/**
+	 * Right immediate operand, including addressing mode.
+	 */
 	String immediateOperand = null;
 
 	/**
@@ -115,5 +121,22 @@ class Instruction
 	public boolean discardsLhs()
 	{
 		return mnemonic.equals("load") || mnemonic.equals("in");
+	}
+
+	/**
+	 * Get the full RHS operand as string.
+	 *
+	 * @return string representation of RHS
+	 */
+	public String getRhsString()
+	{
+		String ret = immediateOperand != null ? immediateOperand : "";
+		if (rightReg != null) {
+			if (ret.isEmpty())
+				ret = rightReg.realRegister.toString();
+			else
+				ret += "(" + rightReg.realRegister.toString() + ")";
+		}
+		return ret;
 	}
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import titocc.compiler.ExpressionAssembler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.PointerType;
 import titocc.compiler.types.VoidType;
@@ -192,7 +193,7 @@ public class BinaryExpression extends Expression
 		Rvalue rhs = right.compileWithConversion(asm, scope, CType.BOOLISH);
 		asm.emit(binaryOperators.get(operator).mnemonic, rhs.getRegister(), jumpLabel);
 		asm.emit("load", lhs.getRegister(), operator.equals("||") ? "=0" : "=1");
-		asm.emit("jump", lhs.getRegister(), jumpLabel2);
+		asm.emit("jump", VirtualRegister.NONE, jumpLabel2);
 		asm.addLabel(jumpLabel);
 		asm.emit("load", lhs.getRegister(), operator.equals("||") ? "=1" : "=0");
 		asm.addLabel(jumpLabel2);

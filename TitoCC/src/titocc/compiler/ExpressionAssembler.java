@@ -126,9 +126,9 @@ public class ExpressionAssembler
 	}
 
 	/**
+	 * Sends the instructions to the final assembler.
 	 *
-	 *
-	 * @param asm
+	 * @param asm assembler
 	 * @throws IOException if assembler throws
 	 */
 	public void sendToAssembler(Assembler asm) throws IOException
@@ -136,16 +136,10 @@ public class ExpressionAssembler
 		for (Instruction instr : instructions) {
 			if (instr.label != null)
 				asm.addLabel(instr.label);
-			if (instr.leftReg != null) {
-				String rhs = instr.immediateOperand != null ? instr.immediateOperand : "";
-				if (instr.rightReg != null) {
-					if (rhs.isEmpty())
-						rhs = instr.rightReg.realRegister.toString();
-					else
-						rhs += "(" + instr.rightReg.realRegister.toString() + ")";
-				}
-
-				asm.emit(instr.mnemonic, instr.leftReg.realRegister, rhs);
+			if (instr.leftReg == VirtualRegister.NONE) {
+				asm.emit(instr.mnemonic, instr.getRhsString());
+			} else if (instr.leftReg != null) {
+				asm.emit(instr.mnemonic, instr.leftReg.realRegister, instr.getRhsString());
 			} else
 				asm.emit(instr.mnemonic, Integer.toString(instr.pseudoOperand));
 		}

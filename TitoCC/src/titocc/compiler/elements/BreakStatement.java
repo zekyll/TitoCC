@@ -2,7 +2,6 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
@@ -40,7 +39,7 @@ public class BreakStatement extends Statement
 			throw new SyntaxException("Break used outside loop or switch.", getPosition());
 
 		// Jump to end of the loop/switch
-		asm.emit("jump", Register.SP, jumpPosition.getReference());
+		asm.emit("jump", jumpPosition.getReference());
 	}
 
 	@Override

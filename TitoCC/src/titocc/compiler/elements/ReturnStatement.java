@@ -71,7 +71,7 @@ public class ReturnStatement extends Statement
 
 		// Jump to function end
 		Symbol functionEnd = scope.find("__End");
-		asm.emit("jump", Register.SP, functionEnd.getReference());
+		asm.emit("jump", functionEnd.getReference());
 	}
 
 	@Override
