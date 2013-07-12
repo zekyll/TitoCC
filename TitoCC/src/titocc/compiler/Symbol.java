@@ -113,6 +113,19 @@ public class Symbol
 	}
 
 	/**
+	 * Creates an RHS operand for assembly instruction that corresponds to this symbol.
+	 *
+	 * @param dereference true if the value of the variable is required, false when address
+	 * @return RHS operand
+	 */
+	public RhsOperand getRhsOperand(boolean dereference)
+	{
+		int addrMode = dereference ? 1 : 0;
+		VirtualRegister reg = storageClass == storageClass.Auto ? VirtualRegister.FP : null;
+		return new RhsOperand(addrMode, globallyUniqueName, reg);
+	}
+
+	/**
 	 * Returns the type of the object corresponding to this symbol.
 	 *
 	 * @return the object type

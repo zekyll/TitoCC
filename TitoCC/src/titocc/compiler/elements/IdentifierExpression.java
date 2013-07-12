@@ -59,9 +59,9 @@ public class IdentifierExpression extends Expression
 		// Load value to register (or address if we have an array/function).
 		VirtualRegister retReg = new VirtualRegister();
 		if (symbol.getType() instanceof ArrayType || symbol.getType().isFunction())
-			asm.emit("load", retReg, "=" + symbol.getReference());
+			asm.emit("load", retReg, symbol.getRhsOperand(false));
 		else
-			asm.emit("load", retReg, symbol.getReference());
+			asm.emit("load", retReg, symbol.getRhsOperand(true));
 
 		return new Rvalue(retReg);
 	}
@@ -76,7 +76,7 @@ public class IdentifierExpression extends Expression
 			requireLvalueType(scope);
 
 		VirtualRegister retReg = new VirtualRegister();
-		asm.emit("load", retReg, "=" + symbol.getReference());
+		asm.emit("load", retReg, symbol.getRhsOperand(false));
 
 		return new Lvalue(retReg);
 	}
