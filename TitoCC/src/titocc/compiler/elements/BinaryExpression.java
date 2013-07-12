@@ -42,7 +42,7 @@ import titocc.util.Position;
  */
 public class BinaryExpression extends Expression
 {
-	private enum Type
+	enum Type
 	{
 		BITWISE, ARITHMETIC, EQUALITY, RELATIONAL, SHIFT, LOGICAL
 	};
@@ -50,11 +50,11 @@ public class BinaryExpression extends Expression
 	/**
 	 * Binary operator with mnemonic and operation type.
 	 */
-	private static class Operator
+	static class Operator
 	{
-		public String mnemonic;
+		String mnemonic;
 
-		public Type type;
+		Type type;
 
 		int priority;
 

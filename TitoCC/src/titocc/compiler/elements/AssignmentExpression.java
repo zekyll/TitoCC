@@ -8,6 +8,7 @@ import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.PointerType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -24,24 +25,34 @@ import titocc.util.Position;
  */
 public class AssignmentExpression extends Expression
 {
-	private enum Type
+	private enum Commutativity
 	{
 		SIMPLE, COMMUTATIVE, NONCOMMUTATIVE
 	};
 
 	/**
-	 * Assignment operator with operator mnemonic and operation type.
+	 * Assignment operator with operator mnemonic and operation type and corresponding binary
+	 * operator.
 	 */
 	private static class Operator
 	{
-		public String mnemonic;
+		final String mnemonic;
 
-		public Type type;
+		final Commutativity commutativity;
 
-		public Operator(String mnemonic, Type type)
+		final BinaryExpression.Type type;
+
+		final String binaryOperator;
+
+		Operator(String mnemonic, Commutativity commutativity, String binaryOperator)
 		{
 			this.mnemonic = mnemonic;
-			this.type = type;
+			this.commutativity = commutativity;
+			this.binaryOperator = binaryOperator;
+			if (binaryOperator.isEmpty())
+				this.type = null;
+			else
+				this.type = BinaryExpression.binaryOperators.get(binaryOperator).type;
 		}
 	}
 
@@ -51,17 +62,17 @@ public class AssignmentExpression extends Expression
 	static final Map<String, Operator> assignmentOperators = new HashMap<String, Operator>()
 	{
 		{
-			put("=", new Operator("", Type.SIMPLE));
-			put("+=", new Operator("add", Type.COMMUTATIVE));
-			put("*=", new Operator("mul", Type.COMMUTATIVE));
-			put("&=", new Operator("and", Type.COMMUTATIVE));
-			put("|=", new Operator("or", Type.COMMUTATIVE));
-			put("^=", new Operator("xor", Type.COMMUTATIVE));
-			put("-=", new Operator("sub", Type.NONCOMMUTATIVE));
-			put("/=", new Operator("div", Type.NONCOMMUTATIVE));
-			put("%=", new Operator("mod", Type.NONCOMMUTATIVE));
-			put("<<=", new Operator("shl", Type.NONCOMMUTATIVE));
-			put(">>=", new Operator("shr", Type.NONCOMMUTATIVE));
+			put("=", new Operator("", Commutativity.SIMPLE, ""));
+			put("+=", new Operator("add", Commutativity.COMMUTATIVE, "+"));
+			put("*=", new Operator("mul", Commutativity.COMMUTATIVE, "*"));
+			put("&=", new Operator("and", Commutativity.COMMUTATIVE, "&"));
+			put("|=", new Operator("or", Commutativity.COMMUTATIVE, "|"));
+			put("^=", new Operator("xor", Commutativity.COMMUTATIVE, "^"));
+			put("-=", new Operator("sub", Commutativity.NONCOMMUTATIVE, "-"));
+			put("/=", new Operator("div", Commutativity.NONCOMMUTATIVE, "/"));
+			put("%=", new Operator("mod", Commutativity.NONCOMMUTATIVE, "%"));
+			put("<<=", new Operator("shl", Commutativity.NONCOMMUTATIVE, "<<"));
+			put(">>=", new Operator("shr", Commutativity.NONCOMMUTATIVE, ">>"));
 		}
 	};
 
@@ -127,16 +138,13 @@ public class AssignmentExpression extends Expression
 	{
 		checkTypes(scope);
 
-		// Compile Operator.
-		if (operator.type == Type.SIMPLE)
-			return compileSimple(ic, scope);
-		else if (operator.type == Type.COMMUTATIVE)
-			return compileCommutative(ic, scope);
+		if (operator.commutativity == Commutativity.SIMPLE)
+			return compileSimpleAssignment(ic, scope);
 		else
-			return compileNoncommutative(ic, scope);
+			return compileCompoundAssignment(ic, scope);
 	}
 
-	private Rvalue compileSimple(IntermediateCompiler ic, Scope scope)
+	private Rvalue compileSimpleAssignment(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		Rvalue rhs = right.compileWithConversion(ic, scope, left.getType(scope).decay());
@@ -145,46 +153,60 @@ public class AssignmentExpression extends Expression
 		return rhs;
 	}
 
-	private Rvalue compileCommutative(IntermediateCompiler ic, Scope scope)
+	private Rvalue compileCompoundAssignment(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
-		Rvalue rhs = right.compile(ic, scope);
+		CType leftType, rightType;
+		if (operator.type == BinaryExpression.Type.SHIFT) {
+			leftType = left.getType(scope).decay().promote();
+			rightType = CType.INT;
+		} else if (left.getType(scope).decay().isPointer()) {
+			leftType = new PointerType(CType.CHAR);
+			rightType = CType.PTRDIFF_T;
+		} else {
+			leftType = rightType = CType.getCommonType(left.getType(scope).decay(),
+					right.getType(scope).decay());
+		}
 
-		// If operation is POINTER += INTEGER, we need to scale the integer value.
-		int incSize = left.getType(scope).decay().getIncrementSize();
-		if (incSize > 1)
-			ic.emit("mul", rhs.getRegister(), "=" + incSize);
-
-		Lvalue lhs = left.compileAsLvalue(ic, scope, false);
-
-		// Because the operation is symmetric, we can use the left operand
-		// as the right operand in the assembly instruction, saving one register.
-		ic.emit(operator.mnemonic, rhs.getRegister(), "0", lhs.getRegister());
-		ic.emit("store", rhs.getRegister(), "0", lhs.getRegister());
-
-		return rhs;
+		return compileImpl(ic, scope, leftType, rightType);
 	}
 
-	private Rvalue compileNoncommutative(IntermediateCompiler ic, Scope scope)
-			throws SyntaxException
+	private Rvalue compileImpl(IntermediateCompiler ic, Scope scope,
+			CType leftType, CType rightType) throws SyntaxException
 	{
-		Rvalue rhs = right.compile(ic, scope);
+		// Compile operands.
+		Rvalue rhs = right.compileWithConversion(ic, scope, rightType);
 		Lvalue lhs = left.compileAsLvalue(ic, scope, false);
 
-		// If operation is POINTER -= INTEGER, we need to scale the integer value.
-		int incSize = left.getType(scope).decay().getIncrementSize();
-		if (incSize > 1)
-			ic.emit("mul", rhs.getRegister(), "=" + incSize);
+		// Load LHS to register.
+		Rvalue lhsVal = new Rvalue(new VirtualRegister());
+		ic.emit("load", lhsVal.getRegister(), "0", lhs.getRegister());
+		lhsVal = left.getType(scope).compileConversion(ic, scope, lhsVal, leftType);
 
-		// Load LHS value to new register and operate on it.
-		VirtualRegister retReg = new VirtualRegister();
-		ic.emit("load", retReg, "0", lhs.getRegister());
-		ic.emit(operator.mnemonic, retReg, rhs.getRegister());
+		// Compile the binary operator.
+		String binOp = operator.binaryOperator;
+		Rvalue retVal;
+		if (leftType.isPointer()) {
+			// Scale integer operand if necessary.
+			int leftIncrSize = left.getType(scope).decay().getIncrementSize();
+			if (leftIncrSize > 1)
+				ic.emit("mul", rhs.getRegister(), "=" + leftIncrSize);
+			ic.emit(operator.mnemonic, lhsVal.getRegister(), rhs.getRegister());
+			retVal = lhsVal;
+		} else if (operator.type == BinaryExpression.Type.BITWISE)
+			retVal = leftType.compileBinaryBitwiseOperator(ic, scope, lhsVal, rhs, binOp);
+		else if (operator.type == BinaryExpression.Type.SHIFT)
+			retVal = leftType.compileBinaryBitwiseOperator(ic, scope, lhsVal, rhs, binOp);
+		else //if (operator.type == BinaryExpression.Type.ARITHMETIC)
+			retVal = leftType.compileBinaryArithmeticOperator(ic, scope, lhsVal, rhs, binOp);
 
-		// Store result back to LHS variable.
-		ic.emit("store", retReg, "0", lhs.getRegister());
+		// Convert to the original type of the left operand.
+		retVal = leftType.compileConversion(ic, scope, retVal, left.getType(scope));
 
-		return new Rvalue(retReg);
+		// Assign result back to lvalue.
+		ic.emit("store", retVal.getRegister(), "0", lhs.getRegister());
+
+		return retVal;
 	}
 
 	private void checkTypes(Scope scope) throws SyntaxException
