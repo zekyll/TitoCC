@@ -1,6 +1,6 @@
 package titocc.compiler.elements;
 
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
@@ -48,7 +48,7 @@ public class IdentifierExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
 		if (!symbol.getType().isObject() && !symbol.getType().isFunction()) {
@@ -59,15 +59,15 @@ public class IdentifierExpression extends Expression
 		// Load value to register (or address if we have an array/function).
 		VirtualRegister retReg = new VirtualRegister();
 		if (symbol.getType() instanceof ArrayType || symbol.getType().isFunction())
-			asm.emit("load", retReg, symbol.getRhsOperand(false));
+			ic.emit("load", retReg, symbol.getRhsOperand(false));
 		else
-			asm.emit("load", retReg, symbol.getRhsOperand(true));
+			ic.emit("load", retReg, symbol.getRhsOperand(true));
 
 		return new Rvalue(retReg);
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(ExpressionAssembler asm, Scope scope, boolean addressOf)
+	public Lvalue compileAsLvalue(IntermediateCompiler ic, Scope scope, boolean addressOf)
 			throws SyntaxException
 	{
 		Symbol symbol = findSymbol(scope);
@@ -76,7 +76,7 @@ public class IdentifierExpression extends Expression
 			requireLvalueType(scope);
 
 		VirtualRegister retReg = new VirtualRegister();
-		asm.emit("load", retReg, symbol.getRhsOperand(false));
+		ic.emit("load", retReg, symbol.getRhsOperand(false));
 
 		return new Lvalue(retReg);
 	}

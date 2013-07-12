@@ -1,6 +1,6 @@
 package titocc.compiler.types;
 
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
@@ -60,21 +60,21 @@ public class PointerType extends CType
 	}
 
 	@Override
-	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+	public Rvalue compileConversion(IntermediateCompiler ic, Scope scope, Rvalue value,
 			CType targetType)
 	{
 		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
 				|| targetType instanceof Uint32Type || targetType instanceof PointerType) {
 			return value; // No-op.
 		} else
-			return super.compileConversion(asm, scope, value, targetType);
+			return super.compileConversion(ic, scope, value, targetType);
 	}
 
 	@Override
-	public Rvalue compileIncDecOperator(ExpressionAssembler asm, Scope scope, Lvalue operand,
+	public Rvalue compileIncDecOperator(IntermediateCompiler ic, Scope scope, Lvalue operand,
 			boolean inc, boolean postfix, int incSize)
 	{
 		incSize *= getIncrementSize();
-		return INTPTR_T.compileIncDecOperator(asm, scope, operand, inc, postfix, incSize);
+		return INTPTR_T.compileIncDecOperator(ic, scope, operand, inc, postfix, incSize);
 	}
 }

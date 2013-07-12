@@ -2,7 +2,7 @@ package titocc.compiler.elements;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
@@ -74,30 +74,30 @@ public class PrefixExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
-		Rvalue constVal = compileConstantExpression(asm, scope);
+		Rvalue constVal = compileConstantExpression(ic, scope);
 		if (constVal != null)
 			return constVal;
 
 		if (operator.equals("++") || operator.equals("--"))
-			return compileIncDec(asm, scope);
+			return compileIncDec(ic, scope);
 		else if (operator.equals("+") || operator.equals("-"))
-			return compileUnaryPlusMinus(asm, scope);
+			return compileUnaryPlusMinus(ic, scope);
 		else if (operator.equals("!"))
-			return compileLogicalNegation(asm, scope);
+			return compileLogicalNegation(ic, scope);
 		else if (operator.equals("~"))
-			return compileBitwiseNegation(asm, scope);
+			return compileBitwiseNegation(ic, scope);
 		else if (operator.equals("&"))
-			return compileAddressOf(asm, scope);
+			return compileAddressOf(ic, scope);
 		else if (operator.equals("*"))
-			return compileDereference(asm, scope);
+			return compileDereference(ic, scope);
 		else
 			throw new InternalCompilerException("Unknown prefix operator.");
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(ExpressionAssembler asm, Scope scope, boolean addressOf)
+	public Lvalue compileAsLvalue(IntermediateCompiler ic, Scope scope, boolean addressOf)
 			throws SyntaxException
 	{
 		// Dereference operator is the only one that can return an lvalue.
@@ -108,11 +108,11 @@ public class PrefixExpression extends Expression
 			requireLvalueType(scope);
 
 		// Operand for * must be a pointer so we just load its value.
-		Rvalue ptrVal = operand.compile(asm, scope);
+		Rvalue ptrVal = operand.compile(ic, scope);
 		return new Lvalue(ptrVal.getRegister());
 	}
 
-	private Rvalue compileIncDec(ExpressionAssembler asm, Scope scope)
+	private Rvalue compileIncDec(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		// ($6.5.3.1)
@@ -123,12 +123,12 @@ public class PrefixExpression extends Expression
 					+ " requires an arithmetic or object pointer type.", getPosition());
 		}
 
-		Lvalue val = operand.compileAsLvalue(asm, scope, false);
+		Lvalue val = operand.compileAsLvalue(ic, scope, false);
 		boolean inc = operator.equals("++");
-		return operandType.compileIncDecOperator(asm, scope, val, inc, false, 1);
+		return operandType.compileIncDecOperator(ic, scope, val, inc, false, 1);
 	}
 
-	private Rvalue compileUnaryPlusMinus(ExpressionAssembler asm, Scope scope)
+	private Rvalue compileUnaryPlusMinus(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		// ($6.5.3.3/1)
@@ -139,11 +139,11 @@ public class PrefixExpression extends Expression
 		}
 
 		operandType = operandType.promote();
-		Rvalue val = operand.compileWithConversion(asm, scope, operandType);
-		return operandType.compileUnaryPlusMinusOperator(asm, scope, val, operator.equals("+"));
+		Rvalue val = operand.compileWithConversion(ic, scope, operandType);
+		return operandType.compileUnaryPlusMinusOperator(ic, scope, val, operator.equals("+"));
 	}
 
-	private Rvalue compileLogicalNegation(ExpressionAssembler asm, Scope scope)
+	private Rvalue compileLogicalNegation(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		// ($6.5.3.3/1)
@@ -152,19 +152,19 @@ public class PrefixExpression extends Expression
 					+ " requires a scalar type.", getPosition());
 		}
 
-		Rvalue val = operand.compileWithConversion(asm, scope, CType.BOOLISH);
+		Rvalue val = operand.compileWithConversion(ic, scope, CType.BOOLISH);
 
 		// Compares operand to zero and sets register value according to the result.
 		String jumpLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jzer", val.getRegister(), jumpLabel);
-		asm.emit("load", val.getRegister(), "=1");
-		asm.addLabel(jumpLabel);
-		asm.emit("xor", val.getRegister(), "=1");
+		ic.emit("jzer", val.getRegister(), jumpLabel);
+		ic.emit("load", val.getRegister(), "=1");
+		ic.addLabel(jumpLabel);
+		ic.emit("xor", val.getRegister(), "=1");
 
 		return val;
 	}
 
-	private Rvalue compileBitwiseNegation(ExpressionAssembler asm, Scope scope)
+	private Rvalue compileBitwiseNegation(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		// ($6.5.3.3/1)
@@ -175,19 +175,19 @@ public class PrefixExpression extends Expression
 		}
 
 		operandType = operandType.promote();
-		Rvalue val = operand.compileWithConversion(asm, scope, operandType);
-		return operandType.compileUnaryBitwiseNegationOperator(asm, scope, val);
+		Rvalue val = operand.compileWithConversion(ic, scope, operandType);
+		return operandType.compileUnaryBitwiseNegationOperator(ic, scope, val);
 	}
 
-	private Rvalue compileAddressOf(ExpressionAssembler asm, Scope scope)
+	private Rvalue compileAddressOf(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		// Load the address of the operand a register.
-		Lvalue lvalue = operand.compileAsLvalue(asm, scope, true);
+		Lvalue lvalue = operand.compileAsLvalue(ic, scope, true);
 		return new Rvalue(lvalue.getRegister());
 	}
 
-	private Rvalue compileDereference(ExpressionAssembler asm, Scope scope)
+	private Rvalue compileDereference(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		// ($6.5.3.2/2)
@@ -197,12 +197,12 @@ public class PrefixExpression extends Expression
 		}
 
 		// Operand must be a pointer; load into register.
-		Rvalue val = operand.compile(asm, scope);
+		Rvalue val = operand.compile(ic, scope);
 
 		// Dereference the pointer unless the result type is an array or function!
 		CType resultType = getType(scope);
 		if (!(resultType instanceof ArrayType) && !resultType.isFunction())
-			asm.emit("load", val.getRegister(), "0", val.getRegister());
+			ic.emit("load", val.getRegister(), "0", val.getRegister());
 
 		return val;
 	}

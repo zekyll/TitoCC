@@ -1,6 +1,5 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import titocc.compiler.DeclarationType;
 import titocc.compiler.Scope;
 import titocc.compiler.StorageClass;
@@ -55,10 +54,9 @@ public class Parameter extends CodeElement
 	 * for unnamed parameters
 	 * @return the symbol for the parameter
 	 * @throws SyntaxException if the parameter has invalid type or the name was redefined
-	 * @throws IOException
 	 */
 	public Symbol compile(Scope scope, boolean functionDefinition, int idx)
-			throws SyntaxException, IOException
+			throws SyntaxException
 	{
 		DeclarationType declType = compileType(scope);
 		Symbol sym = addSymbol(scope, declType, functionDefinition, idx);
@@ -68,7 +66,7 @@ public class Parameter extends CodeElement
 	/**
 	 * Deduce parameter type and check that it is valid.
 	 */
-	private DeclarationType compileType(Scope scope) throws SyntaxException, IOException
+	private DeclarationType compileType(Scope scope) throws SyntaxException
 	{
 		DeclarationType declType = declarationSpecifiers.compile(scope);
 		declType.type = declarator.compile(declType.type, scope, null);

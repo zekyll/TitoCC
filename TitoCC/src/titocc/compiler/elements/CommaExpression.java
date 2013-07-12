@@ -1,6 +1,6 @@
 package titocc.compiler.elements;
 
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
@@ -44,13 +44,13 @@ public class CommaExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		// Evaluate left operand and ignore it.
-		left.compileWithConversion(asm, scope, CType.VOID);
+		left.compileWithConversion(ic, scope, CType.VOID);
 
 		// Evaluate right operand in first register.
-		return right.compile(asm, scope);
+		return right.compile(ic, scope);
 	}
 
 	@Override

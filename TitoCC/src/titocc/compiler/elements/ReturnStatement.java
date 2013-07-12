@@ -1,11 +1,11 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.IntermediateCompiler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -48,8 +48,8 @@ public class ReturnStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		Symbol retVal = scope.find("__Ret");
 
@@ -61,9 +61,8 @@ public class ReturnStatement extends Statement
 			}
 
 			// Load expression to first register and store to the return value.
-			Register exprReg = expression.compileAndAllocateRegisters(asm, scope, stack,
-					retVal.getType());
-			asm.emit("store", exprReg, retVal.getReference());
+			Rvalue initVal = expression.compileWithConversion(ic, scope, retVal.getType());
+			ic.emit("store", initVal.getRegister(), retVal.getRhsOperand(false));
 		} else {
 			if (!retVal.getType().equals(CType.VOID))
 				throw new SyntaxException("Function must return a value.", getPosition());
@@ -71,7 +70,7 @@ public class ReturnStatement extends Statement
 
 		// Jump to function end
 		Symbol functionEnd = scope.find("__End");
-		asm.emit("jump", functionEnd.getReference());
+		ic.emit("jump", VirtualRegister.NONE, functionEnd.getReference());
 	}
 
 	@Override

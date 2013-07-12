@@ -1,6 +1,6 @@
 package titocc.compiler.types;
 
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 
@@ -29,13 +29,13 @@ class Uint32Type extends IntegerType
 	}
 
 	@Override
-	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+	public Rvalue compileConversion(IntermediateCompiler ic, Scope scope, Rvalue value,
 			CType targetType)
 	{
 		if (targetType.equals(CType.BOOLISH) || targetType instanceof Int32Type
 				|| targetType instanceof Uint32Type || targetType instanceof PointerType) {
 			return value; // No-op.
 		} else
-			return super.compileConversion(asm, scope, value, targetType);
+			return super.compileConversion(ic, scope, value, targetType);
 	}
 }

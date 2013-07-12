@@ -1,9 +1,9 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
+import titocc.compiler.VirtualRegister;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -81,26 +81,25 @@ public class IfStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		String skipTrueLabel = scope.makeGloballyUniqueName("lbl");
 
-		compileControlExpression(controlExpression, asm, scope, stack, null, skipTrueLabel,
-				"jzer");
+		compileControlExpression(controlExpression, ic, scope, null, skipTrueLabel, "jzer");
 
 		// True statement.
-		compileInNewScope(asm, scope, stack, trueStatement);
+		compileInNewScope(ic, scope, stack, trueStatement);
 
 		// Else statement.
 		if (elseStatement != null) {
 			String skipElseLabel = scope.makeGloballyUniqueName("lbl");
-			asm.emit("jump", skipElseLabel);
-			asm.addLabel(skipTrueLabel);
-			compileInNewScope(asm, scope, stack, elseStatement);
-			asm.addLabel(skipElseLabel);
+			ic.emit("jump", VirtualRegister.NONE, skipElseLabel);
+			ic.addLabel(skipTrueLabel);
+			compileInNewScope(ic, scope, stack, elseStatement);
+			ic.addLabel(skipElseLabel);
 		} else
-			asm.addLabel(skipTrueLabel);
+			ic.addLabel(skipTrueLabel);
 	}
 
 	@Override
@@ -109,12 +108,12 @@ public class IfStatement extends Statement
 		return "(IF " + controlExpression + " " + trueStatement + " " + elseStatement + ")";
 	}
 
-	private void compileInNewScope(Assembler asm, Scope scope, StackAllocator stack,
-			Statement statement) throws IOException, SyntaxException
+	private void compileInNewScope(IntermediateCompiler ic, Scope scope, StackAllocator stack,
+			Statement statement) throws SyntaxException
 	{
 		Scope subScope = new Scope(scope, "");
 		scope.addSubScope(subScope);
-		statement.compile(asm, subScope, stack);
+		statement.compile(ic, subScope, stack);
 	}
 
 	/**

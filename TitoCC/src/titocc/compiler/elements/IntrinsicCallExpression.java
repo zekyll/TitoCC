@@ -1,7 +1,7 @@
 package titocc.compiler.elements;
 
 import java.util.Arrays;
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
@@ -74,54 +74,54 @@ public class IntrinsicCallExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		if (name.equals("in"))
-			return compileIn(asm, scope);
+			return compileIn(ic, scope);
 		else if (name.equals("in2"))
-			return compileIn2(asm, scope);
+			return compileIn2(ic, scope);
 		else if (name.equals("out"))
-			return compileOut(asm, scope);
+			return compileOut(ic, scope);
 		else //if (name.equals("out2"))
-			return compileOut2(asm, scope);
+			return compileOut2(ic, scope);
 	}
 
-	private Rvalue compileIn(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	private Rvalue compileIn(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(0);
 
 		VirtualRegister retReg = new VirtualRegister();
-		asm.emit("in", retReg, "=kbd");
+		ic.emit("in", retReg, "=kbd");
 
 		return new Rvalue(retReg);
 	}
 
-	private Rvalue compileIn2(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	private Rvalue compileIn2(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(1);
 
 		VirtualRegister retReg = new VirtualRegister();
-		asm.emit("in", retReg, "=" + getDeviceNumber());
+		ic.emit("in", retReg, "=" + getDeviceNumber());
 
 		return new Rvalue(retReg);
 	}
 
-	private Rvalue compileOut(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	private Rvalue compileOut(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(1);
 
-		Rvalue argVal = argumentList.getArguments().get(0).compile(asm, scope);
-		asm.emit("out", argVal.getRegister(), "=crt");
+		Rvalue argVal = argumentList.getArguments().get(0).compile(ic, scope);
+		ic.emit("out", argVal.getRegister(), "=crt");
 
 		return new Rvalue(null);
 	}
 
-	private Rvalue compileOut2(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	private Rvalue compileOut2(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		checkArgumentCount(2);
 
-		Rvalue argVal = argumentList.getArguments().get(1).compile(asm, scope);
-		asm.emit("out", argVal.getRegister(), "=" + getDeviceNumber());
+		Rvalue argVal = argumentList.getArguments().get(1).compile(ic, scope);
+		ic.emit("out", argVal.getRegister(), "=" + getDeviceNumber());
 
 		return new Rvalue(null);
 	}

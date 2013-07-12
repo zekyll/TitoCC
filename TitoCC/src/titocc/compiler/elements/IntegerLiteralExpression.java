@@ -1,7 +1,7 @@
 package titocc.compiler.elements;
 
 import java.math.BigInteger;
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
@@ -65,9 +65,9 @@ public class IntegerLiteralExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
-		return compileConstantExpression(asm, scope);
+		return compileConstantExpression(ic, scope);
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package titocc.compiler.elements;
 
 import java.util.Arrays;
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
@@ -70,7 +70,7 @@ public class PostfixExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		// ($6.5.2.4)
 		CType operandType = operand.getType(scope).decay();
@@ -80,9 +80,9 @@ public class PostfixExpression extends Expression
 					+ " requires an arithmetic or object pointer type.", getPosition());
 		}
 
-		Lvalue val = operand.compileAsLvalue(asm, scope, false);
+		Lvalue val = operand.compileAsLvalue(ic, scope, false);
 		boolean inc = operator.equals("++");
-		return operandType.compileIncDecOperator(asm, scope, val, inc, true, 1);
+		return operandType.compileIncDecOperator(ic, scope, val, inc, true, 1);
 	}
 
 	@Override

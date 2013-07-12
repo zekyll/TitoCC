@@ -1,6 +1,6 @@
 package titocc.compiler.elements;
 
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.VirtualRegister;
@@ -65,28 +65,28 @@ public class FunctionCallExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
 		FunctionType funcType = getFunctionType(scope);
 
 		// Reserve space for return value.
 		if (!funcType.getReturnType().equals(CType.VOID))
-			asm.emit("add", VirtualRegister.SP, "=" + funcType.getReturnType().getSize());
+			ic.emit("add", VirtualRegister.SP, "=" + funcType.getReturnType().getSize());
 
 		// Push arguments to stack.
-		argumentList.compile(asm, scope, funcType.getParameterTypes());
+		argumentList.compile(ic, scope, funcType.getParameterTypes());
 
 		// Evaluate the function pointer.
-		Rvalue funcPtrVal = functionPointer.compile(asm, scope);
+		Rvalue funcPtrVal = functionPointer.compile(ic, scope);
 
 		// Make the call.
-		asm.emit("call", VirtualRegister.SP, funcPtrVal.getRegister());
+		ic.emit("call", VirtualRegister.SP, funcPtrVal.getRegister());
 
 		// Read the return value.
 		VirtualRegister retReg = null;
 		if (!funcType.getReturnType().equals(CType.VOID)) {
 			retReg = new VirtualRegister();
-			asm.emit("pop", VirtualRegister.SP, retReg);
+			ic.emit("pop", VirtualRegister.SP, retReg);
 		}
 
 		return new Rvalue(retReg);

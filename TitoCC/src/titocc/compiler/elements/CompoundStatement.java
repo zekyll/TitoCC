@@ -1,9 +1,8 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import titocc.compiler.Assembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.tokenizer.SyntaxException;
@@ -47,8 +46,8 @@ public class CompoundStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		// Create new scope for the block.
 		Scope blockScope = new Scope(scope, "");
@@ -56,7 +55,7 @@ public class CompoundStatement extends Statement
 
 		// Compile statements.
 		for (Statement st : statements)
-			st.compile(asm, blockScope, stack);
+			st.compile(ic, blockScope, stack);
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package titocc.compiler.types;
 
 import java.util.HashMap;
 import java.util.Map;
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.InternalCompilerException;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
@@ -194,13 +194,13 @@ public abstract class CType
 	/**
 	 * Generates code that converts a value of this type to the target type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param value operand value
 	 * @param targetType target type of the conversion
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+	public Rvalue compileConversion(IntermediateCompiler ic, Scope scope, Rvalue value,
 			CType targetType)
 	{
 		if (targetType.equals(CType.VOID))
@@ -212,14 +212,14 @@ public abstract class CType
 	/**
 	 * Generates code for binary bitwise operator with two operands of this type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param lhs LHS value
 	 * @param rhs RHS value
 	 * @param operator operator as a string
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileBinaryBitwiseOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+	public Rvalue compileBinaryBitwiseOperator(IntermediateCompiler ic, Scope scope, Rvalue lhs,
 			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary bitwise operator.");
@@ -228,14 +228,14 @@ public abstract class CType
 	/**
 	 * Generates code for binary comparison operator with two operands of this type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param lhs LHS value
 	 * @param rhs RHS value
 	 * @param operator operator as a string
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileBinaryComparisonOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+	public Rvalue compileBinaryComparisonOperator(IntermediateCompiler ic, Scope scope, Rvalue lhs,
 			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary comparison operator.");
@@ -245,14 +245,14 @@ public abstract class CType
 	 * Generates code for binary shift operator, where left operand has this type and right
 	 * operand has "int" type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param lhs LHS value
 	 * @param rhs RHS value
 	 * @param operator operator as a string
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileBinaryShiftOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+	public Rvalue compileBinaryShiftOperator(IntermediateCompiler ic, Scope scope, Rvalue lhs,
 			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary shift operator.");
@@ -261,14 +261,14 @@ public abstract class CType
 	/**
 	 * Generates code for binary arithmetic operator with two operands of this type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param lhs LHS value
 	 * @param rhs RHS value
 	 * @param operator operator as a string
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileBinaryArithmeticOperator(ExpressionAssembler asm, Scope scope, Rvalue lhs,
+	public Rvalue compileBinaryArithmeticOperator(IntermediateCompiler ic, Scope scope, Rvalue lhs,
 			Rvalue rhs, String operator)
 	{
 		throw new InternalCompilerException("Unimplemented binary arithmetic operator.");
@@ -277,7 +277,7 @@ public abstract class CType
 	/**
 	 * Generates code for unary increment/decrement operator for this type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param operand modifiable lvalue operand
 	 * @param inc true if increment operator, false if decrement
@@ -285,7 +285,7 @@ public abstract class CType
 	 * @param incSize how many steps are incremented/decrement
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileIncDecOperator(ExpressionAssembler asm, Scope scope, Lvalue operand,
+	public Rvalue compileIncDecOperator(IntermediateCompiler ic, Scope scope, Lvalue operand,
 			boolean inc, boolean postfix, int incSize)
 	{
 		throw new InternalCompilerException("Unimplemented increment/decrement operator.");
@@ -294,13 +294,13 @@ public abstract class CType
 	/**
 	 * Generates code for unary plus/minus operator for this type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param operand operand value
 	 * @param plus true if unary plus, false if unary minus
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileUnaryPlusMinusOperator(ExpressionAssembler asm, Scope scope,
+	public Rvalue compileUnaryPlusMinusOperator(IntermediateCompiler ic, Scope scope,
 			Rvalue operand, boolean plus)
 	{
 		throw new InternalCompilerException("Unimplemented unary plus/minus operator.");
@@ -309,12 +309,12 @@ public abstract class CType
 	/**
 	 * Generates code for unary bitwise negation operator for this type.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the compilation takes place; only used for adding labels
 	 * @param operand operand value
 	 * @return Rvalue object describing the result value
 	 */
-	public Rvalue compileUnaryBitwiseNegationOperator(ExpressionAssembler asm, Scope scope,
+	public Rvalue compileUnaryBitwiseNegationOperator(IntermediateCompiler ic, Scope scope,
 			Rvalue operand)
 	{
 		throw new InternalCompilerException("Unimplemented unary bitwise negation operator.");

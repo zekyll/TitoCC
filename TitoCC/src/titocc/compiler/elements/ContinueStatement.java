@@ -1,10 +1,10 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
+import titocc.compiler.VirtualRegister;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
@@ -29,8 +29,8 @@ public class ContinueStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		Symbol jumpPosition = scope.find("__Cont");
 
@@ -38,7 +38,7 @@ public class ContinueStatement extends Statement
 			throw new SyntaxException("Continue used outside of loop.", getPosition());
 
 		// Jump to next iteration.
-		asm.emit("jump", jumpPosition.getReference());
+		ic.emit("jump", VirtualRegister.NONE, jumpPosition.getReference());
 	}
 
 	@Override

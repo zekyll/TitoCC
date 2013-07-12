@@ -1,10 +1,9 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.VirtualRegister;
@@ -53,13 +52,12 @@ public class ArgumentList extends CodeElement
 	 * Generates assembly code to evaluate the arguments from left to right and push the values to
 	 * program stack.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the arguments are evaluated
 	 * @param paramTypes parameter types for the called function
 	 * @throws SyntaxException if argument list contains an error
-	 * @throws IOException if assembler throws
 	 */
-	public void compile(ExpressionAssembler asm, Scope scope, List<CType> paramTypes)
+	public void compile(IntermediateCompiler ic, Scope scope, List<CType> paramTypes)
 			throws SyntaxException
 	{
 		if (paramTypes.size() != arguments.size()) {
@@ -75,8 +73,8 @@ public class ArgumentList extends CodeElement
 						arg.getPosition());
 			}
 
-			Rvalue val = arg.compileWithConversion(asm, scope, paramType);
-			asm.emit("push", VirtualRegister.SP, val.getRegister());
+			Rvalue val = arg.compileWithConversion(ic, scope, paramType);
+			ic.emit("push", VirtualRegister.SP, val.getRegister());
 		}
 	}
 

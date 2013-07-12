@@ -1,6 +1,5 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,10 +56,9 @@ public class ParameterList extends CodeElement
 	 * "temporary" subscope
 	 * @return list of parameter symbols
 	 * @throws SyntaxException if the parameters contain errors
-	 * @throws IOException if assembler throws
 	 */
 	public List<Symbol> compile(Scope scope, boolean functionDefinition)
-			throws SyntaxException, IOException
+			throws SyntaxException
 	{
 		// For function definitions use the given function scope, otherwise
 		// create a temporary subscope for checking duplicate parameter names.

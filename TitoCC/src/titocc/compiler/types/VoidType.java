@@ -1,6 +1,6 @@
 package titocc.compiler.types;
 
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 
@@ -23,12 +23,12 @@ public class VoidType extends CType
 	}
 
 	@Override
-	public Rvalue compileConversion(ExpressionAssembler asm, Scope scope, Rvalue value,
+	public Rvalue compileConversion(IntermediateCompiler ic, Scope scope, Rvalue value,
 			CType targetType)
 	{
 		if (targetType.equals(CType.VOID))
 			return value; // No-op.
 		else
-			return super.compileConversion(asm, scope, value, targetType);
+			return super.compileConversion(ic, scope, value, targetType);
 	}
 }

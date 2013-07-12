@@ -1,11 +1,11 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.LinkedList;
-import titocc.compiler.Assembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -66,8 +66,8 @@ public class ForStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		// The whole for statement creates a new scope.
 		Scope loopScope = new Scope(scope, "");
@@ -86,28 +86,28 @@ public class ForStatement extends Statement
 		String loopTestLabel = loopScope.makeGloballyUniqueName("lbl");
 
 		// Loop initialization code.
-		initStatement.compile(asm, loopScope, stack);
+		initStatement.compile(ic, loopScope, stack);
 
 		// Loop start; jump to the test.
-		asm.emit("jump", loopTestLabel);
-		asm.addLabel(loopStartLabel);
+		ic.emit("jump", VirtualRegister.NONE, loopTestLabel);
+		ic.addLabel(loopStartLabel);
 
 		// Body.
-		body.compile(asm, loopScope, stack);
+		body.compile(ic, loopScope, stack);
 		//TODO implement block-item-list so body can't be a single declaration
 
 		// Evaluate the increment expression and ignore return value.
-		asm.addLabel(continueSymbol.getReference());
+		ic.addLabel(continueSymbol.getReference());
 		if (incrementExpression != null)
-			incrementExpression.compileAndAllocateRegisters(asm, loopScope, stack, CType.VOID);
+			incrementExpression.compileWithConversion(ic, loopScope, CType.VOID);
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
-		compileControlExpression(controlExpression, asm, loopScope, stack, loopTestLabel,
+		compileControlExpression(controlExpression, ic, loopScope, loopTestLabel,
 				loopStartLabel, "jnzer");
 
 		// Insert label to be used by break statements.
-		asm.addLabel(breakSymbol.getReference());
+		ic.addLabel(breakSymbol.getReference());
 	}
 
 	@Override

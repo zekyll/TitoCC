@@ -1,6 +1,6 @@
 package titocc.compiler.elements;
 
-import titocc.compiler.ExpressionAssembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
@@ -52,46 +52,46 @@ public class SubscriptExpression extends Expression
 	}
 
 	@Override
-	public Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException
+	public Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException
 	{
-		return compile(asm, scope, false);
+		return compile(ic, scope, false);
 	}
 
 	@Override
-	public Lvalue compileAsLvalue(ExpressionAssembler asm, Scope scope, boolean addressOf)
+	public Lvalue compileAsLvalue(IntermediateCompiler ic, Scope scope, boolean addressOf)
 			throws SyntaxException
 	{
 		if (!addressOf)
 			requireLvalueType(scope);
 
-		Rvalue addrVal = compile(asm, scope, true);
+		Rvalue addrVal = compile(ic, scope, true);
 		return new Lvalue(addrVal.getRegister());
 	}
 
-	private Rvalue compile(ExpressionAssembler asm, Scope scope, boolean lvalue)
+	private Rvalue compile(IntermediateCompiler ic, Scope scope, boolean lvalue)
 			throws SyntaxException
 	{
 		// Standard allows the operands to be switched so get the actual operands.
 		Expression actualArrayOperand = getActualArrayOperand(scope);
 		Expression actualSubscriptOperand = getActualSubscriptOperand(scope);
 
-		Rvalue arrayVal = actualArrayOperand.compile(asm, scope);
-		Rvalue subscriptVal = actualSubscriptOperand.compileWithConversion(asm, scope,
+		Rvalue arrayVal = actualArrayOperand.compile(ic, scope);
+		Rvalue subscriptVal = actualSubscriptOperand.compileWithConversion(ic, scope,
 				CType.PTRDIFF_T);
 
 		// If increment size > 1 then multiply subscript.
 		int incSize = actualArrayOperand.getType(scope).decay().getIncrementSize();
 		if (incSize != 1)
-			asm.emit("mul", subscriptVal.getRegister(), "=" + incSize);
+			ic.emit("mul", subscriptVal.getRegister(), "=" + incSize);
 
 		// Add subscript to the array pointer.
-		asm.emit("add", arrayVal.getRegister(), subscriptVal.getRegister());
+		ic.emit("add", arrayVal.getRegister(), subscriptVal.getRegister());
 
 		// Dereference the result if lvalue is not explicitly requested and result is not an array
 		// or function.
 		CType resultType = getType(scope);
 		if (!lvalue && !(resultType instanceof ArrayType) && !resultType.isFunction())
-			asm.emit("load", arrayVal.getRegister(), "0", arrayVal.getRegister());
+			ic.emit("load", arrayVal.getRegister(), "0", arrayVal.getRegister());
 
 		return arrayVal;
 	}

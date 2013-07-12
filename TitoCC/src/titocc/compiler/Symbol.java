@@ -108,7 +108,7 @@ public class Symbol
 	{
 		// Stack variables (automatic local variables and parameters) are accessed through stack
 		// pointer (sp).
-		return storageClass == StorageClass.Auto ? globallyUniqueName + "(fp)"
+		return storageClass == StorageClass.Auto ? globallyUniqueName + "(FP)"
 				: globallyUniqueName;
 	}
 

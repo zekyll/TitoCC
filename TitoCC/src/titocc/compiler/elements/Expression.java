@@ -1,14 +1,9 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
-import titocc.compiler.ExpressionAssembler;
-import titocc.compiler.InternalCompilerException;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Lvalue;
-import titocc.compiler.Register;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
-import titocc.compiler.StackAllocator;
 import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
@@ -40,55 +35,28 @@ public abstract class Expression extends CodeElement
 	/**
 	 * Generates assembly code for the expression.
 	 *
-	 * @param asm intermediate expression assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the expression is evaluated
 	 * @return Rvalue object describing the result value
 	 * @throws SyntaxException if expression contains an error
 	 */
-	public abstract Rvalue compile(ExpressionAssembler asm, Scope scope) throws SyntaxException;
+	public abstract Rvalue compile(IntermediateCompiler ic, Scope scope) throws SyntaxException;
 
 	/**
 	 * Generates assembly code for evaluating the expression and converting it to the given target
 	 * type. Requires that the conversion is legal.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the expression is evaluated
 	 * @param targetType target type of the conversion
 	 * @return Rvalue object describing the result value
 	 * @throws SyntaxException if expression contains an error
 	 */
-	public Rvalue compileWithConversion(ExpressionAssembler asm, Scope scope, CType targetType)
+	public Rvalue compileWithConversion(IntermediateCompiler ic, Scope scope, CType targetType)
 			throws SyntaxException
 	{
-		Rvalue val = compile(asm, scope);
-		return getType(scope).decay().compileConversion(asm, scope, val, targetType);
-	}
-
-	/**
-	 * Calls compileWithConversion and also runs the second stage of the compilation that allocates
-	 * physical registers to the virtual ones.
-	 *
-	 * @param asm assembler used for code generation
-	 * @param scope scope in which the expression is evaluated
-	 * @param stack stack allocator
-	 * @param targetType target type of the conversion
-	 * @return the physical register of the result value
-	 * @throws SyntaxException if expression contains an error
-	 * @throws IOException if assembler throws
-	 */
-	public Register compileAndAllocateRegisters(Assembler asm, Scope scope,
-			StackAllocator stack, CType targetType) throws SyntaxException, IOException
-	{
-		ExpressionAssembler exprAsm = new ExpressionAssembler();
-		Rvalue val = compileWithConversion(exprAsm, scope, targetType);
-		exprAsm.optimize();
-		exprAsm.allocateRegisters(stack);
-		exprAsm.sendToAssembler(asm);
-		if (val.getRegister() == null)
-			return null;
-		if (val.getRegister().realRegister == null)
-			throw new InternalCompilerException("Unassigned virtual register.");
-		return val.getRegister().realRegister;
+		Rvalue val = compile(ic, scope);
+		return getType(scope).decay().compileConversion(ic, scope, val, targetType);
 	}
 
 	/**
@@ -105,15 +73,14 @@ public abstract class Expression extends CodeElement
 	/**
 	 * Generates assembly code for the expression, evaluating it as an lvalue.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the expression is evaluated
 	 * @param addressOf true if the expression appears as the operand of operator &, which disables
 	 * the array->pointer decay and function->pointer decay
 	 * @return Lvalue object describing the result value
 	 * @throws SyntaxException if expression contains an error
-	 * @throws IOException if assembler throws
 	 */
-	public Lvalue compileAsLvalue(ExpressionAssembler asm, Scope scope, boolean addressOf)
+	public Lvalue compileAsLvalue(IntermediateCompiler ic, Scope scope, boolean addressOf)
 			throws SyntaxException
 	{
 		throw new SyntaxException("Operation requires an lvalue.", getPosition());
@@ -145,12 +112,12 @@ public abstract class Expression extends CodeElement
 	 * constant by using getCompileTimeValue() and if it is then generates code for the constant
 	 * value.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the expression is evaluated
 	 * @return Rvalue object describing the result value or null if not compile time constant
 	 * @throws SyntaxException if expression contains an error
 	 */
-	protected Rvalue compileConstantExpression(ExpressionAssembler asm, Scope scope)
+	protected Rvalue compileConstantExpression(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
 		Integer value = getCompileTimeValue();
@@ -159,12 +126,12 @@ public abstract class Expression extends CodeElement
 			// Load value in first available register.
 			VirtualRegister retReg = new VirtualRegister();
 			if (value < 32768 && value >= -32768)
-				asm.emit("load", retReg, "=" + value);
+				ic.emit("load", retReg, "=" + value);
 			else {
 				String name = scope.makeGloballyUniqueName("int");
-				asm.addLabel(name);
-				asm.emit("dc", value);
-				asm.emit("load", retReg, name);
+				ic.addLabel(name);
+				ic.emit("dc", value);
+				ic.emit("load", retReg, name);
 			}
 			return new Rvalue(retReg);
 		} else

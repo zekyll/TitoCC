@@ -1,10 +1,10 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -64,8 +64,8 @@ public class WhileStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		// While statement creates a new scope.
 		Scope loopScope = new Scope(scope, "");
@@ -81,19 +81,19 @@ public class WhileStatement extends Statement
 
 		// Loop start.
 		String loopStartLabel = scope.makeGloballyUniqueName("lbl");
-		asm.emit("jump", continueSymbol.getReference());
-		asm.addLabel(loopStartLabel);
+		ic.emit("jump", VirtualRegister.NONE, continueSymbol.getReference());
+		ic.addLabel(loopStartLabel);
 
 		// Body.
-		body.compile(asm, loopScope, stack);
+		body.compile(ic, loopScope, stack);
 
 		// Loop test code is after the body so that we only need one
 		// jump instruction per iteration.
-		compileControlExpression(controlExpression, asm, loopScope, stack,
-				continueSymbol.getReference(), loopStartLabel, "jnzer");
+		compileControlExpression(controlExpression, ic, loopScope, continueSymbol.getReference(),
+				loopStartLabel, "jnzer");
 
 		// Insert label to be used by break statements.
-		asm.addLabel(breakSymbol.getReference());
+		ic.addLabel(breakSymbol.getReference());
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.types.CType;
@@ -35,7 +34,7 @@ public class ExpressionStatement extends Statement
 		this.expression = expression;
 	}
 
-	/**scope
+	/**
 	 * Returns the expression.
 	 *
 	 * @return the expression
@@ -46,11 +45,11 @@ public class ExpressionStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		// Evaluate expression and ignore result.
-		expression.compileAndAllocateRegisters(asm, scope, stack, CType.VOID);
+		expression.compileWithConversion(ic, scope, CType.VOID);
 	}
 
 	@Override

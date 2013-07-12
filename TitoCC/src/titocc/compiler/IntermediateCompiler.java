@@ -18,7 +18,7 @@ import java.util.TreeSet;
  * virtual registers using simple linear scan allocator and inserts spill code. Finally the
  * instructions are sent to the actual assembler.
  */
-public class ExpressionAssembler
+public class IntermediateCompiler
 {
 	/**
 	 * Auxiliary register for temporarily loading spilled register that is used as LHS operand.
@@ -47,7 +47,8 @@ public class ExpressionAssembler
 	 */
 	public void emit(String mnemonic)
 	{
-		emit(mnemonic, null, null, null);
+		instructions.add(new Instruction(label, mnemonic));
+		label = null;
 	}
 
 	/**
@@ -149,8 +150,12 @@ public class ExpressionAssembler
 	 *
 	 * @param stack allocator for local stack data; used for reserving register spill locations
 	 */
-	public void allocateRegisters(StackAllocator stack)
+	public void compile(StackAllocator stack)
 	{
+//		if (this.label != null)
+//			emit("nop");
+
+		optimize();
 		int spillCount = decideSpillRegisters();
 		stack.reserveSpillLocations(spillCount);
 		insertLoadsAndStores();

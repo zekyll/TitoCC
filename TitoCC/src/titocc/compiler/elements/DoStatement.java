@@ -1,7 +1,6 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
-import titocc.compiler.Assembler;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.Symbol;
@@ -64,8 +63,8 @@ public class DoStatement extends Statement
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		// Do statement creates a new scope.
 		Scope loopScope = new Scope(scope, "");
@@ -81,17 +80,17 @@ public class DoStatement extends Statement
 
 		// Loop start.
 		String loopStartLabel = scope.makeGloballyUniqueName("lbl");
-		asm.addLabel(loopStartLabel);
+		ic.addLabel(loopStartLabel);
 
 		// Body.
-		body.compile(asm, loopScope, stack);
+		body.compile(ic, loopScope, stack);
 
 		// Test.
-		compileControlExpression(controlExpression, asm, loopScope, stack,
-				continueSymbol.getReference(), loopStartLabel, "jnzer");
+		compileControlExpression(controlExpression, ic, loopScope, continueSymbol.getReference(),
+				loopStartLabel, "jnzer");
 
 		// Insert end label to be used by break statements.
-		asm.addLabel(breakSymbol.getReference());
+		ic.addLabel(breakSymbol.getReference());
 	}
 
 	@Override

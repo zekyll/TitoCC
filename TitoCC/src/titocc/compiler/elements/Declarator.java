@@ -1,6 +1,5 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Scope;
@@ -89,7 +88,7 @@ public abstract class Declarator extends CodeElement
 
 		@Override
 		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
-				throws SyntaxException, IOException
+				throws SyntaxException
 		{
 			if (!type.isObject())
 				throw new SyntaxException("Array elements must have object type.", getPosition());
@@ -125,7 +124,7 @@ public abstract class Declarator extends CodeElement
 
 		@Override
 		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
-				throws SyntaxException, IOException
+				throws SyntaxException
 		{
 			return subDeclarator.compile(new PointerType(type), scope, paramSymbolsOut);
 		}
@@ -153,7 +152,7 @@ public abstract class Declarator extends CodeElement
 
 		@Override
 		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
-				throws SyntaxException, IOException
+				throws SyntaxException
 		{
 			// Only recognize the innermost function declarator as function definition, in case
 			// there are several (e.g. a function returning a function pointer).
@@ -234,7 +233,7 @@ public abstract class Declarator extends CodeElement
 	 * @throws SyntaxException
 	 */
 	public abstract CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
-			throws SyntaxException, IOException;
+			throws SyntaxException;
 
 	/**
 	 * Attempts to parse a declarator from token stream. If parsing fails the stream is reset to its

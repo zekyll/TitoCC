@@ -1,11 +1,11 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import java.util.LinkedList;
-import titocc.compiler.Assembler;
-import titocc.compiler.Register;
+import titocc.compiler.IntermediateCompiler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
+import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
@@ -34,29 +34,27 @@ public abstract class Statement extends CodeElement
 	/**
 	 * Generates assembly code for the statement.
 	 *
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the statement is evaluated
 	 * @param stack allocator for local stack data
 	 * @throws SyntaxException if statement contains an error
-	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException;
+	public abstract void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException;
 
 	/**
 	 * Helper function for compiling if/for/do/while control expressions and corresponding jumps.
 	 *
 	 * @param controlExpr control expression, if null then unconditional jump is generated
-	 * @param asm assembler used for code generation
+	 * @param ic intermediate compiler used for code generation
 	 * @param scope scope in which the control expression is evaluated
-	 * @param stack allocator for local stack data
 	 * @param testLabel label added just before the test
 	 * @param jumpLabel jump target label when test is true
 	 * @param jumpInstr mnemonic for the jump/test instruction
 	 */
-	protected static void compileControlExpression(Expression controlExpr, Assembler asm,
-			Scope scope, StackAllocator stack, String testLabel, String jumpLabel,
-			String jumpInstr) throws IOException, SyntaxException
+	protected static void compileControlExpression(Expression controlExpr, IntermediateCompiler ic,
+			Scope scope, String testLabel, String jumpLabel, String jumpInstr)
+			throws SyntaxException
 	{
 		if (controlExpr != null && !controlExpr.getType(scope).decay().isScalar()) {
 			throw new SyntaxException("Illegal control expression. Scalar type required.",
@@ -64,18 +62,17 @@ public abstract class Statement extends CodeElement
 		}
 
 		if (testLabel != null)
-			asm.addLabel(testLabel);
+			ic.addLabel(testLabel);
 
 		// Only generate code for the test if there is a control expression. Otherwise make
 		// unconditional jump (only allowed in for loops).
 		if (controlExpr != null) {
-			Register valReg = controlExpr.compileAndAllocateRegisters(asm, scope, stack,
-					CType.BOOLISH);
+			Rvalue val = controlExpr.compileWithConversion(ic, scope, CType.BOOLISH);
 
 			// Jump if test was false/true (depending on jump instruction).
-			asm.emit(jumpInstr, valReg, jumpLabel); // jnzer/jzer
+			ic.emit(jumpInstr, val.getRegister(), jumpLabel); // jnzer/jzer
 		} else
-			asm.emit("jump", jumpLabel);
+			ic.emit("jump", VirtualRegister.NONE, jumpLabel);
 	}
 
 	/**

@@ -1,11 +1,11 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Assembler;
 import titocc.compiler.DeclarationType;
+import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Register;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
@@ -74,7 +74,7 @@ public class Function extends Declaration
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator sa)
+	public void compile(Assembler asm, IntermediateCompiler ic_, Scope scope, StackAllocator sa_)
 			throws IOException, SyntaxException
 	{
 		asm.addEmptyLines(1);
@@ -99,7 +99,7 @@ public class Function extends Declaration
 		// Declare the function and its symbols. Point of declaration is right
 		// after the function's declarator, i.e. the function name cannot be
 		// used in parameter list.
-		Symbol sym = addSymbol(scope, declType);
+		Symbol funcSym = addSymbol(scope, declType);
 		addInternalSymbols(functionScope, returnType);
 
 		// Constants for return value and parameters.
@@ -107,14 +107,13 @@ public class Function extends Declaration
 
 		// Compile body before prologue because we want to know all the local
 		// variables in the prologue.
-		StringWriter bodyWriter = new StringWriter();
-		Assembler bodyAsm = new Assembler(bodyWriter);
-		compileBody(bodyAsm, functionScope, stack);
+		IntermediateCompiler bodyIc = new IntermediateCompiler();
+		compileBody(bodyIc, functionScope, stack);
+		bodyIc.compile(stack);
 		List<Symbol> localVariables = getLocalVariables(functionScope);
-		bodyAsm.finish();
 
-		compilePrologue(asm, localVariables, stack.getSpillCount(), sym.getReference());
-		asm.getWriter().append(bodyWriter.toString());
+		compilePrologue(asm, localVariables, stack.getSpillCount(), funcSym.getReference());
+		bodyIc.sendToAssembler(asm);
 		compileEpilogue(asm, localVariables, stack.getSpillCount(), paramTotalSize);
 	}
 
@@ -183,24 +182,24 @@ public class Function extends Declaration
 			asm.emit("add", Register.SP, "=" + varOffset);
 
 		// Push registers.
-		asm.emit("pushr", "sp");
+		asm.emit("pushr", "SP");
 	}
 
-	private void compileBody(Assembler asm, Scope scope, StackAllocator stack)
-			throws IOException, SyntaxException
+	private void compileBody(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
 	{
 		// Compile statements directly, so that CompoundStatement doesn't create
 		// new scope, and the statements are in the same scope as parameters.
 		for (Statement st : body.getStatements())
-			st.compile(asm, scope, stack);
+			st.compile(ic, scope, stack);
+		ic.addLabel(endSymbol.getReference());
 	}
 
 	private void compileEpilogue(Assembler asm, List<Symbol> localVariables, int spillCount,
 			int paramTotalSize) throws IOException, SyntaxException
 	{
 		// Pop registers from stack.
-		asm.addLabel(endSymbol.getReference());
-		asm.emit("popr", "sp");
+		asm.emit("popr", "SP");
 
 		// Calculate total size of local variables and register spill locations on stack.
 		int localDataSize = spillCount;

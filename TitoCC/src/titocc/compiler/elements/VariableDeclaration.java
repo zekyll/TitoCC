@@ -3,7 +3,8 @@ package titocc.compiler.elements;
 import java.io.IOException;
 import titocc.compiler.Assembler;
 import titocc.compiler.DeclarationType;
-import titocc.compiler.Register;
+import titocc.compiler.IntermediateCompiler;
+import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
 import titocc.compiler.StorageClass;
@@ -68,7 +69,7 @@ public class VariableDeclaration extends Declaration
 	}
 
 	@Override
-	public void compile(Assembler asm, Scope scope, StackAllocator stack)
+	public void compile(Assembler asm, IntermediateCompiler ic, Scope scope, StackAllocator stack)
 			throws SyntaxException, IOException
 	{
 		DeclarationType declType = declarationSpecifiers.compile(scope);
@@ -90,7 +91,7 @@ public class VariableDeclaration extends Declaration
 		if (scope.isGlobal())
 			compileGlobalVariable(asm, scope, sym);
 		else
-			compileLocalVariable(asm, scope, stack, sym, declType.type);
+			compileLocalVariable(ic, scope, stack, sym, declType.type);
 	}
 
 	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
@@ -137,13 +138,12 @@ public class VariableDeclaration extends Declaration
 			asm.emit("dc", "" + initValue);
 	}
 
-	private void compileLocalVariable(Assembler asm, Scope scope, StackAllocator stack,
-			Symbol sym, CType variableType) throws SyntaxException, IOException
+	private void compileLocalVariable(IntermediateCompiler ic, Scope scope, StackAllocator stack,
+			Symbol sym, CType variableType) throws SyntaxException
 	{
 		if (initializer != null) {
-			Register valReg = initializer.compileAndAllocateRegisters(asm, scope, stack,
-					variableType);
-			asm.emit("store", valReg, sym.getReference());
+			Rvalue initVal = initializer.compileWithConversion(ic, scope, variableType);
+			ic.emit("store", initVal.getRegister(), sym.getRhsOperand(false));
 		}
 	}
 
