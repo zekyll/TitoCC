@@ -30,10 +30,10 @@ public final class DeclarationType
 	/**
 	 * Storage class.
 	 */
-	public StorageClass storageClass;
+	public final StorageClass storageClass;
 
 	/**
 	 * Whether the function was declared inline or not. Only applicable to functions.
 	 */
-	public boolean inline;
+	public final boolean inline;
 }

@@ -119,6 +119,13 @@ int main()
 	int date = 115; ok |= date == 115;
 	out(ok);
 
+	// Multiple init-declarators
+	{
+		int x;
+		int *a = &x, b = 9, c[12], d = b;
+		out(a == &x && b == 9 && d == 9);
+	}
+
 	// Void function call
 	gok = 0;
 	voidFunc(99, 98);

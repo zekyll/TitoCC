@@ -100,7 +100,7 @@ public class CompilerTest
 		testErr("\nvoid f() { while(f()); }",
 				"Illegal control expression. Scalar type required.", 1, 17);
 		testErr("\nvoid f() { int x = f(); }",
-				"Initializer type doesn't match variable type.", 1, 11);
+				"Initializer type doesn't match variable type.", 1, 19);
 		testErr("\nvoid f(int a) { f(out()); }",
 				"Argument type doesn't match type of the parameter.", 1, 18);
 	}
@@ -192,34 +192,36 @@ public class CompilerTest
 	public void errorWhenRedefiningAVariable() throws IOException
 	{
 		String msg = "Redefinition of \"a\".";
-		testErr("\nvoid f() { int a = 0; int a; }", msg, 1, 22);
-		testErr("\nvoid f(int a) { int a; }", msg, 1, 16);
-		testErr("\nvoid f() { if(1){int a; int a;} }", msg, 1, 24);
-		testErr("\nvoid f() { if(1);else{int a; int a;} }", msg, 1, 29);
-		testErr("\nvoid f() { for(;;) {int a; int a;} }", msg, 1, 27);
-		testErr("\nvoid f() { while(1) {int a; int a;} }", msg, 1, 28);
-		testErr("\nvoid f() { do{int a; int a;}while(1); }", msg, 1, 21);
-		testErr("\nvoid f() { {int a; int a;} }", msg, 1, 19);
+		testErr("\nvoid f() { int a = 0; int a; }", msg, 1, 26);
+		testErr("\nvoid f(int a) { int a; }", msg, 1, 20);
+		testErr("\nvoid f() { if(1){int a; int a;} }", msg, 1, 28);
+		testErr("\nvoid f() { if(1);else{int a; int a;} }", msg, 1, 33);
+		testErr("\nvoid f() { for(;;) {int a; int a;} }", msg, 1, 31);
+		testErr("\nvoid f() { while(1) {int a; int a;} }", msg, 1, 32);
+		testErr("\nvoid f() { do{int a; int a;}while(1); }", msg, 1, 25);
+		testErr("\nvoid f() { {int a; int a;} }", msg, 1, 23);
+		testErr("\nint a; int a;", msg, 1, 11);
+		testErr("\nint a = 1, a;", msg, 1, 11);
 	}
 
 	@Test
 	public void errorWhenGlobalVariableInitializerNotConstant() throws IOException
 	{
 		testErr("\nint a; int b = a;",
-				"Global variable must be initialized with a compile time constant.", 1, 7);
+				"Global variable must be initialized with a compile time constant.", 1, 15);
 	}
 
 	@Test
 	public void errorWhenArrayHasInitializer() throws IOException
 	{
-		testErr("\nint a[2] = 0;", "Array initializers are not supported.", 1, 0);
+		testErr("\nint a[2] = 0;", "Array initializers are not supported.", 1, 11);
 	}
 
 	@Test
 	public void errorWhenVariableIsNotObject() throws IOException
 	{
-		testErr("\nvoid a;", "Variable must have object type.", 1, 0);
-		testErr("\nvoid a();", "Variable must have object type.", 1, 0);
+		testErr("\nvoid a;", "Variable must have object type.", 1, 5);
+		testErr("\nvoid a();", "Variable must have object type.", 1, 5);
 	}
 
 	@Test
@@ -314,14 +316,14 @@ public class CompilerTest
 	public void errorWhenIllegalInitializerType() throws IOException
 	{
 		String msg = "Initializer type doesn't match variable type.";
-		testErr("\nint f() { int* a = 1; }", msg, 1, 10);
-		testErr("\nint f() { void* a = 1; }", msg, 1, 10);
-		testErr("\nint f() { int** b; int* a = b; }", msg, 1, 19);
-		testErr("\nint f() { int (*p)(int) = f; }", msg, 1, 10);
-		testErr("\nint f() { void* v; int (*p)() = v; }", msg, 1, 19);
-		testErr("\nint f() { int (*p)(); void* v = p; }", msg, 1, 22);
-		testErr("\nint f() { int b[2][2]; int *a = b; }", msg, 1, 23);
-		testErr("\nvoid f() { int a = f(); }", msg, 1, 11);
+		testErr("\nint f() { int* a = 1; }", msg, 1, 19);
+		testErr("\nint f() { void* a = 1; }", msg, 1, 20);
+		testErr("\nint f() { int** b; int* a = b; }", msg, 1, 28);
+		testErr("\nint f() { int (*p)(int) = f; }", msg, 1, 26);
+		testErr("\nint f() { void* v; int (*p)() = v; }", msg, 1, 32);
+		testErr("\nint f() { int (*p)(); void* v = p; }", msg, 1, 32);
+		testErr("\nint f() { int b[2][2]; int *a = b; }", msg, 1, 32);
+		testErr("\nvoid f() { int a = f(); }", msg, 1, 19);
 	}
 
 	@Test

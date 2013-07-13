@@ -310,9 +310,10 @@ public class ParserTest
 	@Test
 	public void matchForStatement() throws IOException, SyntaxException
 	{
-		assertEquals(inFunc("(FOR (DECL_ST (VAR_DECL (DS int) (DCLTOR i) (INT_EXPR 0)))"
-				+ " (BIN_EXPR < (ID_EXPR i) (ID_EXPR n)) (PRE_EXPR ++ (ID_EXPR i)) (BLK_ST))"),
-				parse("void f() { for(int i = 0; i < n; ++i) {} }"));
+		assertEquals(inFunc("(FOR (DECL_ST (VAR_DECL (DS int) (DCLTOR i) (INT_EXPR 0) (DCLTOR b)"
+				+ " null)) (BIN_EXPR < (ID_EXPR i) (ID_EXPR n)) (PRE_EXPR ++ (ID_EXPR i))"
+				+ " (BLK_ST))"),
+				parse("void f() { for(int i = 0,b; i < n; ++i) {} }"));
 		assertEquals(inFunc("(FOR (EXPR_ST (ASGN_EXPR = (ID_EXPR a) (ID_EXPR b))) null null"
 				+ " (BLK_ST))"),
 				parse("void f() { for(a = b; ; ) {} }"));
@@ -355,6 +356,14 @@ public class ParserTest
 				+ " (VAR_DECL (DS typedef extern char short int _Bool _Complex restrict)"
 				+ " (DCLTOR x) null)))))",
 				parse("int f() { typedef extern char short int _Bool _Complex restrict x; }"));
+	}
+
+	@Test
+	public void matchInitDeclaratorList() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR (DCLTOR a)) null (DCLTOR (DCLTOR b)"
+				+ " (INT_EXPR 1)) null (DCLTOR c) null))",
+				parse("int *a, b[1], c;"));
 	}
 
 	@Test
@@ -584,6 +593,13 @@ public class ParserTest
 	}
 
 	@Test
+	public void failAtVariableDeclarationAfterComma() throws IOException, SyntaxException
+	{
+		testFailure("\nint a = 2,;", ";", 1, 10);
+		testFailure("\nint a = 2,0;", "0", 1, 10);
+	}
+
+	@Test
 	public void failAtWhileStatementOpeningBrace() throws IOException, SyntaxException
 	{
 		testFailure("\nvoid foo() { while a == b) foo(); }", "a", 1, 19);
@@ -710,6 +726,6 @@ public class ParserTest
 	public void failWhenCommaExpressionUsedInIllegalPlace() throws IOException, SyntaxException
 	{
 		testFailure("\nint x[a,b]", ",", 1, 7);
-		testFailure("\nint x = a,0", ",", 1, 9);
+		testFailure("\nint x = a,0", "0", 1, 10);
 	}
 }
