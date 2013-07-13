@@ -84,7 +84,7 @@ public class BinaryExpression extends Expression
 			put(">", new Operator("jgre", Type.RELATIONAL, 8));
 			put(">=", new Operator("jnles", Type.RELATIONAL, 8));
 			put("<<", new Operator("shl", Type.SHIFT, 9));
-			put(">>", new Operator("shr", Type.SHIFT, 9));
+			put(">>", new Operator("shra", Type.SHIFT, 9));
 			put("+", new Operator("add", Type.ARITHMETIC, 10));
 			put("-", new Operator("sub", Type.ARITHMETIC, 10));
 			put("*", new Operator("mul", Type.ARITHMETIC, 11));

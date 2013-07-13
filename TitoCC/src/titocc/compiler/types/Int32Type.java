@@ -30,7 +30,7 @@ class Int32Type extends IntegerType
 			put(">", "jgre");
 			put(">=", "jnles");
 			put("<<", "shl");
-			put(">>", "shr");
+			put(">>", "shra");
 			put("+", "add");
 			put("-", "sub");
 			put("*", "mul");

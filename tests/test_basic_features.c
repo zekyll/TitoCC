@@ -194,7 +194,10 @@ int main()
 	// Right shift
 	a = 72; b = 3; out(a >> b == 9);
 	a = 255; b = 1; out(a >> b == 127);
-	a = -1; b = 31; out(a >> b == 1);
+
+	// Arithmetic right shift
+	a = -1; b = 31; out(a >> b == -1);
+	a = -12345678; b = 7; out(a >> b == -96451);
 
 	// Less than
 	a = -7; b = -7; out(a < b == 0);
@@ -339,7 +342,10 @@ int main()
 	// Right shift assignment
 	a = 72; b = 3; out((a >>= b) == 9 && a == 9);
 	a = 255; b = 1; out((a >>= b) == 127 && a == 127);
-	a = -1; b = 31; out((a >>= b) == 1 && a == 1);
+
+	// Arithmetic right shift assignment
+	a = -1; b = 31; out((a >>= b) == -1 && a == -1);
+	a = -12345678; b = 7; out((a >>= b) == -96451 && a == -96451);
 
 	// Comma operator
 	a = 22;
