@@ -230,7 +230,7 @@ public class BinaryExpression extends Expression
 
 		Rvalue lhs = left.compileWithConversion(ic, scope, leftType);
 		Rvalue rhs = right.compileWithConversion(ic, scope, rightType);
-		return leftType.compileBinaryBitwiseOperator(ic, scope, lhs, rhs, operator);
+		return leftType.compileBinaryShiftOperator(ic, scope, lhs, rhs, operator);
 	}
 
 	private Rvalue compileArithmeticOperator(IntermediateCompiler ic, Scope scope)
