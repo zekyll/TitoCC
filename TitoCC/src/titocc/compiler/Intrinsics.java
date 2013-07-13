@@ -5,6 +5,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.elements.Declaration;
+import titocc.compiler.types.CType;
+import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
 import titocc.tokenizer.TokenStream;
@@ -56,6 +58,36 @@ class Intrinsics
 	 */
 	Intrinsics()
 	{
+		// The "middle" 32-bit value (2^31).
+		add(new Symbol(
+				"__m",
+				CType.INT,
+				Symbol.Category.GlobalVariable,
+				StorageClass.Static,
+				false),
+				"int __m = -2147483648;");
+
+		// Unsigned division using only signed operations.
+		add(new Symbol(
+				"__udiv",
+				new FunctionType(CType.INT, CType.INT, CType.INT),
+				Symbol.Category.Function,
+				StorageClass.Extern,
+				false),
+				"int __udiv(int a, int b)"
+				+ "{"
+				+ "  if (b & __m) {"
+				+ "      return a + __m >= b + __m;"
+				+ "  } else {"
+				+ "    int r = 0;"
+				+ "    int c;"
+				+ "    while (a & __m) {"
+				+ "      r += c = (__m - 1) / b;"
+				+ "      a -= c * b;"
+				+ "    }"
+				+ "    return r + a / b;"
+				+ "  }"
+				+ "}");
 	}
 
 	/**

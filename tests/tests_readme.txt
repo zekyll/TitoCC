@@ -12,6 +12,9 @@ Tets for, while and do-while loops, and break/continue statements. Outputs "1" o
 --- test_function_pointers.c ---
 Tets function declarators and function pointers. Outputs "1" on successful tests.
 
+--- test_integer_types.c ---
+Tests operations on different integer types.
+
 --- example_random_number_generator.c ---
 Random number generator using WELL512 algorithm. First 5 generated numbers should be:
 1174520813
