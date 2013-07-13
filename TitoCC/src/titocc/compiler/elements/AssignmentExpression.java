@@ -196,7 +196,7 @@ public class AssignmentExpression extends Expression
 		} else if (operator.type == BinaryExpression.Type.BITWISE)
 			retVal = leftType.compileBinaryBitwiseOperator(ic, scope, lhsVal, rhs, binOp);
 		else if (operator.type == BinaryExpression.Type.SHIFT)
-			retVal = leftType.compileBinaryBitwiseOperator(ic, scope, lhsVal, rhs, binOp);
+			retVal = leftType.compileBinaryShiftOperator(ic, scope, lhsVal, rhs, binOp);
 		else //if (operator.type == BinaryExpression.Type.ARITHMETIC)
 			retVal = leftType.compileBinaryArithmeticOperator(ic, scope, lhsVal, rhs, binOp);
 
