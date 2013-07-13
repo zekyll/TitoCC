@@ -49,6 +49,16 @@ public class Symbol
 	private final Category category;
 
 	/**
+	 * Whether the object/function is defined.
+	 */
+	private boolean defined = false;
+
+	/**
+	 * Number of source code references to this symnol.
+	 */
+	private int useCount = 0;
+
+	/**
 	 * Constructs a new Symbol.
 	 *
 	 * @param name name of the symbol
@@ -163,5 +173,45 @@ public class Symbol
 	public boolean getInline()
 	{
 		return inline;
+	}
+
+	/**
+	 * Check if the object/function has been defined.
+	 *
+	 * @return
+	 */
+	public boolean isDefined()
+	{
+		return defined;
+	}
+
+	/**
+	 * Marks the object/function as defined.
+	 *
+	 * @return false if already defined
+	 */
+	public boolean define()
+	{
+		boolean ret = !defined;
+		defined = true;
+		return ret;
+	}
+
+	/**
+	 * Increments the usage counter for this symbol.
+	 */
+	public void increaseUseCount()
+	{
+		++useCount;
+	}
+
+	/**
+	 * Get the number of usages. Can be used by optimizations to eliminate unused code etc.
+	 *
+	 * @return use count
+	 */
+	public int getUseCount()
+	{
+		return useCount;
 	}
 }

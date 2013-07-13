@@ -96,6 +96,8 @@ public class Scope
 		Symbol sym = symbols.get(name);
 		if (sym == null && parent != null)
 			sym = parent.find(name);
+		if (sym != null)
+			sym.increaseUseCount();
 		return sym;
 	}
 
@@ -104,16 +106,16 @@ public class Scope
 	 * and sets the globally unique name for the symbol.
 	 *
 	 * @param symbol Symbol to be added.
-	 * @return true if succeeded, or false if symbol was not added (already exists)
+	 * @return the symbol itself or existing symbol with same name if one exists already
 	 */
-	public boolean add(Symbol symbol)
+	public Symbol add(Symbol symbol)
 	{
 		if (symbols.containsKey(symbol.getName()))
-			return false;
+			return symbols.get(symbol.getName());
 		symbols.put(symbol.getName(), symbol);
 		String globalName = makeGloballyUniqueName(symbol.getName());
 		symbol.setGlobalName(globalName);
-		return true;
+		return symbol;
 	}
 
 	/**

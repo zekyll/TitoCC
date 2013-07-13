@@ -122,7 +122,8 @@ public class Function extends Declaration
 		String name = declarator.getName();
 		Symbol sym = new Symbol(name, declType.type, Symbol.Category.Function,
 				StorageClass.Extern, false);
-		if (!scope.add(sym))
+		sym = scope.add(sym);
+		if (!sym.define())
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
 		return sym;
 	}

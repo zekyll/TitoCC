@@ -59,14 +59,14 @@ public class ScopeTest
 	}
 
 	@Test
-	public void addFailsIfNameExistsAlready()
+	public void addReturnsEalierSymbolIfExistsAlready()
 	{
 		globalScope.add(sym1);
 		globalScope.add(sym2);
 		Symbol sym3 = new Symbol(sym1.getName(), null, Symbol.Category.LocalVariable,
 				StorageClass.Auto, false);
-		boolean ret = globalScope.add(sym3);
-		assertFalse(ret);
+		Symbol ret = globalScope.add(sym3);
+		assertSame(sym1, ret);
 		assertEquals(2, globalScope.getSymbols().size());
 	}
 

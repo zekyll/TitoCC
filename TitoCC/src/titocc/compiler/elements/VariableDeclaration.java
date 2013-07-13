@@ -107,7 +107,8 @@ public class VariableDeclaration extends Declaration
 					StorageClass.Auto, false);
 		}
 
-		if (!scope.add(sym))
+		sym = scope.add(sym);
+		if (!sym.define())
 			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
 
 		return sym;
