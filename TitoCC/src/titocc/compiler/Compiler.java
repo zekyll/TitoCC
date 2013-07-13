@@ -32,6 +32,8 @@ public class Compiler
 	 */
 	private TranslationUnit translationUnit;
 
+	Intrinsics intrinsics = new Intrinsics();
+
 	/**
 	 * Constructs a compiler object that takes a C source file as input.
 	 *
@@ -68,7 +70,9 @@ public class Compiler
 		Scope scope = new Scope(null, "");
 		reserveNames(scope);
 		Assembler asm = new Assembler(writer);
+		intrinsics.declare(scope);
 		translationUnit.compile(asm, scope);
+		intrinsics.define(asm, scope);
 		asm.finish();
 	}
 

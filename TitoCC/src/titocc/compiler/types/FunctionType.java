@@ -1,5 +1,7 @@
 package titocc.compiler.types;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,6 +30,18 @@ public class FunctionType extends CType
 	{
 		this.returnType = returnType;
 		this.parameterTypes = parameterTypes;
+	}
+
+	/**
+	 * Constructs a new FunctionType, taking parameter types from variadic parameter list .
+	 *
+	 * @param returnType return type
+	 * @param parameterTypes types of all the parameters
+	 */
+	public FunctionType(CType returnType, CType... parameterTypes)
+	{
+		this.returnType = returnType;
+		this.parameterTypes = new ArrayList<CType>(Arrays.asList(parameterTypes));
 	}
 
 	/**
