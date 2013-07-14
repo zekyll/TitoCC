@@ -77,14 +77,12 @@ public class IntegerLiteralExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue() throws SyntaxException
+	public BigInteger getCompileTimeValue() throws SyntaxException
 	{
 		if (!suffix.isEmpty())
 			throw new SyntaxException("Suffixes on literals are not supported.", getPosition());
 
-		// If the literal is too big, only take the least significant 32 bits.
-		// BigInteger.intValue() automatically does this.
-		return new BigInteger(rawValue).intValue();
+		return new BigInteger(rawValue);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.InternalCompilerException;
@@ -128,12 +129,12 @@ public class IntrinsicCallExpression extends Expression
 
 	private int getDeviceNumber() throws SyntaxException
 	{
-		Integer device = argumentList.getArguments().get(0).getCompileTimeValue();
+		BigInteger device = argumentList.getArguments().get(0).getCompileTimeValue();
 		if (device == null) {
 			throw new SyntaxException("Invalid device number for input function. Compile time "
 					+ "constant required.", getPosition());
 		}
-		return device;
+		return device.intValue();
 	}
 
 	private void checkArgumentCount(int expected) throws SyntaxException

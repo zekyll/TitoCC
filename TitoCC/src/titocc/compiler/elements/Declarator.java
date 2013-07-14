@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Scope;
@@ -93,16 +94,17 @@ public abstract class Declarator extends CodeElement
 			if (!type.isObject())
 				throw new SyntaxException("Array elements must have object type.", getPosition());
 
-			Integer len = arrayLength.getCompileTimeValue();
+			BigInteger len = arrayLength.getCompileTimeValue();
 			if (len == null) {
 				throw new SyntaxException("Array length must be a compile time constant.",
 						getPosition());
-			} else if (len <= 0) {
+			} else if (len.compareTo(BigInteger.ZERO) <= 0) {
 				throw new SyntaxException("Array length must be a positive integer.",
 						getPosition());
 			}
 
-			return subDeclarator.compile(new ArrayType(type, len), scope, paramSymbolsOut);
+			CType arrayType = new ArrayType(type, len.intValue());
+			return subDeclarator.compile(arrayType, scope, paramSymbolsOut);
 		}
 
 		@Override

@@ -1,6 +1,7 @@
 package titocc.compiler.elements;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Assembler;
@@ -97,20 +98,21 @@ public class VariableDeclaration extends Declaration
 		private void compileGlobalVariable(Assembler asm, Scope scope, Symbol sym)
 				throws SyntaxException, IOException
 		{
-			Integer initValue = 0;
+			BigInteger initValue;
 			if (initializer != null) {
 				initValue = initializer.getCompileTimeValue();
 				if (initValue == null) {
 					throw new SyntaxException("Global variable must be initialized with a compile"
 							+ " time constant.", initializer.getPosition());
 				}
-			}
+			} else
+				initValue = BigInteger.ZERO;
 
 			asm.addLabel(sym.getGlobalName());
 			if (sym.getType() instanceof ArrayType)
 				asm.emit("ds", "" + sym.getType().getSize());
 			else
-				asm.emit("dc", "" + initValue);
+				asm.emit("dc", "" + initValue.intValue());
 		}
 
 		private void compileLocalVariable(IntermediateCompiler ic, Scope scope, StackAllocator stack,

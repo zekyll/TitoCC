@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import titocc.compiler.IntermediateCompiler;
@@ -282,7 +283,7 @@ public class BinaryExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue()
+	public BigInteger getCompileTimeValue()
 	{
 		// Compile time evaluation of binary operators could be implemented here.
 		return null;
@@ -323,10 +324,10 @@ public class BinaryExpression extends Expression
 					|| leftDeref.isIncomplete()))
 				return CType.INT;
 			if (leftType.isPointer() && rightType.isInteger()
-					&& new Integer(0).equals(right.getCompileTimeValue()))
+					&& BigInteger.ZERO.equals(right.getCompileTimeValue()))
 				return CType.INT;
 			if (rightType.isPointer() && leftType.isInteger()
-					&& new Integer(0).equals(left.getCompileTimeValue()))
+					&& BigInteger.ZERO.equals(left.getCompileTimeValue()))
 				return CType.INT;
 		} else if (op.type == Type.RELATIONAL) {
 			if (leftType.isArithmetic() && rightType.isArithmetic()) //TODO arithmetic->real

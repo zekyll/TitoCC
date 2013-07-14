@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import java.math.BigInteger;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
@@ -65,7 +66,7 @@ public abstract class Expression extends CodeElement
 	 * @return value of the expression or null if expression cannot be evaluated at compile time
 	 * @throws SyntaxException if the expression contains an error
 	 */
-	public Integer getCompileTimeValue() throws SyntaxException
+	public BigInteger getCompileTimeValue() throws SyntaxException
 	{
 		return null;
 	}
@@ -120,17 +121,18 @@ public abstract class Expression extends CodeElement
 	protected Rvalue compileConstantExpression(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
-		Integer value = getCompileTimeValue();
+		BigInteger value = getCompileTimeValue();
 		if (value != null) {
 			// Use immediate operand if value fits in 16 bits; otherwise allocate a data constant.
 			// Load value in first available register.
 			VirtualRegister retReg = new VirtualRegister();
-			if (value < 32768 && value >= -32768)
+			if (value.compareTo(BigInteger.valueOf(-32768)) >= 0
+					&& value.compareTo(BigInteger.valueOf(32768)) < 0) {
 				ic.emit("load", retReg, "=" + value);
-			else {
+			} else {
 				String name = scope.makeGloballyUniqueName("int");
 				ic.addLabel(name);
-				ic.emit("dc", value);
+				ic.emit("dc", value.intValue());
 				ic.emit("load", retReg, name);
 			}
 			return new Rvalue(retReg);
@@ -166,7 +168,7 @@ public abstract class Expression extends CodeElement
 				|| targetDeref.isIncomplete()))
 			return true;
 		if (targetType.isPointer() && sourceType.isInteger()
-				&& new Integer(0).equals(getCompileTimeValue()))
+				&& BigInteger.ZERO.equals(getCompileTimeValue()))
 			return true;
 
 		return false;

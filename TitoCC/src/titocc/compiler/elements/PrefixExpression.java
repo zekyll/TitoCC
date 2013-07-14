@@ -233,16 +233,13 @@ public class PrefixExpression extends Expression
 	}
 
 	@Override
-	public Integer getCompileTimeValue() throws SyntaxException
+	public BigInteger getCompileTimeValue() throws SyntaxException
 	{
 		// Handle unary minus for literals as a special case. Literals need to be non-negative so
 		// this is a way of simulating negative literals. Also, because 2147483648 doesn't fit int
 		// range, this is necessary for expressing the smallest int value of -2147483648.
-		if (operator.equals("-") && operand instanceof IntegerLiteralExpression) {
-			((IntegerLiteralExpression) operand).getCompileTimeValue();
-			String rawValue = ((IntegerLiteralExpression) operand).getRawValue();
-			return new BigInteger("-" + rawValue).intValue();
-		}
+		if (operator.equals("-") && operand instanceof IntegerLiteralExpression)
+			return operand.getCompileTimeValue().negate();
 
 		// Compile time evaluation of operators + - ~ ! could be implemented here.
 
