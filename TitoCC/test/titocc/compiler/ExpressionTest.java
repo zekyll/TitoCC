@@ -191,12 +191,29 @@ public class ExpressionTest
 	}
 
 	@Test
-	public void literalExpressionType() throws IOException, SyntaxException
+	public void integerLiteralExpressionType() throws IOException, SyntaxException
 	{
 		testType("0", CType.INT);
-		testType("-1", CType.INT);
 		testType("2147483647", CType.INT);
-		testType("-2147483648", CType.INT);
+		//testType("2147483648", CType.LLONG);
+		testType("4294967295U", CType.UINT);
+		testType("13Lu", CType.ULONG);
+
+		testType("0x7fffffff", CType.INT);
+		testType("0x80000000", CType.UINT);
+		testType("0x80000000l", CType.ULONG);
+		testType("0xffffffffUl", CType.ULONG);
+
+		testType("0L", CType.LONG);
+	}
+
+	@Test
+	public void negatedLiteralExpressionType() throws IOException, SyntaxException
+	{
+		testType("-1", CType.INT);
+		testType("-2147483647", CType.INT);
+		testType("-0x80000000", CType.UINT);
+		//testType("-2147483648", CType.LLONG);
 	}
 
 	@Test

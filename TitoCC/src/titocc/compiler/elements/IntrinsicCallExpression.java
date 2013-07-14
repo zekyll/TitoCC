@@ -102,7 +102,7 @@ public class IntrinsicCallExpression extends Expression
 		checkArgumentCount(1);
 
 		VirtualRegister retReg = new VirtualRegister();
-		ic.emit("in", retReg, "=" + getDeviceNumber());
+		ic.emit("in", retReg, "=" + getDeviceNumber(scope));
 
 		return new Rvalue(retReg);
 	}
@@ -122,14 +122,14 @@ public class IntrinsicCallExpression extends Expression
 		checkArgumentCount(2);
 
 		Rvalue argVal = argumentList.getArguments().get(1).compile(ic, scope);
-		ic.emit("out", argVal.getRegister(), "=" + getDeviceNumber());
+		ic.emit("out", argVal.getRegister(), "=" + getDeviceNumber(scope));
 
 		return new Rvalue(null);
 	}
 
-	private int getDeviceNumber() throws SyntaxException
+	private int getDeviceNumber(Scope scope) throws SyntaxException
 	{
-		BigInteger device = argumentList.getArguments().get(0).getCompileTimeValue();
+		BigInteger device = argumentList.getArguments().get(0).getCompileTimeValue(scope);
 		if (device == null) {
 			throw new SyntaxException("Invalid device number for input function. Compile time "
 					+ "constant required.", getPosition());

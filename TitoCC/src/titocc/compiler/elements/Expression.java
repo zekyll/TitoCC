@@ -63,10 +63,11 @@ public abstract class Expression extends CodeElement
 	/**
 	 * Evaluates the expression at compile time if possible.
 	 *
+	 * @param scope scope of the expression
 	 * @return value of the expression or null if expression cannot be evaluated at compile time
 	 * @throws SyntaxException if the expression contains an error
 	 */
-	public BigInteger getCompileTimeValue() throws SyntaxException
+	public BigInteger getCompileTimeValue(Scope scope) throws SyntaxException
 	{
 		return null;
 	}
@@ -121,7 +122,7 @@ public abstract class Expression extends CodeElement
 	protected Rvalue compileConstantExpression(IntermediateCompiler ic, Scope scope)
 			throws SyntaxException
 	{
-		BigInteger value = getCompileTimeValue();
+		BigInteger value = getCompileTimeValue(scope);
 		if (value != null) {
 			// Use immediate operand if value fits in 16 bits; otherwise allocate a data constant.
 			// Load value in first available register.
@@ -168,7 +169,7 @@ public abstract class Expression extends CodeElement
 				|| targetDeref.isIncomplete()))
 			return true;
 		if (targetType.isPointer() && sourceType.isInteger()
-				&& BigInteger.ZERO.equals(getCompileTimeValue()))
+				&& BigInteger.ZERO.equals(getCompileTimeValue(scope)))
 			return true;
 
 		return false;

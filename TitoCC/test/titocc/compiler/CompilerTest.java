@@ -135,9 +135,47 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenUsingSuffixOnLiteral() throws IOException
+	public void errorWhenUnsupportedSuffixOnIntegerLiteral() throws IOException
 	{
-		testErr("\nvoid f() { 1u; }", "Suffixes on literals are not supported.", 1, 11);
+		String msg = "Unsupported suffix on integer literal.";
+		testErr("\nvoid f() { 1ll; }", msg, 1, 11);
+		testErr("\nvoid f() { 0x1LL; }", msg, 1, 11);
+		testErr("\nvoid f() { 0xabull; }", msg, 1, 11);
+		testErr("\nvoid f() { 123123123123123123123123123123123Ull; }", msg, 1, 11);
+		testErr("\nvoid f() { 1llu; }", msg, 1, 11);
+	}
+
+	@Test
+	public void errorWhenIllegalSuffixOnIntegerLiteral() throws IOException
+	{
+		String msg = "Illegal suffix on integer literal.";
+		testErr("\nvoid f() { 1f; }", msg, 1, 11);
+		testErr("\nvoid f() { 01abc; }", msg, 1, 11);
+		testErr("\nvoid f() { 0x1Ll; }", msg, 1, 11);
+		testErr("\nvoid f() { 0123d; }", msg, 1, 11);
+		testErr("\nvoid f() { 1lul; }", msg, 1, 11);
+	}
+
+	@Test
+	public void errorWhenIntegerLiteralTooLargeForSigned() throws IOException
+	{
+		String msg = "Integer literal is too large to fit signed type.";
+		testErr("\nvoid f() { 2147483648; }", msg, 1, 11);
+		testErr("\nvoid f() { -2147483648; }", msg, 1, 12);
+		testErr("\nvoid f() { 2147483648l; }", msg, 1, 11);
+		testErr("\nvoid f() { 4294967295; }", msg, 1, 11);
+		//testErr("\nvoid f() { 9223372036854775808ll; }", msg, 1, 11);
+	}
+
+	@Test
+	public void errorWhenIntegerLiteralTooLargeForAnyType() throws IOException
+	{
+		String msg = "Integer literal is too large to fit any supported type.";
+		testErr("\nvoid f() { 4294967296; }", msg, 1, 11);
+		testErr("\nvoid f() { -4294967296; }", msg, 1, 12);
+		testErr("\nvoid f() { 123123123123132123l; }", msg, 1, 11);
+		testErr("\nvoid f() { 0x10000000000ul; }", msg, 1, 11);
+		testErr("\nvoid f() { 040000000000ul; }", msg, 1, 11);
 	}
 
 	@Test

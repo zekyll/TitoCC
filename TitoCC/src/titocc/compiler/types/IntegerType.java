@@ -1,5 +1,7 @@
 package titocc.compiler.types;
 
+import java.math.BigInteger;
+
 /**
  * Abstract base class for all integer types. Classified as object, scalar, arithmetic and integer
  * type. Equals only to integer types of the same class.
@@ -114,8 +116,32 @@ public abstract class IntegerType extends CType
 	 *
 	 * @return unsigned integer type
 	 */
-	public CType toUnsigned()
+	public IntegerType toUnsigned()
 	{
 		return this;
+	}
+
+	/**
+	 * Returns the smallest value reprsentable in this type.
+	 *
+	 * @return smallest value
+	 */
+	public BigInteger getMinValue()
+	{
+		if (isSigned())
+			return BigInteger.ZERO.subtract(BigInteger.ONE.shiftLeft(getSize() * 32 - 1));
+		else
+			return BigInteger.ZERO;
+	}
+
+	/**
+	 * Returns the largest value reprsentable in this type.
+	 *
+	 * @return largest value
+	 */
+	public BigInteger getMaxValue()
+	{
+		int exp = getSize() * 32 - (isSigned() ? 1 : 0);
+		return BigInteger.ONE.shiftLeft(exp).subtract(BigInteger.ONE);
 	}
 }

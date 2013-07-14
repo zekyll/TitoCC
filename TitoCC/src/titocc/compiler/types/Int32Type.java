@@ -57,7 +57,7 @@ class Int32Type extends IntegerType
 	}
 
 	@Override
-	public CType toUnsigned()
+	public IntegerType toUnsigned()
 	{
 		return new Uint32Type(getRank(), tag);
 	}

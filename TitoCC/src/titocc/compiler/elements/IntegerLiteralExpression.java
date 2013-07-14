@@ -1,10 +1,13 @@
 package titocc.compiler.elements;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
 import titocc.compiler.types.CType;
+import titocc.compiler.types.IntegerType;
 import titocc.tokenizer.IntegerLiteralToken;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Token;
@@ -20,6 +23,37 @@ import titocc.util.Position;
  */
 public class IntegerLiteralExpression extends Expression
 {
+	/**
+	 * Mapping of suffixes to types, as specified in ($6.4.4.1/5). Long long not supported yet.
+	 */
+	private static Map<String, IntegerType[]> suffixes = new HashMap<String, IntegerType[]>()
+	{
+		void put(String[] sfxs, IntegerType[] types)
+		{
+			for (String sfx : sfxs)
+				put(sfx, types);
+		}
+
+		{
+			put(new String[]{""},
+					new IntegerType[]{CType.INT, CType.UINT, CType.LONG, CType.ULONG});
+			put(new String[]{"u", "U"},
+					new IntegerType[]{CType.UINT, CType.ULONG});
+			put(new String[]{"l", "L"},
+					new IntegerType[]{CType.LONG, CType.ULONG});
+			put(new String[]{"ul", "uL", "Ul", "UL"},
+					new IntegerType[]{CType.ULONG});
+			put(new String[]{"lu", "lU", "Lu", "LU"},
+					new IntegerType[]{CType.ULONG});
+			put(new String[]{"ll", "LL"},
+					null);
+			put(new String[]{"ull", "uLL", "Ull", "ULL"},
+					null);
+			put(new String[]{"llu", "llU", "LLu", "LLU"},
+					null);
+		}
+	};
+
 	/**
 	 * Token that specifies the digits, suffix and base system.
 	 */
@@ -44,16 +78,42 @@ public class IntegerLiteralExpression extends Expression
 	}
 
 	@Override
-	public CType getType(Scope scope)
+	public CType getType(Scope scope) throws SyntaxException
 	{
-		return CType.INT;
+		String suffix = token.getSuffix().replace("U", "u").replace("LL", "ll");
+		IntegerType[] types = suffixes.get(suffix);
+		if (types == null) {
+			if (suffixes.containsKey(suffix))
+				throw new SyntaxException("Unsupported suffix on integer literal.", getPosition());
+			else
+				throw new SyntaxException("Illegal suffix on integer literal.", getPosition());
+		}
+
+		BigInteger val = new BigInteger(token.getValue(), token.getBase());
+		IntegerType biggest = null;
+		for (IntegerType type : types) {
+			if (token.getBase() == 10 && !suffix.contains("u") && !type.isSigned())
+				continue;
+			if (val.compareTo(type.getMinValue()) >= 0 && val.compareTo(type.getMaxValue()) <= 0)
+				return type;
+			biggest = type;
+		}
+
+		biggest = biggest.toUnsigned();
+		if (val.compareTo(biggest.getMinValue()) >= 0 && val.compareTo(biggest.getMaxValue()) <= 0)
+			throw new SyntaxException("Integer literal is too large to fit signed type.",
+					getPosition());
+
+		throw new SyntaxException("Integer literal is too large to fit any supported type.",
+				getPosition());
 	}
 
 	@Override
-	public BigInteger getCompileTimeValue() throws SyntaxException
+	public BigInteger getCompileTimeValue(Scope scope) throws SyntaxException
 	{
-		if (!token.getSuffix().isEmpty())
-			throw new SyntaxException("Suffixes on literals are not supported.", getPosition());
+		// Type of the compile time constant doesn't matter (yet), but we still need to check
+		// correctness.
+		getType(scope);
 
 		return new BigInteger(token.getValue(), token.getBase());
 	}

@@ -100,7 +100,7 @@ public class VariableDeclaration extends Declaration
 		{
 			BigInteger initValue;
 			if (initializer != null) {
-				initValue = initializer.getCompileTimeValue();
+				initValue = initializer.getCompileTimeValue(scope);
 				if (initValue == null) {
 					throw new SyntaxException("Global variable must be initialized with a compile"
 							+ " time constant.", initializer.getPosition());

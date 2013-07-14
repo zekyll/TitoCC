@@ -24,7 +24,7 @@ class Int64Type extends IntegerType
 	}
 
 	@Override
-	public CType toUnsigned()
+	public IntegerType toUnsigned()
 	{
 		return new Uint64Type(getRank(), tag);
 	}

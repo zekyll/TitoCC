@@ -94,7 +94,7 @@ public abstract class Declarator extends CodeElement
 			if (!type.isObject())
 				throw new SyntaxException("Array elements must have object type.", getPosition());
 
-			BigInteger len = arrayLength.getCompileTimeValue();
+			BigInteger len = arrayLength.getCompileTimeValue(scope);
 			if (len == null) {
 				throw new SyntaxException("Array length must be a compile time constant.",
 						getPosition());

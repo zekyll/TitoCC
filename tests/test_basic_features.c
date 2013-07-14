@@ -4,8 +4,9 @@ int gok;
 int gok2;
 
 int x0;
-int x1 = -2147483648;
+int x1 = -2147483647;
 int x2 = 2147483647;
+int INT_MIN = 0x80000000;
 
 void voidFunc(int a, int b)
 {
@@ -79,18 +80,18 @@ int main()
 	//*/
 
 	// Accessing global variables
-	out(x1 == -2147483648);
+	out(x1 == -2147483647);
 	out(x2 == 2147483647);
 
 	// Globals default initialized to 0
 	out(x0 == 0);
 
 	// Hiding global names, int initializers, negative literals, case sensitivity
-	int x1 = -2147483648;
-	int x2 = 2147483647;
+	int x1 = -2000000000;
+	int x2 = 2000000000;
 	int X1 = 1001;
-	out(x1 == -2147483648);
-	out(x2 == 2147483647);
+	out(x1 == -2000000000);
+	out(x2 == 2000000000);
 	out(X1 == 1001);
 
 	// Long variable names
@@ -174,16 +175,16 @@ int main()
 
 	// Octal literals
 	out(01234567 == 342391);
-	out(00030575653551 == 3321321321);
+	out(00030575653551 == 3321321321ul);
 
 	// Hexadecimal literals
 	out(0x09abcdef == 162254319);
-	out(0xFDEBCA90 == 4260088464);
-	out(0X00000C5F75769 == 3321321321);
+	out(0xFDEBCA90 == 4260088464U);
+	out(0X00000C5F75769== 3321321321U);
 
 	// Add
 	a = 7001; b = 7002; out(a + b == 14003);
-	a = -2147483648; b = 2147483647; out(a + b == -1);
+	a = INT_MIN; b = 2147483647; out(a + b == -1);
 
 	// Subtract
 	a = 8013; b = 8001; out(a - b == 12);
@@ -205,7 +206,7 @@ int main()
 	// Left shift
 	a = 9; b = 3; out(a << b == 72);
 	a = 2147483647; b = 1; out(a << b == -2);
-	a = -1; b = 31; out(a << b == -2147483648);
+	a = -1; b = 31; out(a << b == INT_MIN);
 
 	// Right shift
 	a = 72; b = 3; out(a >> b == 9);
@@ -219,37 +220,37 @@ int main()
 	a = -7; b = -7; out(a < b == 0);
 	a = -8; b = -7; out(a < b == 1);
 	a = 14; b = 13; out(a < b == 0);
-	a = -2147483648; b = 2147483647; out(a < b == 1);
+	a = INT_MIN; b = 2147483647; out(a < b == 1);
 
 	// Greater than
 	a = -7; b = -7; out(b > a == 0);
 	a = -8; b = -7; out(b > a == 1);
 	a = 14; b = 13; out(b > a == 0);
-	a = -2147483648; b = 2147483647; out(b > a == 1);
+	a = INT_MIN; b = 2147483647; out(b > a == 1);
 
 	// Less than or equal to
 	a = -7; b = -7; out(a <= b == 1);
 	a = -8; b = -7; out(a <= b == 1);
 	a = 14; b = 13; out(a <= b == 0);
-	a = -2147483648; b = 2147483647; out(a <= b == 1);
+	a = INT_MIN; b = 2147483647; out(a <= b == 1);
 
 	// Greater than or equal to
 	a = -7; b = -7; out(b >= a == 1);
 	a = -8; b = -7; out(b >= a == 1);
 	a = 14; b = 13; out(b >= a == 0);
-	a = -2147483648; b = 2147483647; out(b >= a == 1);
+	a = INT_MIN; b = 2147483647; out(b >= a == 1);
 
 	// Inequality
 	a = -7; b = -7; out((a != b) == 0);
 	a = -8; b = -7; out((a != b) == 1);
 	a = 14; b = 13; out((a != b) == 1);
-	a = -2147483648; b = 2147483647; out((a == b) != 1);
+	a = INT_MIN; b = 2147483647; out((a == b) != 1);
 
 	// Equality
 	a = -7; b = -7; out((a == b) == 1);
 	a = -8; b = -7; out((a == b) == 0);
 	a = 14; b = 13; out((a == b) == 0);
-	a = -2147483648; b = 2147483647; out((a == b) == 0);
+	a = INT_MIN; b = 2147483647; out((a == b) == 0);
 
 	// Bitwise and
 	a = 1234567890; b = 987654321; out((a & b) == 144048272);
@@ -279,7 +280,7 @@ int main()
 	ok = 1; b = 0 && (ok = 0); b = 1 || (ok = 0); out(ok);
 
 	// Unary plus
-	a = -2147483648; out(+a == -2147483648);
+	a = INT_MIN; out(+a == INT_MIN);
 	a = 2147483647; out(+a == 2147483647);
 
 	// Unary minus
@@ -298,28 +299,28 @@ int main()
 	a = -1234567890; out(~a == 1234567889);
 
 	// Prefix increment
-	a = -2147483648; out(++a == -2147483647); out(a == -2147483647);
+	a = INT_MIN; out(++a == -2147483647); out(a == -2147483647);
 	a = 2147483646; out(++a == 2147483647); out(a == 2147483647);
 
 	// Prefix decrement
-	a = -2147483647; out(--a == -2147483648); out(a == -2147483648);
+	a = -2147483647; out(--a == INT_MIN); out(a == INT_MIN);
 	a = 2147483647; out(--a == 2147483646); out(a == 2147483646);
 
 	// Postfix increment
-	a = -2147483648; out(a++ == -2147483648); out(a == -2147483647);
+	a = INT_MIN; out(a++ == INT_MIN); out(a == -2147483647);
 	a = 2147483646; out(a++ == 2147483646); out(a == 2147483647);
 
 	// Posfix decrement
-	a = -2147483647; out(a-- == -2147483647); out(a == -2147483648);
+	a = -2147483647; out(a-- == -2147483647); out(a == INT_MIN);
 	a = 2147483647; out(a-- == 2147483647); out(a == 2147483646);
 
 	// Simple assignment
 	a = 0; b = 13; out((a = b) == 13 && a == 13);
-	a = 666; b = -2147483648; out((a = b) == -2147483648 && a == -2147483648);
+	a = 666; b = INT_MIN; out((a = b) == INT_MIN && a == INT_MIN);
 
 	// Add assignment
 	a = 7001; b = 7002; out((a += b) == 14003 && a == 14003);
-	a = -2147483648; b = 2147483647; out((a += b) == -1 && a == -1);
+	a = INT_MIN; b = 2147483647; out((a += b) == -1 && a == -1);
 
 	// Subtract assignment
 	a = 8013; b = 8001; out((a -= b) == 12 && a == 12);
@@ -353,7 +354,7 @@ int main()
 	// Left shift assignment
 	a = 9; b = 3; out((a <<= b) == 72 && a == 72);
 	a = 2147483647; b = 1; out((a <<= b) == -2 && a ==-2);
-	a = -1; b = 31; out((a <<= b) == -2147483648 && a == -2147483648);
+	a = -1; b = 31; out((a <<= b) == -2147483647 - 1 && a == -2147483647 - 1);
 
 	// Right shift assignment
 	a = 72; b = 3; out((a >>= b) == 9 && a == 9);

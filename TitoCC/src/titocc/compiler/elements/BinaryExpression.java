@@ -283,7 +283,7 @@ public class BinaryExpression extends Expression
 	}
 
 	@Override
-	public BigInteger getCompileTimeValue()
+	public BigInteger getCompileTimeValue(Scope scope)
 	{
 		// Compile time evaluation of binary operators could be implemented here.
 		return null;
@@ -324,10 +324,10 @@ public class BinaryExpression extends Expression
 					|| leftDeref.isIncomplete()))
 				return CType.INT;
 			if (leftType.isPointer() && rightType.isInteger()
-					&& BigInteger.ZERO.equals(right.getCompileTimeValue()))
+					&& BigInteger.ZERO.equals(right.getCompileTimeValue(scope)))
 				return CType.INT;
 			if (rightType.isPointer() && leftType.isInteger()
-					&& BigInteger.ZERO.equals(left.getCompileTimeValue()))
+					&& BigInteger.ZERO.equals(left.getCompileTimeValue(scope)))
 				return CType.INT;
 		} else if (op.type == Type.RELATIONAL) {
 			if (leftType.isArithmetic() && rightType.isArithmetic()) //TODO arithmetic->real

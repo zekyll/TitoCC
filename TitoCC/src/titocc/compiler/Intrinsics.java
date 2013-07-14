@@ -65,7 +65,7 @@ class Intrinsics
 				Symbol.Category.GlobalVariable,
 				StorageClass.Static,
 				false),
-				"int __m = -2147483648;");
+				"int __m = 0x80000000;");
 
 		// Unsigned division using only signed operations.
 		add(new Symbol(

@@ -18,8 +18,8 @@ Tests operations on different integer types.
 --- example_random_number_generator.c ---
 Random number generator using WELL512 algorithm. First 5 generated numbers should be:
 1174520813
-1516304396
-950030359
+2105604108
+-526364649
 -1098122639
 112202824
 
