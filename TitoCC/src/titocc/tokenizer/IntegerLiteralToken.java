@@ -13,7 +13,7 @@ import titocc.util.Position;
 public class IntegerLiteralToken extends Token
 {
 	/**
-	 * Raw string of the digits.
+	 * Raw string of the digits (not including the leading "0x" for hecadecimal).
 	 */
 	private final String value;
 
@@ -23,19 +23,26 @@ public class IntegerLiteralToken extends Token
 	private final String suffix;
 
 	/**
+	 * Base/radix of the number.
+	 */
+	private final int base;
+
+	/**
 	 * Constructs an IntegerLiteralToken.
 	 *
 	 * @param string the whole token as a string
 	 * @param position starting position of the token
 	 * @param value value part of the token
 	 * @param suffix suffix part of the token
+	 * @param base base/radix (8/10/16)
 	 */
 	public IntegerLiteralToken(String string, Position position,
-			String value, String suffix)
+			String value, String suffix, int base)
 	{
 		super(string, position);
 		this.value = value;
 		this.suffix = suffix;
+		this.base = base;
 	}
 
 	/**
@@ -59,6 +66,16 @@ public class IntegerLiteralToken extends Token
 	}
 
 	/**
+	 * Returns the base of the integer literal (8, 10 or 16).
+	 *
+	 * @return base
+	 */
+	public int getBase()
+	{
+		return base;
+	}
+
+	/**
 	 * Attempts to parse an integer literal from input. If the characters don't match an integer
 	 * literal then resets the stream to its original position and returns null.
 	 *
@@ -71,21 +88,60 @@ public class IntegerLiteralToken extends Token
 		IntegerLiteralToken token = null;
 		Position pos = reader.getPosition();
 
+		String prefix = "";
 		StringBuilder digits = new StringBuilder();
+		int base = 0;
 
-		while (Character.isDigit(reader.peek()))
-			digits.append(reader.read());
+		if (reader.peek() == '0') {
+			reader.read();
+			Character c = reader.peek();
+			if ((c == 'x' || c == 'X') && AsciiUtil.isHexadecimalDigit(reader.peek2nd())) {
+				reader.read();
+				prefix = "0" + c;
+				base = 16;
+			} else {
+				digits.append('0');
+				base = 8;
+			}
+		} else if (Character.isDigit(reader.peek()))
+			base = 10;
+
+		parseDigits(reader, digits, base);
 
 		String digitStr = digits.toString();
-		if (digitStr.length() > 0) {
-			StringBuilder suffix = new StringBuilder();
-			while (AsciiUtil.isIdentifierCharacter(reader.peek()))
-				suffix.append(reader.read());
-
-			String tokenString = digitStr + suffix.toString();
-			token = new IntegerLiteralToken(tokenString, pos, digitStr, suffix.toString());
+		if (digits.length() > 0) {
+			String suffix = parseSuffix(reader);
+			String tokenStr = prefix + digitStr + suffix;
+			token = new IntegerLiteralToken(tokenStr, pos, digitStr, suffix, base);
 		}
 
 		return token;
+	}
+
+	private static void parseDigits(CodeReader reader, StringBuilder digits, int base)
+			throws IOException
+	{
+		if (base == 10) {
+			while (Character.isDigit(reader.peek()))
+				digits.append(reader.read());
+		} else if (base == 16) {
+			while (AsciiUtil.isHexadecimalDigit(reader.peek()))
+				digits.append(reader.read());
+		} else { // if (base == 8)
+			while (AsciiUtil.isOctalDigit(reader.peek()))
+				digits.append(reader.read());
+		}
+	}
+
+	private static String parseSuffix(CodeReader reader)
+			throws IOException
+	{
+		StringBuilder suffix = new StringBuilder();
+		if (AsciiUtil.isIdentifierStart(reader.peek())) {
+			suffix.append(reader.read());
+			while (AsciiUtil.isIdentifierCharacter(reader.peek()))
+				suffix.append(reader.read());
+		}
+		return suffix.toString();
 	}
 }
