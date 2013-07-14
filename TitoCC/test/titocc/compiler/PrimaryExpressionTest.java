@@ -39,7 +39,21 @@ public class PrimaryExpressionTest
 	@Test
 	public void matchesIntegerLiteralWithSuffix() throws IOException, SyntaxException
 	{
-		assertEquals("(INT_EXPR 0 U)", parse("0U").toString());
+		assertEquals("(INT_EXPR 0U)", parse("0U").toString());
+		assertTrue(stream.read() instanceof EofToken);
+	}
+
+	@Test
+	public void matchesHexadecimalLiteral() throws IOException, SyntaxException
+	{
+		assertEquals("(INT_EXPR 0x1eull)", parse("0x1eull").toString());
+		assertTrue(stream.read() instanceof EofToken);
+	}
+
+	@Test
+	public void matchesOctallLiteral() throws IOException, SyntaxException
+	{
+		assertEquals("(INT_EXPR 0017)", parse("0017").toString());
 		assertTrue(stream.read() instanceof EofToken);
 	}
 

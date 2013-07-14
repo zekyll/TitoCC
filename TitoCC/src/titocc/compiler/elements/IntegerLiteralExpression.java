@@ -21,47 +21,20 @@ import titocc.util.Position;
 public class IntegerLiteralExpression extends Expression
 {
 	/**
-	 * Digits as a string.
+	 * Token that specifies the digits, suffix and base system.
 	 */
-	private final String rawValue;
-
-	/**
-	 * Suffix as a string.
-	 */
-	private final String suffix;
+	private final IntegerLiteralToken token;
 
 	/**
 	 * Constructs an IntegerLiteralExpression.
 	 *
-	 * @param rawValue integer digits as a string
-	 * @param suffix suffix
+	 * @param integerToken corresponding token
 	 * @param position starting position of the integer literal expression
 	 */
-	public IntegerLiteralExpression(String rawValue, String suffix, Position position)
+	public IntegerLiteralExpression(IntegerLiteralToken integerToken, Position position)
 	{
 		super(position);
-		this.rawValue = rawValue;
-		this.suffix = suffix;
-	}
-
-	/**
-	 * Returns the digits of the integer literal.
-	 *
-	 * @return string representation of the digits
-	 */
-	public String getRawValue()
-	{
-		return rawValue;
-	}
-
-	/**
-	 * Returns the suffix of the literal.
-	 *
-	 * @return the suffix
-	 */
-	public String getSuffix()
-	{
-		return suffix;
+		this.token = integerToken;
 	}
 
 	@Override
@@ -79,16 +52,16 @@ public class IntegerLiteralExpression extends Expression
 	@Override
 	public BigInteger getCompileTimeValue() throws SyntaxException
 	{
-		if (!suffix.isEmpty())
+		if (!token.getSuffix().isEmpty())
 			throw new SyntaxException("Suffixes on literals are not supported.", getPosition());
 
-		return new BigInteger(rawValue);
+		return new BigInteger(token.getValue(), token.getBase());
 	}
 
 	@Override
 	public String toString()
 	{
-		return "(INT_EXPR " + rawValue + (suffix.isEmpty() ? "" : " " + suffix) + ")";
+		return "(INT_EXPR " + token.toString() + ")";
 	}
 
 	/**
@@ -105,10 +78,8 @@ public class IntegerLiteralExpression extends Expression
 		IntegerLiteralExpression intExpr = null;
 
 		Token token = tokens.read();
-		if (token instanceof IntegerLiteralToken) {
-			IntegerLiteralToken intToken = (IntegerLiteralToken) token;
-			intExpr = new IntegerLiteralExpression(intToken.getValue(), intToken.getSuffix(), pos);
-		}
+		if (token instanceof IntegerLiteralToken)
+			intExpr = new IntegerLiteralExpression((IntegerLiteralToken) token, pos);
 
 		tokens.popMark(intExpr == null);
 		return intExpr;

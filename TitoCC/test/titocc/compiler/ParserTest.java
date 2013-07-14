@@ -37,7 +37,7 @@ public class ParserTest
 	@Test
 	public void matchVariableDeclarationWithInitializer() throws IOException, SyntaxException
 	{
-		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR xyz) (INT_EXPR 0 U)))",
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR xyz) (INT_EXPR 0U)))",
 				parse("int xyz = 0U;"));
 	}
 

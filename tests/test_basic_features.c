@@ -172,6 +172,15 @@ int main()
 	out(ok);
 	out(ok2);
 
+	// Octal literals
+	out(01234567 == 342391);
+	out(00030575653551 == 3321321321);
+
+	// Hexadecimal literals
+	out(0x09abcdef == 162254319);
+	out(0xFDEBCA90 == 4260088464);
+	out(0X00000C5F75769 == 3321321321);
+
 	// Add
 	a = 7001; b = 7002; out(a + b == 14003);
 	a = -2147483648; b = 2147483647; out(a + b == -1);
