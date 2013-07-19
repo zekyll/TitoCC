@@ -19,8 +19,11 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~"| "&"| "*") PREFIX_EXPRESSION
+ * <br> PREFIX_EXPRESSION = ("++" | "--" | "+" | "-" | "!" | "~"| "&"| "*") CAST_EXPRESSION
  * | POSTFIX_EXPRESSION
+ *
+ * <br> Note: In standard ++ and -- are followed by UNARY_EXPRESSION; however cast expression in C
+ * never returns lvalue (needed by ++/--) so there is no difference.
  */
 public class PrefixExpression extends Expression
 {
@@ -267,7 +270,7 @@ public class PrefixExpression extends Expression
 
 		String op = tokens.read().toString();
 		if (Arrays.asList(prefixOperators).contains(op)) {
-			Expression operand = PrefixExpression.parse(tokens);
+			Expression operand = CastExpression.parse(tokens);
 			if (operand != null)
 				expr = new PrefixExpression(op, operand, pos);
 		}

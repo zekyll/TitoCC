@@ -367,6 +367,25 @@ public class ParserTest
 	}
 
 	@Test
+	public void matchCastExpression() throws IOException, SyntaxException
+	{
+		assertEquals(inFunc("(EXPR_ST (CAST (DS int) (DCLTOR (DCLTOR null) (INT_EXPR 2))"
+				+ " (ID_EXPR a)))"),
+				parse("void f() { (int[2])a; }"));
+	}
+
+	@Test
+	public void matchChainedPrefixAndCastExpressions() throws IOException, SyntaxException
+	{
+		assertEquals(inFunc("(EXPR_ST (CAST (DS void) (DCLTOR null) (PRE_EXPR ~ (PRE_EXPR -- (CAST"
+				+ " (DS int) (DCLTOR null) (INT_EXPR 0))))))"),
+				parse("void f() { (void)~--(int)0; }"));
+		assertEquals(inFunc("(EXPR_ST (CAST (DS void) (DCLTOR null) (CAST (DS int) (DCLTOR null)"
+				+ " (PRE_EXPR ++ (PRE_EXPR - (INT_EXPR 0))))))"),
+				parse("void f() { (void)(int)++-0; }"));
+	}
+
+	@Test
 	public void throwsOnIllegalSyntax() throws IOException, SyntaxException
 	{
 		try {
@@ -727,5 +746,29 @@ public class ParserTest
 	{
 		testFailure("\nint x[a,b]", ",", 1, 7);
 		testFailure("\nint x = a,0", "0", 1, 10);
+	}
+
+	@Test
+	public void failAtCastExpressionTypeName() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = ()0;", ")", 1, 9);
+	}
+
+	@Test
+	public void failIfIdentifierInCastExpressionTypeName() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = (int a)0;", "a", 1, 13);
+	}
+
+	@Test
+	public void failAtCastExpressionClosingBrace() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = (int 0;", "0", 1, 13);
+	}
+
+	@Test
+	public void failAtCastExpressionOperand() throws IOException, SyntaxException
+	{
+		testFailure("\nint x = (int);", ";", 1, 13);
 	}
 }

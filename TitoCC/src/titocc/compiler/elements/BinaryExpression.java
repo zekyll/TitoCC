@@ -383,7 +383,7 @@ public class BinaryExpression extends Expression
 	private static Expression parseImpl(TokenStream tokens, int priority)
 	{
 		if (priority == 12)
-			return PrefixExpression.parse(tokens);
+			return CastExpression.parse(tokens);
 
 		Position pos = tokens.getPosition();
 		tokens.pushMark();

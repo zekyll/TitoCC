@@ -94,7 +94,7 @@ public class CompilerTest
 	public void errorWhenVoidUsedInExpression() throws IOException
 	{
 		testErr("\nvoid f() { 2 + f(); }", "Incompatible operands for operator +.", 1, 11);
-		testErr("\nvoid f() { !f(); }", "Operator ! requires a scalar type.", 1, 11);
+		testErr("\nvoid f() { !(void)0; }", "Operator ! requires a scalar type.", 1, 11);
 		testErr("\nvoid f() { int x; x = f(); }", "Incompatible operands for operator =.", 1, 18);
 		testErr("\nvoid f() { if(f()); }", "Illegal control expression. Scalar type required.", 1, 14);
 		testErr("\nvoid f() { while(f()); }",
@@ -103,6 +103,8 @@ public class CompilerTest
 				"Initializer type doesn't match variable type.", 1, 19);
 		testErr("\nvoid f(int a) { f(out()); }",
 				"Argument type doesn't match type of the parameter.", 1, 18);
+		testErr("\nvoid f() { (int)(void)0; }",
+				"Illegal cast. Both types must be scalar or target type must be void.", 1, 11);
 	}
 
 	@Test
@@ -740,5 +742,13 @@ public class CompilerTest
 		testErr("\nshort char x;", msg, 1, 0);
 		testErr("\nsigned void x;", msg, 1, 0);
 		testErr("\nchar int x;", msg, 1, 0);
+	}
+
+	@Test
+	public void errorWhenInvalidCast() throws IOException
+	{
+		String msg = "Illegal cast. Both types must be scalar or target type must be void.";
+		testErr("\nvoid f() { void* x = (void*)(void)0; }", msg, 1, 21);
+		testErr("\nvoid f() { int x = (int)f(); }", msg, 1, 19);
 	}
 }

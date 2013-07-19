@@ -15,7 +15,7 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> PARAMETER = DECLARATIOn_SPECIFIERS [DECLARATOR]
+ * <br> PARAMETER = DECLARATION_SPECIFIERS DECLARATOR
  */
 public class Parameter extends CodeElement
 {
@@ -122,7 +122,7 @@ public class Parameter extends CodeElement
 		DeclarationSpecifiers declSpecifiers = DeclarationSpecifiers.parse(tokens);
 
 		if (declSpecifiers != null) {
-			Declarator declarator = Declarator.parse(tokens, true);
+			Declarator declarator = Declarator.parse(tokens, true, true);
 			if (declarator != null)
 				param = new Parameter(declSpecifiers, declarator, pos);
 		}

@@ -225,7 +225,7 @@ public class VariableDeclaration extends Declaration
 		tokens.pushMark();
 		InitDeclarator initDecl = null;
 
-		Declarator declarator = Declarator.parse(tokens, false);
+		Declarator declarator = Declarator.parse(tokens, true, false);
 		if (declarator != null)
 			initDecl = new InitDeclarator(declarator, parseInitializer(tokens), pos);
 

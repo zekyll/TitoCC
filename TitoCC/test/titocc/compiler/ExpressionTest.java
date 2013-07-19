@@ -165,11 +165,11 @@ public class ExpressionTest
 	}
 
 	@Test
-	public void binaryExpression11ParsedAfterPrefixExpression()
+	public void binaryExpression11ParsedAfterCastExpression()
 			throws IOException, SyntaxException
 	{
-		assertEquals("(BIN_EXPR * (PRE_EXPR ++ (ID_EXPR b)) (ID_EXPR a))",
-				parse("++b * a"));
+		assertEquals("(BIN_EXPR * (CAST (DS int) (DCLTOR null) (ID_EXPR b)) (ID_EXPR a))",
+				parse("(int)b * a"));
 	}
 
 	@Test
@@ -485,5 +485,14 @@ public class ExpressionTest
 		testType("pi[i]", CType.INT);
 		testType("c[a2]", new ArrayType(CType.INT, 2));
 		testType("pi[ull]", CType.INT);
+	}
+
+	@Test
+	public void castExpressionType() throws IOException, SyntaxException
+	{
+		testType("(unsigned long)c", CType.ULONG);
+		testType("(void)c", CType.VOID);
+		testType("(void)(void)ull", CType.VOID);
+		testType("(void*)pi", new PointerType(CType.VOID));
 	}
 }

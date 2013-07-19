@@ -242,17 +242,18 @@ public abstract class Declarator extends CodeElement
 	 * initial position.
 	 *
 	 * @param tokens source token stream
+	 * @param allowNamed allows a normal declarators that specifies a name
 	 * @param allowAbstract allows the declarator to be abstract, i.e. without name
 	 * @return Declarator object or null if tokens don't form a valid declarator
 	 */
-	public static Declarator parse(TokenStream tokens, boolean allowAbstract)
+	public static Declarator parse(TokenStream tokens, boolean allowNamed, boolean allowAbstract)
 	{
 		Position pos = tokens.getPosition();
 		tokens.pushMark();
 		Declarator declarator = null;
 
 		if (tokens.read().toString().equals("*")) {
-			declarator = Declarator.parse(tokens, allowAbstract);
+			declarator = Declarator.parse(tokens, allowNamed, allowAbstract);
 			if (declarator != null)
 				declarator = new PointerDeclarator(declarator, pos);
 		}
@@ -260,7 +261,7 @@ public abstract class Declarator extends CodeElement
 		tokens.popMark(declarator == null);
 
 		if (declarator == null)
-			declarator = parseDirectDeclarator(tokens, allowAbstract);
+			declarator = parseDirectDeclarator(tokens, allowNamed, allowAbstract);
 
 		return declarator;
 	}
@@ -269,16 +270,19 @@ public abstract class Declarator extends CodeElement
 	 * Parses a direct declarator. It is either a variable name, declarator inside () parentheses,
 	 * an array declarator or a function declarator. declarator inside () parentheses.
 	 */
-	private static Declarator parseDirectDeclarator(TokenStream tokens, boolean allowAbstract)
+	private static Declarator parseDirectDeclarator(TokenStream tokens, boolean allowNamed,
+			boolean allowAbstract)
 	{
 		Position pos = tokens.getPosition();
+		Declarator declarator = null;
 
 		// Identifier declarator.
-		Declarator declarator = parseIdentifierDeclarator(tokens);
+		if (allowNamed)
+			declarator = parseIdentifierDeclarator(tokens);
 
 		// Parenthesized declarator.
 		if (declarator == null)
-			declarator = parseParenthesizedDeclarator(tokens, allowAbstract);
+			declarator = parseParenthesizedDeclarator(tokens, allowNamed, allowAbstract);
 
 		// Null/abstract declarator.
 		if (declarator == null && allowAbstract)
@@ -327,14 +331,14 @@ public abstract class Declarator extends CodeElement
 	/**
 	 * Parses a parenthesized declarator.
 	 */
-	private static Declarator parseParenthesizedDeclarator(TokenStream tokens,
+	private static Declarator parseParenthesizedDeclarator(TokenStream tokens, boolean allowNamed,
 			boolean allowAbstract)
 	{
 		Declarator declarator = null;
 		tokens.pushMark();
 
 		if (tokens.read().toString().equals("(")) {
-			declarator = Declarator.parse(tokens, allowAbstract);
+			declarator = Declarator.parse(tokens, allowNamed, allowAbstract);
 			if (declarator != null && !tokens.read().toString().equals(")"))
 				declarator = null;
 		}

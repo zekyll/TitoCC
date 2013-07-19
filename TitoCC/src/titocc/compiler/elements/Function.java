@@ -233,8 +233,7 @@ public class Function extends Declaration
 	@Override
 	public String toString()
 	{
-		return "(FUNC " + declarationSpecifiers + " " + declarator
-				+ " " + body + ")";
+		return "(FUNC " + declarationSpecifiers + " " + declarator + " " + body + ")";
 	}
 
 	/**
@@ -253,7 +252,7 @@ public class Function extends Declaration
 		DeclarationSpecifiers declSpecifiers = DeclarationSpecifiers.parse(tokens);
 
 		if (declSpecifiers != null) {
-			Declarator declarator = Declarator.parse(tokens, false);
+			Declarator declarator = Declarator.parse(tokens, true, false);
 			if (declarator != null) {
 				CompoundStatement body = CompoundStatement.parse(tokens);
 				if (body != null)
