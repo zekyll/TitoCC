@@ -74,8 +74,7 @@ public class FunctionDefinition extends ExternalDeclaration
 	}
 
 	@Override
-	public void compile(Assembler asm, IntermediateCompiler ic_, Scope scope, StackAllocator sa_)
-			throws IOException, SyntaxException
+	public void compile(Assembler asm, Scope scope) throws IOException, SyntaxException
 	{
 		asm.addEmptyLines(1);
 

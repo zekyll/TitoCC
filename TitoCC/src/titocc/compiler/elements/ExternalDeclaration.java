@@ -31,15 +31,13 @@ public abstract class ExternalDeclaration extends CodeElement
 	/**
 	 * Generates assembly code for the external declaration.
 	 *
-	 * @param asm assembler used for code generation (global declarations)
-	 * @param ic intermediate compiler used for code generation (local declarations)
+	 * @param asm assembler used for code generation
 	 * @param scope scope in which the declaration is evaluated
-	 * @param stack allocator for local stack data (not used for global declarations)
 	 * @throws SyntaxException if the declaration contains an error
 	 * @throws IOException if assembler throws
 	 */
-	public abstract void compile(Assembler asm, IntermediateCompiler ic,
-			Scope scope, StackAllocator stack) throws IOException, SyntaxException;
+	public abstract void compile(Assembler asm, Scope scope)
+			throws IOException, SyntaxException;
 
 	/**
 	 * Attempts to parse an external declaration from token stream. If parsing fails the stream is

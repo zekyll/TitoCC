@@ -1,6 +1,5 @@
 package titocc.compiler.elements;
 
-import java.io.IOException;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
@@ -38,10 +37,7 @@ public class DeclarationStatement extends Statement
 	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
 			throws SyntaxException
 	{
-		try {
-			declaration.compile(null, ic, scope, stack);
-		} catch (IOException e) { //TODO remove catch (no assembler to local declarations!)
-		}
+		declaration.compile(ic, scope, stack);
 	}
 
 	@Override

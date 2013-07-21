@@ -59,7 +59,7 @@ public class TranslationUnit extends CodeElement
 		asm.emit("svc", Register.SP, "=halt");
 
 		for (ExternalDeclaration decl : externalDeclarations)
-			decl.compile(asm, null, scope, null);
+			decl.compile(asm, scope);
 
 		if (!mainFunctionExists(scope))
 			throw new SyntaxException("Function \"int main()\" was not found.", getPosition());

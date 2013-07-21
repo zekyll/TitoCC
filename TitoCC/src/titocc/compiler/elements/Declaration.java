@@ -152,11 +152,33 @@ public class Declaration extends ExternalDeclaration
 	}
 
 	@Override
-	public void compile(Assembler asm, IntermediateCompiler ic, Scope scope, StackAllocator stack)
+	public void compile(Assembler asm, Scope scope) throws SyntaxException, IOException
+	{
+		compile(asm, null, scope, null);
+	}
+
+	/**
+	 * Compiles a block-scope declaration.
+	 *
+	 * @param ic intermediate compiler used for code generation
+	 * @param scope scope of the declaration
+	 * @param stack stack allocator
+	 * @throws SyntaxException
+	 */
+	public void compile(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
+	{
+		try {
+			compile(null, ic, scope, stack);
+		} catch (IOException e) {
+			// Never thrown with local declarations.
+		}
+	}
+
+	private void compile(Assembler asm, IntermediateCompiler ic, Scope scope, StackAllocator stack)
 			throws SyntaxException, IOException
 	{
 		DeclarationType declType = declarationSpecifiers.compile(scope);
-
 		for (InitDeclarator initDecl : initDeclList)
 			initDecl.compile(asm, ic, scope, stack, declType);
 	}

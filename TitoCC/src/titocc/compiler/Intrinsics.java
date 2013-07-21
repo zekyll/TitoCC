@@ -45,7 +45,7 @@ class Intrinsics
 				throw new SyntaxException("Unexpected token \"" + token + "\".",
 						token.getPosition());
 			}
-			declaration.compile(asm, null, scope, null);
+			declaration.compile(asm, scope);
 			compiled = true;
 			return true;
 		}
