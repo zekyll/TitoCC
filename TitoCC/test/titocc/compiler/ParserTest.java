@@ -386,6 +386,24 @@ public class ParserTest
 	}
 
 	@Test
+	public void matchStringLiteralExpression() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR a) (STR 97 98 99)))",
+				parse("int a = \"abc\";"));
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR a) (STR 97 98 99 65535 97 291)))",
+				parse("int a = \"abc\" \"\\uffFFa\" \"\\x123\";"));
+	}
+
+	@Test
+	public void matchCharacterLiteralExpression() throws IOException, SyntaxException
+	{
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR a) (CHR 97 98 99)))",
+				parse("int a = 'abc';"));
+		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR a) (CHR 97 209)))",
+				parse("int a = 'a\\0321';"));
+	}
+
+	@Test
 	public void throwsOnIllegalSyntax() throws IOException, SyntaxException
 	{
 		try {

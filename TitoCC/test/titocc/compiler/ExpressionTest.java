@@ -208,6 +208,19 @@ public class ExpressionTest
 	}
 
 	@Test
+	public void stringLiteralExpressionType() throws IOException, SyntaxException
+	{
+		testType("\"ab\"", new ArrayType(CType.CHAR, 3));
+		testType("\"abc\" \"\\\"\"", new ArrayType(CType.CHAR, 5));
+	}
+
+	@Test
+	public void characterLiteralExpressionType() throws IOException, SyntaxException
+	{
+		testType("'a\\n'", CType.INT);
+	}
+
+	@Test
 	public void negatedLiteralExpressionType() throws IOException, SyntaxException
 	{
 		testType("-1", CType.INT);

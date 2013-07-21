@@ -78,6 +78,14 @@ public class Tokenizer
 		if (token != null)
 			return token;
 
+		token = CharacterLiteralToken.parse(input);
+		if (token != null)
+			return token;
+
+		token = StringLiteralToken.parse(input);
+		if (token != null)
+			return token;
+
 		token = EofToken.parse(input);
 		if (token != null)
 			return token;

@@ -8,7 +8,8 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> PRIMARY_EXPRESSION = IDENTIFIER_EXPRESSION | INTEGER_LITERAL_EXPRESSION | "(" EXPRESSION ")"
+ * <br> PRIMARY_EXPRESSION = IDENTIFIER_EXPRESSION | INTEGER_LITERAL_EXPRESSION
+ * | CHARACTER_LITERAL_EXPRESSION | STRING_LITERAL_EXPRESSION | "(" EXPRESSION ")"
  */
 public abstract class PrimaryExpression extends Expression
 {
@@ -36,6 +37,12 @@ public abstract class PrimaryExpression extends Expression
 
 		if (expr == null)
 			expr = IntegerLiteralExpression.parse(tokens);
+
+		if (expr == null)
+			expr = CharacterLiteralExpression.parse(tokens);
+
+		if (expr == null)
+			expr = StringLiteralExpression.parse(tokens);
 
 		if (expr == null) {
 			if (tokens.read().toString().equals("(")) {

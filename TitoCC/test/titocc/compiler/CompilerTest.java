@@ -56,7 +56,9 @@ public class CompilerTest
 	@Test
 	public void errorWhenAssigningToLiteral() throws IOException
 	{
-		testErr("\nint main() { 0 = 1; }", "Operation requires an lvalue.", 1, 13);
+		String msg = "Operation requires an lvalue.";
+		testErr("\nint main() { 0 = 1; }", msg, 1, 13);
+		testErr("\nint main() { 'a' = 'b'; }", msg, 1, 13);
 	}
 
 	@Test
@@ -480,6 +482,7 @@ public class CompilerTest
 	{
 		String msg = "Operation requires an lvalue.";
 		testErr("\nvoid f() { &2;              }", msg, 1, 12);
+		testErr("\nvoid f() { &'a';              }", msg, 1, 12);
 		testErr("\nvoid f() { &f();            }", msg, 1, 12);
 		testErr("\nvoid f() { int a; &(a = 1); }", msg, 1, 20);
 		testErr("\nvoid f() { int a; & &a;     }", msg, 1, 20);
