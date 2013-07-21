@@ -26,7 +26,7 @@ public class ParserTest
 	}
 
 	@Test
-	public void matchVariableDeclaration() throws IOException, SyntaxException
+	public void matchDeclaration() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR abc) null))",
 				parse("int abc;"));
@@ -35,7 +35,7 @@ public class ParserTest
 	}
 
 	@Test
-	public void matchVariableDeclarationWithInitializer() throws IOException, SyntaxException
+	public void matchDeclarationWithInitializer() throws IOException, SyntaxException
 	{
 		assertEquals("(TRUNIT (VAR_DECL (DS int) (DCLTOR xyz) (INT_EXPR 0U)))",
 				parse("int xyz = 0U;"));
@@ -618,19 +618,19 @@ public class ParserTest
 	}
 
 	@Test
-	public void failAtVariableDeclarationName() throws IOException, SyntaxException
+	public void failAtDeclarationName() throws IOException, SyntaxException
 	{
 		testFailure("\nint ;", ";", 1, 4);
 	}
 
 	@Test
-	public void failAtVariableDeclarationInitializer() throws IOException, SyntaxException
+	public void failAtDeclarationInitializer() throws IOException, SyntaxException
 	{
 		testFailure("\nint a =;", ";", 1, 7);
 	}
 
 	@Test
-	public void failAtVariableDeclarationAfterComma() throws IOException, SyntaxException
+	public void failAtDeclarationAfterComma() throws IOException, SyntaxException
 	{
 		testFailure("\nint a = 2,;", ";", 1, 10);
 		testFailure("\nint a = 2,0;", "0", 1, 10);

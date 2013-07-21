@@ -17,39 +17,29 @@ import titocc.util.Position;
 
 /**
  * Top level code element that represents a single translation unit. Formed by a list of
- * declarations.
+ * file-scope external declarations.
  *
  * <p> EBNF definition:
  *
- * <br> TRANSLATION_UNIT = {DECLARATION} EOF
+ * <br> TRANSLATION_UNIT = {EXTERNAL_DECLARATION} EOF
  */
 public class TranslationUnit extends CodeElement
 {
 	/**
-	 * List of declarations (Functions or global variables).
+	 * List of file-scope declarations.
 	 */
-	private List<Declaration> declarations;
+	private List<ExternalDeclaration> externalDeclarations;
 
 	/**
 	 * Constructs a TranslationUnit.
 	 *
-	 * @param declarations list of declarations in the translation unit
+	 * @param externalDeclarations list of file-scope declarations in the translation unit
 	 * @param position starting position number of the translation unit
 	 */
-	public TranslationUnit(List<Declaration> declarations, Position position)
+	public TranslationUnit(List<ExternalDeclaration> externalDeclarations, Position position)
 	{
 		super(position);
-		this.declarations = declarations;
-	}
-
-	/**
-	 * Returns declarations in the translation unit.
-	 *
-	 * @return list of declarations
-	 */
-	public List<Declaration> getDeclarations()
-	{
-		return declarations;
+		this.externalDeclarations = externalDeclarations;
 	}
 
 	/**
@@ -68,7 +58,7 @@ public class TranslationUnit extends CodeElement
 		asm.emit("call", Register.SP, "main");
 		asm.emit("svc", Register.SP, "=halt");
 
-		for (Declaration decl : declarations)
+		for (ExternalDeclaration decl : externalDeclarations)
 			decl.compile(asm, null, scope, null);
 
 		if (!mainFunctionExists(scope))
@@ -87,12 +77,12 @@ public class TranslationUnit extends CodeElement
 		tokens.pushMark();
 		TranslationUnit translUnit = null;
 
-		List<Declaration> declarations = new LinkedList<Declaration>();
+		List<ExternalDeclaration> declarations = new LinkedList<ExternalDeclaration>();
 
-		Declaration d = Declaration.parse(tokens);
+		ExternalDeclaration d = ExternalDeclaration.parse(tokens);
 		while (d != null) {
 			declarations.add(d);
-			d = Declaration.parse(tokens);
+			d = ExternalDeclaration.parse(tokens);
 		}
 
 		// Set the position manually to (0, 0) instead of using
@@ -110,7 +100,7 @@ public class TranslationUnit extends CodeElement
 	public String toString()
 	{
 		String s = "(TRUNIT";
-		for (Declaration d : declarations)
+		for (ExternalDeclaration d : externalDeclarations)
 			s += " " + d;
 		return s + ")";
 	}

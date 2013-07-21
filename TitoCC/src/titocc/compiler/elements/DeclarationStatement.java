@@ -9,39 +9,29 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * A statement that declares a local variable.
+ * A statement that declares a function or object in block scope.
  *
  * <p> EBNF definition:
  *
- * <br> DECLARATION_STATEMENT = VARIABLE_DECLARATION
+ * <br> DECLARATION_STATEMENT = DECLARATION
  */
 public class DeclarationStatement extends Statement
 {
 	/**
 	 * Declaration for for this declaration statement.
 	 */
-	private final VariableDeclaration declaration;
+	private final Declaration declaration;
 
 	/**
 	 * Constructs a DeclarationStatement.
 	 *
-	 * @param declaration variable declaration
+	 * @param declaration declaration
 	 * @param position starting position of the declaration statement
 	 */
-	public DeclarationStatement(VariableDeclaration declaration, Position position)
+	public DeclarationStatement(Declaration declaration, Position position)
 	{
 		super(position);
 		this.declaration = declaration;
-	}
-
-	/**
-	 * Returns the variable declaration.
-	 *
-	 * @return the variable declaration.
-	 */
-	public VariableDeclaration getDeclaration()
-	{
-		return declaration;
 	}
 
 	@Override
@@ -73,7 +63,7 @@ public class DeclarationStatement extends Statement
 		Position pos = tokens.getPosition();
 		DeclarationStatement declStatement = null;
 
-		VariableDeclaration varDecl = VariableDeclaration.parse(tokens);
+		Declaration varDecl = Declaration.parse(tokens);
 		if (varDecl != null)
 			declStatement = new DeclarationStatement(varDecl, pos);
 

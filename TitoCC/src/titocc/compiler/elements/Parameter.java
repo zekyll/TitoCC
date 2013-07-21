@@ -9,9 +9,9 @@ import titocc.tokenizer.TokenStream;
 import titocc.util.Position;
 
 /**
- * Single parameter in a function parameter list. Syntactically similar to variable declaration,
- * except no initializer is allowed. Also, function prototypes may have unnamed parameters,
- * whereas parameters in function definitions must be named.
+ * Single parameter in a function parameter list. Syntactically similar to a declaration, except no
+ * initializer is allowed. Also, function prototypes may have unnamed parameters, whereas parameters
+ * in function definitions must be named.
  *
  * <p> EBNF definition:
  *

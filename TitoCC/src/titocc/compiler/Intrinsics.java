@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import titocc.compiler.elements.Declaration;
+import titocc.compiler.elements.ExternalDeclaration;
 import titocc.compiler.types.CType;
 import titocc.compiler.types.FunctionType;
 import titocc.tokenizer.SyntaxException;
@@ -39,7 +39,7 @@ class Intrinsics
 
 			Tokenizer tokenizer = new Tokenizer(new StringReader(definition));
 			TokenStream tokenStream = new TokenStream(tokenizer.tokenize());
-			Declaration declaration = Declaration.parse(tokenStream);
+			ExternalDeclaration declaration = ExternalDeclaration.parse(tokenStream);
 			if (declaration == null) {
 				Token token = tokenStream.getFurthestReadToken();
 				throw new SyntaxException("Unexpected token \"" + token + "\".",

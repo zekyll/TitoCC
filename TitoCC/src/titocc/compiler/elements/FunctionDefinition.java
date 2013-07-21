@@ -26,9 +26,9 @@ import titocc.util.Position;
  *
  * <p> EBNF definition:
  *
- * <br> FUNCTION = TYPE_SPECIFIER DECLARATOR COMPOUND_STATEMENT
+ * <br> FUNCTION_DEFINITION = TYPE_SPECIFIER DECLARATOR COMPOUND_STATEMENT
  */
-public class Function extends Declaration
+public class FunctionDefinition extends ExternalDeclaration
 {
 	/**
 	 * Declaration specifiers that specify the storage class and part of the return type. The
@@ -57,14 +57,14 @@ public class Function extends Declaration
 	private Symbol endSymbol;
 
 	/**
-	 * Constructs a Function.
+	 * Constructs a FunctionDefinition.
 	 *
 	 * @param declarationSpecifiers return type specifier
 	 * @param declarator declarator
 	 * @param body body of the function
-	 * @param position starting position of the function
+	 * @param position starting position of the function definition
 	 */
-	public Function(DeclarationSpecifiers declarationSpecifiers, Declarator declarator,
+	public FunctionDefinition(DeclarationSpecifiers declarationSpecifiers, Declarator declarator,
 			CompoundStatement body, Position position)
 	{
 		super(position);
@@ -237,17 +237,17 @@ public class Function extends Declaration
 	}
 
 	/**
-	 * Attempts to parse a function from token stream. If parsing fails the stream is reset to its
-	 * initial position.
+	 * Attempts to parse a function definition from token stream. If parsing fails the stream is
+	 * reset to its initial position.
 	 *
 	 * @param tokens source token stream
-	 * @return Function object or null if tokens don't form a valid function
+	 * @return FunctionDefinition object or null if tokens don't form a valid function definition
 	 */
-	public static Function parse(TokenStream tokens)
+	public static FunctionDefinition parse(TokenStream tokens)
 	{
 		Position pos = tokens.getPosition();
 		tokens.pushMark();
-		Function function = null;
+		FunctionDefinition function = null;
 
 		DeclarationSpecifiers declSpecifiers = DeclarationSpecifiers.parse(tokens);
 
@@ -256,7 +256,7 @@ public class Function extends Declaration
 			if (declarator != null) {
 				CompoundStatement body = CompoundStatement.parse(tokens);
 				if (body != null)
-					function = new Function(declSpecifiers, declarator, body, pos);
+					function = new FunctionDefinition(declSpecifiers, declarator, body, pos);
 			}
 		}
 
