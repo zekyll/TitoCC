@@ -332,7 +332,7 @@ class Instruction
 		if (immediateOperand == null)
 			return null;
 		if (immediateOperand.charAt(0) == '=' || immediateOperand.charAt(0) == '@')
-			return immediateOperand.substring(1);
+			return immediateOperand.length() > 1 ? immediateOperand.substring(1) : null;
 		return immediateOperand;
 	}
 
