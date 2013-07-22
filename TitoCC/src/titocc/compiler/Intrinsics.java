@@ -113,12 +113,12 @@ class Intrinsics
 	void define(Assembler asm, Scope scope) throws IOException
 	{
 		try {
-			boolean end;
+			boolean newDefinitions;
 			do {
-				end = true;
+				newDefinitions = false;
 				for (Intrinsic intr : intrinsics)
-					end |= !intr.define(asm, scope);
-			} while (!end);
+					newDefinitions |= intr.define(asm, scope);
+			} while (newDefinitions);
 		} catch (SyntaxException e) {
 			throw new InternalCompilerException("Compiler error in intrinsic function: "
 					+ e.getMessage());
