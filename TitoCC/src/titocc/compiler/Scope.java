@@ -33,6 +33,8 @@ public class Scope
 	 */
 	private final Set<String> globallyUniqueNames;
 
+	private final Map<String, Symbol> linkages;
+
 	/**
 	 * Prefix added for this scope when generating globally unique names.
 	 */
@@ -48,10 +50,13 @@ public class Scope
 	{
 		this.parent = parent;
 		this.globalNamePrefix = globalNamePrefix;
-		if (parent == null)
+		if (parent == null) {
 			globallyUniqueNames = new HashSet<String>();
-		else
+			linkages = new HashMap<String, Symbol>();
+		} else {
 			globallyUniqueNames = parent.globallyUniqueNames;
+			linkages = parent.linkages;
+		}
 	}
 
 	/**
@@ -103,18 +108,50 @@ public class Scope
 
 	/**
 	 * Adds a new symbol to the scope if no symbols with the same name exist already. Also reserves
-	 * and sets the globally unique name for the symbol.
+	 * and sets the globally unique name for the symbol and sets up the linkage.
 	 *
 	 * @param symbol Symbol to be added.
-	 * @return the symbol itself or existing symbol with same name if one exists already
+	 * @return the symbol itself or existing symbol with same name if one exists already; if the
+	 * type of the existing symbol is conflicting then returns null
 	 */
 	public Symbol add(Symbol symbol)
 	{
-		if (symbols.containsKey(symbol.getName()))
-			return symbols.get(symbol.getName());
-		symbols.put(symbol.getName(), symbol);
-		String globalName = makeGloballyUniqueName(symbol.getName());
+		// Determine linkage based on type, storage class and scope.
+		Linkage linkage;
+		if (isGlobal() && symbol.getStorageClass() == StorageClass.Static)
+			linkage = Linkage.Internal;
+		else if (symbol.getStorageClass() == StorageClass.Extern || symbol.getType().isFunction())
+			linkage = Linkage.External;
+		else
+			linkage = Linkage.None;
+
+		// If symbol already exists in current scope, return it. (Must have same type.)
+		Symbol prevSymbol = symbols.get(symbol.getName());
+		if (prevSymbol != null)
+			return prevSymbol.getType().equals(symbol.getType()) ? prevSymbol : null;
+
+		// Link the symbol if it has linkage and determine global name.
+		String globalName;
+		if (linkage != Linkage.None) {
+			// Internal/external linkage; get global name from earlier declaration.
+			Symbol linkedSymbol = linkages.get(symbol.getName());
+			if (linkedSymbol != null) {
+				if (!linkedSymbol.getType().equals(symbol.getType()))
+					return null;
+				symbol.setLinkedSymbol(linkedSymbol);
+				globalName = linkedSymbol.getGlobalName();
+			} else {
+				linkages.put(symbol.getName(), symbol);
+				globalName = makeGloballyUniqueName(symbol.getName());
+			}
+		} else {
+			// No linkage; generate new global name.
+			globalName = makeGloballyUniqueName(symbol.getName());
+		}
 		symbol.setGlobalName(globalName);
+
+		symbols.put(symbol.getName(), symbol);
+
 		return symbol;
 	}
 

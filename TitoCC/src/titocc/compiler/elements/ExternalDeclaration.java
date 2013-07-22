@@ -2,9 +2,7 @@ package titocc.compiler.elements;
 
 import java.io.IOException;
 import titocc.compiler.Assembler;
-import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
-import titocc.compiler.StackAllocator;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.TokenStream;
 import titocc.util.Position;

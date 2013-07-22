@@ -44,6 +44,11 @@ public class Symbol
 	private String globallyUniqueName = null;
 
 	/**
+	 * For symbols with linkage, the symbol to which this symbol is linked.
+	 */
+	private Symbol linkedSymbol = null;
+
+	/**
 	 * True is local variable.
 	 */
 	private final Category category;
@@ -52,6 +57,11 @@ public class Symbol
 	 * Whether the object/function is defined.
 	 */
 	private boolean defined = false;
+
+	/**
+	 * Whether the object has tentative definitions.
+	 */
+	private boolean hasTentativeDefinition = false;
 
 	/**
 	 * Number of source code references to this symnol.
@@ -118,8 +128,7 @@ public class Symbol
 	{
 		// Stack variables (automatic local variables and parameters) are accessed through stack
 		// pointer (sp).
-		return storageClass == StorageClass.Auto ? globallyUniqueName + "(FP)"
-				: globallyUniqueName;
+		return isStackObject() ? globallyUniqueName + "(FP)" : globallyUniqueName;
 	}
 
 	/**
@@ -131,8 +140,13 @@ public class Symbol
 	public RhsOperand getRhsOperand(boolean dereference)
 	{
 		int addrMode = dereference ? 1 : 0;
-		VirtualRegister reg = storageClass == storageClass.Auto ? VirtualRegister.FP : null;
+		VirtualRegister reg = isStackObject() ? VirtualRegister.FP : null;
 		return new RhsOperand(addrMode, globallyUniqueName, reg);
+	}
+
+	private boolean isStackObject()
+	{
+		return storageClass == StorageClass.Auto;
 	}
 
 	/**
@@ -182,6 +196,8 @@ public class Symbol
 	 */
 	public boolean isDefined()
 	{
+		if (linkedSymbol != null)
+			return linkedSymbol.isDefined();
 		return defined;
 	}
 
@@ -192,9 +208,34 @@ public class Symbol
 	 */
 	public boolean define()
 	{
+		if (linkedSymbol != null)
+			return linkedSymbol.define();
 		boolean ret = !defined;
 		defined = true;
 		return ret;
+	}
+
+	/**
+	 * Marks the object as having a tentative definition.
+	 */
+	public void defineTentatively()
+	{
+		if (linkedSymbol != null)
+			linkedSymbol.defineTentatively();
+		else
+			hasTentativeDefinition = true;
+	}
+
+	/**
+	 * Checks whether the object has a tentative definition.
+	 *
+	 * @return
+	 */
+	public boolean hasTentativeDefinition()
+	{
+		if (linkedSymbol != null)
+			return linkedSymbol.hasTentativeDefinition();
+		return hasTentativeDefinition;
 	}
 
 	/**
@@ -213,5 +254,23 @@ public class Symbol
 	public int getUseCount()
 	{
 		return useCount;
+	}
+
+	/**
+	 * Gets the linked symbol for symbols with linkage.
+	 *
+	 * @return linked symbol or null if no linkage
+	 */
+	public Symbol getLinkedSymbol()
+	{
+		return linkedSymbol;
+	}
+
+	/**
+	 * Sets the linked symbol.
+	 */
+	public void setLinkedSymbol(Symbol linkedSymbol)
+	{
+		this.linkedSymbol = linkedSymbol;
 	}
 }

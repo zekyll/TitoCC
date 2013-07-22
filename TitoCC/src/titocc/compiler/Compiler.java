@@ -6,6 +6,7 @@ import java.io.Writer;
 import titocc.compiler.elements.TranslationUnit;
 import titocc.tokenizer.SyntaxException;
 import titocc.tokenizer.Tokenizer;
+import titocc.util.Position;
 
 /**
  * Main compiler class. Accepts either a C source file or parser output (TranslationUnit object) as
@@ -73,6 +74,7 @@ public class Compiler
 		intrinsics.declare(scope);
 		translationUnit.compile(asm, scope);
 		intrinsics.define(asm, scope);
+		checkDefinitions(asm, scope);
 		asm.finish();
 	}
 
@@ -100,5 +102,32 @@ public class Compiler
 	{
 		for (String name : reservedGlobalNames)
 			scope.makeGloballyUniqueName(name);
+	}
+
+	/**
+	 * Checks that all referenced symbols are defined. Also allocates storage for objects that
+	 * only have tentative definitions.
+	 */
+	private void checkDefinitions(Assembler asm, Scope scope) throws SyntaxException, IOException
+	{
+		for (Symbol s : scope.getSymbols()) {
+			if (!s.getType().isFunction() && !s.getType().isObject())
+				continue;
+			if (s.isDefined() || s.getUseCount() == 0)
+				continue;
+
+			if (s.hasTentativeDefinition()) {
+				asm.addEmptyLines(1);
+				asm.addLabel(s.getGlobalName());
+				asm.emit("ds", Integer.toString(s.getType().getSize()));
+				continue;
+			}
+
+			throw new SyntaxException("Undefined reference to " + s.getName() + ".",
+					new Position(0, 0));
+		}
+
+		for (Scope subScope : scope.getSubScopes())
+			checkDefinitions(asm, subScope);
 	}
 }

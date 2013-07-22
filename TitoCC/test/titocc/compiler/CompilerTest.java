@@ -30,12 +30,6 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenMainNotFound() throws IOException
-	{
-		testErr("int main2() {}", "Function \"int main()\" was not found.", 0, 0);
-	}
-
-	@Test
 	public void errorWhenMainReturnTypeWrong() throws IOException
 	{
 		testErr("void main2() {}", "Function \"int main()\" was not found.", 0, 0);
@@ -87,9 +81,113 @@ public class CompilerTest
 	}
 
 	@Test
+	public void errorWhenRedefiningAVariable() throws IOException
+	{
+		String msg = "Redefinition of \"a\".";
+		testErr("\nvoid f() { int a = 0; int a; }", msg, 1, 26);
+		testErr("\nvoid f(int a) { int a; }", msg, 1, 20);
+		testErr("\nvoid f() { if(1){int a; int a;} }", msg, 1, 28);
+		testErr("\nvoid f() { if(1);else{int a; int a;} }", msg, 1, 33);
+		testErr("\nvoid f() { for(;;) {int a; int a;} }", msg, 1, 31);
+		testErr("\nvoid f() { while(1) {int a; int a;} }", msg, 1, 32);
+		testErr("\nvoid f() { do{int a; int a;}while(1); }", msg, 1, 25);
+		testErr("\nvoid f() { {int a; int a;} }", msg, 1, 23);
+		testErr("\nint a = 0; int a = 0;", msg, 1, 15);
+		testErr("\nint a = 1, a = 1;", msg, 1, 11);
+	}
+
+	@Test
+	public void errorWhenRedefiningAParameter() throws IOException
+	{
+		String msg2 = "Redefinition of \"a\".";
+		testErr("\nvoid f(int a, int a) { }", msg2, 1, 18);
+		testErr("\nvoid f(int* a, int a[3]) { }", msg2, 1, 19);
+	}
+
+	@Test
 	public void errorWhenRedefiningAFunction() throws IOException
 	{
-		testErr("\nint main() { }\nvoid main() {}", "Redefinition of \"main\".", 2, 0);
+		testErr("\nint main() {}\nint main() {}", "Redefinition of \"main\".", 2, 4);
+	}
+
+	@Test
+	public void errorWhenRedefiningForLoopVariable() throws IOException
+	{
+		testErr("\nvoid f() { for(int i,i;;); }", "Redefinition of \"i\".", 1, 21);
+	}
+
+	@Test
+	public void errorWhenRedeclaringAnObjectWithDifferentType() throws IOException
+	{
+		String msg = "Redeclaration of \"a\" with incompatible type.";
+		testErr("\nint a; char a;", msg, 1, 12);
+		testErr("\nchar a[3]; char a[4];", msg, 1, 16);
+		testErr("\nint a; void a();", msg, 1, 12);
+		testErr("\nint a[3]; void a() {}", msg, 1, 15);
+		testErr("\nvoid g() { int a[2]; void a(); }", msg, 1, 26);
+	}
+
+	@Test
+	public void errorWhenRedeclaringAParameterWithDifferentType() throws IOException
+	{
+		String msg = "Redeclaration of \"a\" with incompatible type.";
+		testErr("\nvoid (*fp)(int, void* a, int (*a)(), int*);", msg, 1, 29);
+		testErr("\nvoid g(int a) { char a; }", msg, 1, 21);
+		testErr("\nvoid g(int a) { void a(); }", msg, 1, 21);
+	}
+
+	@Test
+	public void errorWhenRedeclaringFunctionWithDifferentType() throws IOException
+	{
+		String msg = "Redeclaration of \"f\" with incompatible type.";
+		testErr("\nvoid f(); int f();", msg, 1, 14);
+		testErr("\nvoid f(); int f() {}", msg, 1, 14);
+		testErr("\nvoid f() { } int f();", msg, 1, 17);
+		testErr("\nvoid g() { int f(); }  int f(int a) {} ", msg, 1, 27);
+		testErr("\nvoid g1() { int f(); } void g2() { void f(); } ", msg, 1, 40);
+		testErr("\nvoid f(); int f;", msg, 1, 14);
+		testErr("\nvoid g() { void f(); int f[2]; }", msg, 1, 25);
+	}
+
+	@Test
+	public void errorWhenFunctionUndefined() throws IOException
+	{
+		String msg = "Undefined reference to f.";
+		testErr("int f(); int main() { f(); }", msg, 0, 0);
+		testErr("int main() { void f(); f(); }", msg, 0, 0);
+		testErr("int main() { int f; {void f(); f();} }", msg, 0, 0);
+	}
+
+	@Test
+	public void errorWhenMainUndefined() throws IOException
+	{
+		String msg = "Function \"int main()\" was not found.";
+		testErr("int main2() {}", msg, 0, 0);
+		testErr("void main() {}", msg, 0, 0);
+		testErr("int main(int x) {}", msg, 0, 0);
+	}
+
+	@Test
+	public void errorWhenMainOnlyDeclared() throws IOException
+	{
+		String msg = "Undefined reference to main.";
+		testErr("int main();", msg, 0, 0);
+	}
+
+	@Test
+	public void errorWhenInitializerInFunctionDeclaration() throws IOException
+	{
+		String msg = "Initializer in function declaration.";
+		testErr("\nvoid f(); void g() = f;", msg, 1, 21);
+		testErr("\nvoid f() { void f() = 0; }", msg, 1, 22);
+	}
+
+	@Test
+	public void errorWhenFunctionDeclarationInForLoopInit() throws IOException
+	{
+		String msg = "Function declaration in for loop initialization.";
+		testErr("\nvoid g() { for(int f();;); }", msg, 1, 15);
+		testErr("\nvoid g() { for(int x, f();;); }", msg, 1, 15);
 	}
 
 	@Test
@@ -209,14 +307,6 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenRedefiningAParameter() throws IOException
-	{
-		String msg = "Redefinition of \"a\".";
-		testErr("\nvoid f(int a, int a) { }", msg, 1, 14);
-		testErr("\nvoid (*fp)(int, void* a, int (*a)(), int*);", msg, 1, 25);
-	}
-
-	@Test
 	public void errorWhenIncrementingNonLValue() throws IOException
 	{
 		testErr("\nvoid f() { 0++; }", "Operation requires an lvalue.", 1, 11);
@@ -228,22 +318,6 @@ public class CompilerTest
 	{
 		testErr("\nvoid f() { 0--; }", "Operation requires an lvalue.", 1, 11);
 		testErr("\nvoid f() { --0; }", "Operation requires an lvalue.", 1, 13);
-	}
-
-	@Test
-	public void errorWhenRedefiningAVariable() throws IOException
-	{
-		String msg = "Redefinition of \"a\".";
-		testErr("\nvoid f() { int a = 0; int a; }", msg, 1, 26);
-		testErr("\nvoid f(int a) { int a; }", msg, 1, 20);
-		testErr("\nvoid f() { if(1){int a; int a;} }", msg, 1, 28);
-		testErr("\nvoid f() { if(1);else{int a; int a;} }", msg, 1, 33);
-		testErr("\nvoid f() { for(;;) {int a; int a;} }", msg, 1, 31);
-		testErr("\nvoid f() { while(1) {int a; int a;} }", msg, 1, 32);
-		testErr("\nvoid f() { do{int a; int a;}while(1); }", msg, 1, 25);
-		testErr("\nvoid f() { {int a; int a;} }", msg, 1, 23);
-		testErr("\nint a; int a;", msg, 1, 11);
-		testErr("\nint a = 1, a;", msg, 1, 11);
 	}
 
 	@Test
@@ -260,10 +334,10 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenVariableIsNotObject() throws IOException
+	public void errorWhenIllegalDeclarationType() throws IOException
 	{
-		testErr("\nvoid a;", "Variable must have object type.", 1, 5);
-		testErr("\nvoid a();", "Variable must have object type.", 1, 5);
+		String msg = "Declaration does not specify an object or a function.";
+		testErr("\nvoid a;", msg, 1, 5);
 	}
 
 	@Test
@@ -646,11 +720,6 @@ public class CompilerTest
 				"Illegal control expression. Scalar type required.", 1, 16);
 	}
 
-//	@Test
-//	public void errorForLoopVariableRedeclared() throws IOException
-//	{
-//		testErr("\nvoid f() { for(int i,i;;); }", "", 1, 16);
-//	}
 	@Test
 	public void errorWhenBreakUsedOutsideLoopOrSwitch() throws IOException
 	{

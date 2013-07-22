@@ -86,7 +86,7 @@ public class ForStatement extends Statement
 		String loopTestLabel = loopScope.makeGloballyUniqueName("lbl");
 
 		// Loop initialization code.
-		initStatement.compile(ic, loopScope, stack);
+		compileInitStatement(ic, loopScope, stack);
 
 		// Loop start; jump to the test.
 		ic.emit("jump", VirtualRegister.NONE, loopTestLabel);
@@ -108,6 +108,19 @@ public class ForStatement extends Statement
 
 		// Insert label to be used by break statements.
 		ic.addLabel(breakSymbol.getReference());
+	}
+
+	private void compileInitStatement(IntermediateCompiler ic, Scope scope, StackAllocator stack)
+			throws SyntaxException
+	{
+		initStatement.compile(ic, scope, stack);
+
+		// Declaring functions not allowed in for loop declaration. ($6.8.5/3)
+		for (Symbol s : scope.getSymbols())
+			if (s.getType().isFunction()) {
+				throw new SyntaxException("Function declaration in for loop initialization.",
+						initStatement.getPosition());
+			}
 	}
 
 	@Override

@@ -122,8 +122,16 @@ public class FunctionDefinition extends ExternalDeclaration
 		Symbol sym = new Symbol(name, declType.type, Symbol.Category.Function,
 				StorageClass.Extern, false);
 		sym = scope.add(sym);
-		if (!sym.define())
-			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
+
+		if (sym == null) {
+			throw new SyntaxException("Redeclaration of \"" + name + "\" with incompatible type.",
+					declarator.getPosition());
+		}
+
+		if (!sym.define()) {
+			throw new SyntaxException("Redefinition of \"" + name + "\".",
+					declarator.getPosition());
+		}
 		return sym;
 	}
 
@@ -138,6 +146,7 @@ public class FunctionDefinition extends ExternalDeclaration
 		retValSymbol = new Symbol("__Ret", returnType, Symbol.Category.Internal,
 				StorageClass.Auto, false);
 		scope.add(retValSymbol);
+		retValSymbol.define();
 	}
 
 	/**

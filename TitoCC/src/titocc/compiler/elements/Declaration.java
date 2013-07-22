@@ -57,62 +57,102 @@ public class Declaration extends ExternalDeclaration
 				StackAllocator stack, DeclarationType declType) throws SyntaxException, IOException
 		{
 			CType finalType = declarator.compile(declType.type, scope, null);
-			if (!finalType.isObject())
-				throw new SyntaxException("Variable must have object type.", getPosition());
-
-			if (finalType instanceof ArrayType && initializer != null) {
-				throw new SyntaxException("Array initializers are not supported.",
-						initializer.getPosition());
+			if (!finalType.isObject() && !finalType.isFunction()) {
+				throw new SyntaxException("Declaration does not specify an object or a function.",
+						getPosition());
 			}
 
-			Symbol sym = addSymbol(scope, declarator.getName(), finalType);
+			Symbol sym = declare(scope, declarator.getName(), finalType);
 
-			if (initializer != null && !initializer.isAssignableTo(finalType, scope)) {
-				throw new SyntaxException("Initializer type doesn't match variable type.",
-						initializer.getPosition());
+			define(scope, sym, declType.storageClass);
+
+			checkInitializer(scope, sym);
+
+			if (sym.getType().isObject()) {
+				if (scope.isGlobal())
+					compileGlobalVariable(asm, scope, sym);
+				else
+					compileLocalVariable(ic, scope, stack, sym, sym.getType());
 			}
-
-			if (scope.isGlobal())
-				compileGlobalVariable(asm, scope, sym);
-			else
-				compileLocalVariable(ic, scope, stack, sym, finalType);
 		}
 
-		private Symbol addSymbol(Scope scope, String name, CType type) throws SyntaxException
+		private Symbol declare(Scope scope, String name, CType type) throws SyntaxException
 		{
 			Symbol sym;
-			if (scope.isGlobal())
-				sym = new Symbol(name, type, Symbol.Category.GlobalVariable, null, false);
-			else {
+			if (type.isFunction()) {
+				sym = new Symbol(name, type, Symbol.Category.Function, null, false);
+			} else if (scope.isGlobal()) {
+				sym = new Symbol(name, type, Symbol.Category.GlobalVariable,
+						StorageClass.Extern, false);
+			} else {
 				sym = new Symbol(name, type, Symbol.Category.LocalVariable,
 						StorageClass.Auto, false);
 			}
 			sym = scope.add(sym);
 
-			if (!sym.define())
-				throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
+			if (sym == null) {
+				throw new SyntaxException("Redeclaration of \"" + name
+						+ "\" with incompatible type.", getPosition());
+			}
 
 			return sym;
+		}
+
+		private void define(Scope scope, Symbol sym, StorageClass storageClass)
+				throws SyntaxException
+		{
+			if (sym.getType().isObject() && (initializer != null || !scope.isGlobal())) {
+				// Local object declaration, or global declaration with initializer is considered
+				// a definition.
+				if (!sym.define()) {
+					throw new SyntaxException("Redefinition of \"" + sym.getName() + "\".",
+							getPosition());
+				}
+			} else if (sym.getType().isObject() && (storageClass == StorageClass.Static
+					|| storageClass == null)) {
+				// File-scope object declaration without initializer and with static or no
+				// storage class is a "tentative definition" ($6.9.2/2)
+				sym.defineTentatively();
+			}
+		}
+
+		private void checkInitializer(Scope scope, Symbol sym) throws SyntaxException
+		{
+			if (initializer != null) {
+				if (sym.getType().isFunction()) {
+					throw new SyntaxException("Initializer in function declaration.",
+							initializer.getPosition());
+				}
+
+				if (sym.getType() instanceof ArrayType) {
+					throw new SyntaxException("Array initializers are not supported.",
+							initializer.getPosition());
+				}
+
+				if (!initializer.isAssignableTo(sym.getType(), scope)) {
+					throw new SyntaxException("Initializer type doesn't match variable type.",
+							initializer.getPosition());
+				}
+			}
 		}
 
 		private void compileGlobalVariable(Assembler asm, Scope scope, Symbol sym)
 				throws SyntaxException, IOException
 		{
-			BigInteger initValue;
 			if (initializer != null) {
-				initValue = initializer.getCompileTimeValue(scope);
+				BigInteger initValue = initializer.getCompileTimeValue(scope);
 				if (initValue == null) {
 					throw new SyntaxException("Global variable must be initialized with a compile"
 							+ " time constant.", initializer.getPosition());
 				}
-			} else
-				initValue = BigInteger.ZERO;
 
-			asm.addLabel(sym.getGlobalName());
-			if (sym.getType() instanceof ArrayType)
-				asm.emit("ds", "" + sym.getType().getSize());
-			else
-				asm.emit("dc", "" + initValue.intValue());
+				asm.addEmptyLines(1);
+				asm.addLabel(sym.getGlobalName());
+				if (sym.getType() instanceof ArrayType)
+					asm.emit("ds", "" + sym.getType().getSize());
+				else
+					asm.emit("dc", "" + initValue.intValue());
+			}
 		}
 
 		private void compileLocalVariable(IntermediateCompiler ic, Scope scope, StackAllocator stack,

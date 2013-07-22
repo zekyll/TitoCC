@@ -3,6 +3,7 @@ package titocc.compiler;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import titocc.compiler.types.CType;
 
 public class ScopeTest
 {
@@ -14,8 +15,8 @@ public class ScopeTest
 	public void setUp()
 	{
 		globalScope = new Scope(null, "prefix1_");
-		sym1 = new Symbol("aaa", null, Symbol.Category.LocalVariable, StorageClass.Auto, false);
-		sym2 = new Symbol("bbb", null, Symbol.Category.LocalVariable, StorageClass.Auto, false);
+		sym1 = new Symbol("aa", CType.INT, Symbol.Category.LocalVariable, StorageClass.Auto, false);
+		sym2 = new Symbol("bb", CType.INT, Symbol.Category.LocalVariable, StorageClass.Auto, false);
 	}
 
 	@Test
@@ -63,11 +64,21 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		globalScope.add(sym2);
-		Symbol sym3 = new Symbol(sym1.getName(), null, Symbol.Category.LocalVariable,
+		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, Symbol.Category.LocalVariable,
 				StorageClass.Auto, false);
 		Symbol ret = globalScope.add(sym3);
 		assertSame(sym1, ret);
 		assertEquals(2, globalScope.getSymbols().size());
+	}
+
+	@Test
+	public void addReturnsNullIfEarlierSymbolHasDifferentType()
+	{
+		globalScope.add(sym1);
+		globalScope.add(sym2);
+		Symbol sym3 = new Symbol(sym1.getName(), CType.UINT, Symbol.Category.LocalVariable,
+				StorageClass.Auto, false);
+		assertNull(globalScope.add(sym3));
 	}
 
 	@Test
@@ -93,7 +104,7 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		Scope subScope = new Scope(globalScope, "");
-		Symbol sym3 = new Symbol(sym1.getName(), null, Symbol.Category.LocalVariable,
+		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, Symbol.Category.LocalVariable,
 				StorageClass.Auto, false);
 		subScope.add(sym3);
 		assertSame(sym3, subScope.find(sym1.getName()));
@@ -113,7 +124,7 @@ public class ScopeTest
 		myScope.addSubScope(subScope);
 
 		siblingScope.add(sym1);
-		Symbol sym3 = new Symbol(sym1.getName(), null, Symbol.Category.LocalVariable,
+		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, Symbol.Category.LocalVariable,
 				StorageClass.Auto, false);
 		subScope.add(sym3);
 
@@ -167,7 +178,7 @@ public class ScopeTest
 	{
 		Scope subScope = new Scope(globalScope, "prefix2_");
 		subScope.add(sym1);
-		assertEquals("prefix1_prefix2_aaa", sym1.getGlobalName());
+		assertEquals("prefix1_prefix2_aa", sym1.getGlobalName());
 	}
 
 	@Test

@@ -93,9 +93,16 @@ public class Parameter extends CodeElement
 		Symbol sym = new Symbol(name, declType.type, Symbol.Category.Parameter, StorageClass.Auto,
 				false);
 		sym = scope.add(sym);
-		if (!sym.define())
-			throw new SyntaxException("Redefinition of \"" + name + "\".", getPosition());
-		sym.define();
+
+		if (sym == null) {
+			throw new SyntaxException("Redeclaration of \"" + name + "\" with incompatible type.",
+					declarator.getPosition());
+		}
+
+		if (!sym.define()) {
+			throw new SyntaxException("Redefinition of \"" + name + "\".",
+					declarator.getPosition());
+		}
 
 		return sym;
 	}

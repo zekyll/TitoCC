@@ -789,4 +789,16 @@ public class ParserTest
 	{
 		testFailure("\nint x = (int);", ";", 1, 13);
 	}
+
+	@Test
+	public void failWhenFunctionBodyInDeclaration() throws IOException, SyntaxException
+	{
+		testFailure("\nint x, f() {}", "{", 1, 11);
+	}
+
+	@Test
+	public void failWhenFunctionDefinitionInsideFunction() throws IOException, SyntaxException
+	{
+		testFailure("\nint f() { int g(){} }", "{", 1, 17);
+	}
 }
