@@ -3,6 +3,7 @@ package titocc.compiler.elements;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import titocc.compiler.DeclarationType;
 import titocc.compiler.Scope;
 import titocc.compiler.Symbol;
 import titocc.compiler.types.ArrayType;
@@ -62,7 +63,7 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
+		CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 		{
 			return type;
 		}
@@ -88,7 +89,7 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
+		CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 				throws SyntaxException
 		{
 			if (!type.isObject())
@@ -125,7 +126,7 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
+		CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 				throws SyntaxException
 		{
 			return subDeclarator.compile(new PointerType(type), scope, paramSymbolsOut);
@@ -153,7 +154,7 @@ public abstract class Declarator extends CodeElement
 		}
 
 		@Override
-		public CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
+		CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 				throws SyntaxException
 		{
 			// Only recognize the innermost function declarator as function definition, in case
@@ -180,7 +181,7 @@ public abstract class Declarator extends CodeElement
 
 		private void checkReturnType(CType retType) throws SyntaxException
 		{
-			// Return type must be void or object type, excluding arrays ($6.9.1/3).
+			// Return type must be void or object type, excluding arrays ($6.9.1/3)/($6.7.5.3/1).
 			if (retType instanceof VoidType)
 				return;
 			if (retType.isObject() && !(retType instanceof ArrayType))
@@ -221,6 +222,14 @@ public abstract class Declarator extends CodeElement
 		return subDeclarator.getName();
 	}
 
+	public DeclarationType compile(DeclarationType declType, Scope scope,
+			List<Symbol> paramSymbolsOut) throws SyntaxException
+	{
+		CType type = compile(declType.type, scope, paramSymbolsOut);
+		DeclarationType ret = new DeclarationType(type, declType.storageClass, declType.inline);
+		return ret;
+	}
+
 	/**
 	 * Does semantic analysis for the declarator and deduces the resulting type. Modifies the
 	 * argument type with this declarator and all its subdeclarators. For example given type "int",
@@ -234,7 +243,7 @@ public abstract class Declarator extends CodeElement
 	 * @return modified type
 	 * @throws SyntaxException
 	 */
-	public abstract CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
+	abstract CType compile(CType type, Scope scope, List<Symbol> paramSymbolsOut)
 			throws SyntaxException;
 
 	/**

@@ -11,14 +11,6 @@ import titocc.compiler.types.CType;
 public class Symbol
 {
 	/**
-	 * Symbol categories.
-	 */
-	public enum Category
-	{
-		Function, GlobalVariable, LocalVariable, Parameter, Internal
-	};
-
-	/**
 	 * Name of the symbol.
 	 */
 	private final String name;
@@ -49,9 +41,9 @@ public class Symbol
 	private Symbol linkedSymbol = null;
 
 	/**
-	 * True is local variable.
+	 * Symbol linkage (external/internal/none).
 	 */
-	private final Category category;
+	private Linkage linkage = Linkage.None;
 
 	/**
 	 * Whether the object/function is defined.
@@ -73,17 +65,14 @@ public class Symbol
 	 *
 	 * @param name name of the symbol
 	 * @param type type of the symbol
-	 * @param category Symbol category (local variable, parameter, internal etc)
 	 * @param storageClass storage class
 	 * @param inline whether a function was declared inline or not; ignored if symbol has object
 	 * type
 	 */
-	public Symbol(String name, CType type, Category category, StorageClass storageClass,
-			boolean inline)
+	public Symbol(String name, CType type, StorageClass storageClass, boolean inline)
 	{
 		this.name = name;
 		this.type = type;
-		this.category = category;
 		this.storageClass = storageClass;
 		this.inline = inline;
 	}
@@ -146,7 +135,7 @@ public class Symbol
 
 	private boolean isStackObject()
 	{
-		return storageClass == StorageClass.Auto;
+		return storageClass == StorageClass.Auto || storageClass == StorageClass.Register;
 	}
 
 	/**
@@ -157,16 +146,6 @@ public class Symbol
 	public CType getType()
 	{
 		return type;
-	}
-
-	/**
-	 * Returns the symbol category.
-	 *
-	 * @return category
-	 */
-	public Category getCategory()
-	{
-		return category;
 	}
 
 	/**
@@ -267,10 +246,24 @@ public class Symbol
 	}
 
 	/**
-	 * Sets the linked symbol.
+	 * Get the linkage of the symbol.
+	 *
+	 * @return linkage
 	 */
-	public void setLinkedSymbol(Symbol linkedSymbol)
+	public Linkage getLinkage()
 	{
+		return linkage;
+	}
+
+	/**
+	 * Sets the linkage and linked symbol.
+	 *
+	 * @param linkage external/internal/none
+	 * @param linkedSymbol first declaration of the identifier or null if no linkage
+	 */
+	public void setLinkage(Linkage linkage, Symbol linkedSymbol)
+	{
+		this.linkage = linkage;
 		this.linkedSymbol = linkedSymbol;
 	}
 }

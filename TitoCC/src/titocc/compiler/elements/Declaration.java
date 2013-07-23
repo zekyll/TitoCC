@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Assembler;
+import titocc.compiler.DeclarationResult;
 import titocc.compiler.DeclarationType;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Rvalue;
@@ -56,60 +57,75 @@ public class Declaration extends ExternalDeclaration
 		void compile(Assembler asm, IntermediateCompiler ic, Scope scope,
 				StackAllocator stack, DeclarationType declType) throws SyntaxException, IOException
 		{
-			CType finalType = declarator.compile(declType.type, scope, null);
-			if (!finalType.isObject() && !finalType.isFunction()) {
+			declType = declarator.compile(declType, scope, null);
+			if (!declType.type.isObject() && !declType.type.isFunction()) {
 				throw new SyntaxException("Declaration does not specify an object or a function.",
 						getPosition());
 			}
 
-			Symbol sym = declare(scope, declarator.getName(), finalType);
+			Symbol sym = declare(scope, declarator.getName(), declType);
 
-			define(scope, sym, declType.storageClass);
+			define(scope, sym);
 
-			checkInitializer(scope, sym);
-
-			if (sym.getType().isObject()) {
-				if (scope.isGlobal())
-					compileGlobalVariable(asm, scope, sym);
-				else
-					compileLocalVariable(ic, scope, stack, sym, sym.getType());
+			if (initializer != null) {
+				checkInitializer(scope, sym);
+				if (sym.getType().isObject()) {
+					if (scope.isGlobal() || sym.getStorageClass() == StorageClass.Static)
+						compileStaticObject(asm, ic, scope, sym);
+					else
+						compileAutomaticObject(ic, scope, stack, sym, sym.getType());
+				}
 			}
 		}
 
-		private Symbol declare(Scope scope, String name, CType type) throws SyntaxException
-		{
-			Symbol sym;
-			if (type.isFunction()) {
-				sym = new Symbol(name, type, Symbol.Category.Function, null, false);
-			} else if (scope.isGlobal()) {
-				sym = new Symbol(name, type, Symbol.Category.GlobalVariable,
-						StorageClass.Extern, false);
-			} else {
-				sym = new Symbol(name, type, Symbol.Category.LocalVariable,
-						StorageClass.Auto, false);
-			}
-			sym = scope.add(sym);
-
-			if (sym == null) {
-				throw new SyntaxException("Redeclaration of \"" + name
-						+ "\" with incompatible type.", getPosition());
-			}
-
-			return sym;
-		}
-
-		private void define(Scope scope, Symbol sym, StorageClass storageClass)
+		private Symbol declare(Scope scope, String name, DeclarationType declType)
 				throws SyntaxException
 		{
-			if (sym.getType().isObject() && (initializer != null || !scope.isGlobal())) {
+			// Determine category and storage class.
+			StorageClass storageCls = declType.storageClass;
+			if (declType.type.isFunction()) {
+				// Block scope functions can only have extern or no storage class. ($6.7.1/5)
+				if (!scope.isGlobal() && storageCls != null && storageCls != StorageClass.Extern) {
+					throw new SyntaxException("Illegal storage class in block scope function "
+							+ "declaration.", getPosition());
+				}
+			} else if (!scope.isGlobal()) {
+				// No storage class on local variables is the same as "auto" storage class.
+				if (declType.storageClass == null)
+					storageCls = StorageClass.Auto;
+			}
+
+			// Auto and register not allowed in external declarations. ($6.9/2)
+			if (scope.isGlobal() && (storageCls == StorageClass.Auto
+					|| storageCls == StorageClass.Register)) {
+				throw new SyntaxException("Illegal storage class in external declaration.",
+						getPosition());
+			}
+
+			Symbol sym = new Symbol(name, declType.type, storageCls, declType.inline);
+
+			DeclarationResult declRes = scope.add(sym);
+			if (declRes.symbol == null)
+				throw new SyntaxException(declRes.msg, getPosition());
+
+			return declRes.symbol;
+		}
+
+		private void define(Scope scope, Symbol sym) throws SyntaxException
+		{
+			if (!sym.getType().isObject())
+				return;
+
+			if (initializer != null || sym.getStorageClass() == StorageClass.Auto
+					|| sym.getStorageClass() == StorageClass.Register) {
 				// Local object declaration, or global declaration with initializer is considered
 				// a definition.
 				if (!sym.define()) {
 					throw new SyntaxException("Redefinition of \"" + sym.getName() + "\".",
 							getPosition());
 				}
-			} else if (sym.getType().isObject() && (storageClass == StorageClass.Static
-					|| storageClass == null)) {
+			} else if (sym.getStorageClass() == StorageClass.Static
+					|| sym.getStorageClass() == null) {
 				// File-scope object declaration without initializer and with static or no
 				// storage class is a "tentative definition" ($6.9.2/2)
 				sym.defineTentatively();
@@ -118,50 +134,49 @@ public class Declaration extends ExternalDeclaration
 
 		private void checkInitializer(Scope scope, Symbol sym) throws SyntaxException
 		{
-			if (initializer != null) {
-				if (sym.getType().isFunction()) {
-					throw new SyntaxException("Initializer in function declaration.",
-							initializer.getPosition());
-				}
-
-				if (sym.getType() instanceof ArrayType) {
-					throw new SyntaxException("Array initializers are not supported.",
-							initializer.getPosition());
-				}
-
-				if (!initializer.isAssignableTo(sym.getType(), scope)) {
-					throw new SyntaxException("Initializer type doesn't match variable type.",
-							initializer.getPosition());
-				}
-			}
+			Position pos = initializer.getPosition();
+			if (sym.getType().isFunction())
+				throw new SyntaxException("Initializer in function declaration.", pos);
+			if (sym.getType() instanceof ArrayType)
+				throw new SyntaxException("Array initializers are not supported.", pos);
+			if (!initializer.isAssignableTo(sym.getType(), scope))
+				throw new SyntaxException("Initializer type doesn't match variable type.", pos);
+			// Block-scope objects with linkage may not have an initializer. ($6.7.8/5)
+			if (!scope.isGlobal() && sym.getStorageClass() == StorageClass.Extern)
+				throw new SyntaxException("Initializer on block-scope object with linkage.", pos);
 		}
 
-		private void compileGlobalVariable(Assembler asm, Scope scope, Symbol sym)
-				throws SyntaxException, IOException
+		private void compileStaticObject(Assembler asm, IntermediateCompiler ic, Scope scope,
+				Symbol sym) throws SyntaxException, IOException
 		{
-			if (initializer != null) {
-				BigInteger initValue = initializer.getCompileTimeValue(scope);
-				if (initValue == null) {
-					throw new SyntaxException("Global variable must be initialized with a compile"
-							+ " time constant.", initializer.getPosition());
-				}
+			// ($6.7.8/4)
+			BigInteger initValue = initializer.getCompileTimeValue(scope);
+			if (initValue == null) {
+				throw new SyntaxException("Initializer for static object is not a constant.",
+						initializer.getPosition());
+			}
 
+			if (asm != null) {
 				asm.addEmptyLines(1);
 				asm.addLabel(sym.getGlobalName());
 				if (sym.getType() instanceof ArrayType)
 					asm.emit("ds", "" + sym.getType().getSize());
 				else
 					asm.emit("dc", "" + initValue.intValue());
+			} else {
+				ic.addLabel(sym.getGlobalName());
+				if (sym.getType() instanceof ArrayType)
+					ic.emit("ds", sym.getType().getSize());
+				else
+					ic.emit("dc", initValue.intValue());
 			}
 		}
 
-		private void compileLocalVariable(IntermediateCompiler ic, Scope scope, StackAllocator stack,
-				Symbol sym, CType variableType) throws SyntaxException
+		private void compileAutomaticObject(IntermediateCompiler ic, Scope scope,
+				StackAllocator stack, Symbol sym, CType variableType) throws SyntaxException
 		{
-			if (initializer != null) {
-				Rvalue initVal = initializer.compileWithConversion(ic, scope, variableType);
-				ic.emit("store", initVal.getRegister(), sym.getRhsOperand(false));
-			}
+			Rvalue initVal = initializer.compileWithConversion(ic, scope, variableType);
+			ic.emit("store", initVal.getRegister(), sym.getRhsOperand(false));
 		}
 	}
 

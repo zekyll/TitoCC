@@ -1,5 +1,6 @@
 package titocc.compiler.elements;
 
+import titocc.compiler.DeclarationResult;
 import titocc.compiler.DeclarationType;
 import titocc.compiler.Scope;
 import titocc.compiler.StorageClass;
@@ -69,10 +70,14 @@ public class Parameter extends CodeElement
 	private DeclarationType compileType(Scope scope) throws SyntaxException
 	{
 		DeclarationType declType = declarationSpecifiers.compile(scope);
-		declType.type = declarator.compile(declType.type, scope, null);
+		declType = declarator.compile(declType, scope, null);
 
 		// Adjust parameter type as defined in ($6.7.5.3/7-8).
 		declType.type = declType.type.decay();
+
+		// Only "register" or no storage class allowed in parameters. ($6.7.5.3/2)
+		if (declType.storageClass != null && declType.storageClass != StorageClass.Register)
+			throw new SyntaxException("Illegal storage class for parameter.", getPosition());
 
 		if (!declType.type.isObject())
 			throw new SyntaxException("Parameter must have object type.", getPosition());
@@ -90,21 +95,17 @@ public class Parameter extends CodeElement
 		if (name == null)
 			name = "__param" + idx;
 
-		Symbol sym = new Symbol(name, declType.type, Symbol.Category.Parameter, StorageClass.Auto,
-				false);
-		sym = scope.add(sym);
+		Symbol sym = new Symbol(name, declType.type, StorageClass.Auto, false);
+		DeclarationResult declRes = scope.add(sym);
+		if (declRes.symbol == null)
+			throw new SyntaxException(declRes.msg, declarator.getPosition());
 
-		if (sym == null) {
-			throw new SyntaxException("Redeclaration of \"" + name + "\" with incompatible type.",
-					declarator.getPosition());
-		}
-
-		if (!sym.define()) {
+		if (!declRes.symbol.define()) {
 			throw new SyntaxException("Redefinition of \"" + name + "\".",
 					declarator.getPosition());
 		}
 
-		return sym;
+		return declRes.symbol;
 	}
 
 	@Override

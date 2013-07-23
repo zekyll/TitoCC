@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import titocc.compiler.Assembler;
+import titocc.compiler.DeclarationResult;
 import titocc.compiler.DeclarationType;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Register;
@@ -88,7 +89,7 @@ public class FunctionDefinition extends ExternalDeclaration
 		// Get function type and declare parameters.
 		List<Symbol> parameters = new ArrayList<Symbol>();
 		DeclarationType declType = declarationSpecifiers.compile(scope);
-		declType.type = declarator.compile(declType.type, functionScope, parameters);
+		declType = declarator.compile(declType, functionScope, parameters);
 
 		// Check that the declarator actually declares a function.
 		if (!declType.type.isFunction())
@@ -109,7 +110,7 @@ public class FunctionDefinition extends ExternalDeclaration
 		IntermediateCompiler bodyIc = new IntermediateCompiler();
 		compileBody(bodyIc, functionScope, stack);
 		bodyIc.compile(stack);
-		List<Symbol> localVariables = getLocalVariables(functionScope);
+		List<Symbol> localVariables = getLocalVariables(functionScope, parameters);
 
 		compilePrologue(asm, localVariables, stack.getSpillCount(), funcSym.getReference());
 		bodyIc.sendToAssembler(asm);
@@ -118,33 +119,36 @@ public class FunctionDefinition extends ExternalDeclaration
 
 	private Symbol addSymbol(Scope scope, DeclarationType declType) throws SyntaxException
 	{
-		String name = declarator.getName();
-		Symbol sym = new Symbol(name, declType.type, Symbol.Category.Function,
-				StorageClass.Extern, false);
-		sym = scope.add(sym);
-
-		if (sym == null) {
-			throw new SyntaxException("Redeclaration of \"" + name + "\" with incompatible type.",
+		// Auto and register not allowed in external declarations. ($6.9/2)/($6.9.1/4)
+		if (scope.isGlobal() && (declType.storageClass == StorageClass.Auto
+				|| declType.storageClass == StorageClass.Register)) {
+			throw new SyntaxException("Illegal storage class in external declaration.",
 					declarator.getPosition());
 		}
 
-		if (!sym.define()) {
+		String name = declarator.getName();
+		Symbol sym = new Symbol(name, declType.type, declType.storageClass, false);
+
+		DeclarationResult declRes = scope.add(sym);
+		if (declRes.symbol == null)
+			throw new SyntaxException(declRes.msg, declarator.getPosition());
+
+		if (!declRes.symbol.define()) {
 			throw new SyntaxException("Redefinition of \"" + name + "\".",
 					declarator.getPosition());
 		}
-		return sym;
+
+		return declRes.symbol;
 	}
 
 	private void addInternalSymbols(Scope scope, CType returnType)
 	{
 		// Add symbol for the function end so that return statements can jump to it.
-		endSymbol = new Symbol("__End", CType.VOID, Symbol.Category.Internal,
-				null, false);
+		endSymbol = new Symbol("__End", CType.VOID, StorageClass.Static, false);
 		scope.add(endSymbol);
 
 		// Add symbol for location of the return value.
-		retValSymbol = new Symbol("__Ret", returnType, Symbol.Category.Internal,
-				StorageClass.Auto, false);
+		retValSymbol = new Symbol("__Ret", returnType, StorageClass.Auto, false);
 		scope.add(retValSymbol);
 		retValSymbol.define();
 	}
@@ -223,17 +227,20 @@ public class FunctionDefinition extends ExternalDeclaration
 		asm.emit("exit", Register.SP, "=" + paramTotalSize);
 	}
 
-	private List<Symbol> getLocalVariables(Scope scope)
+	private List<Symbol> getLocalVariables(Scope scope, List<Symbol> parameters)
 	{
 		List<Symbol> localVariables = new ArrayList<Symbol>();
 
-		for (Symbol symbol : scope.getSymbols()) {
-			if (symbol.getCategory() == Symbol.Category.LocalVariable)
-				localVariables.add(symbol);
+		for (Symbol sym : scope.getSymbols()) {
+			// All automatic objects except parameters and internal objects.
+			if ((sym.getStorageClass() == StorageClass.Auto
+					|| sym.getStorageClass() == StorageClass.Register) && !parameters.contains(sym)
+					&& !sym.getName().startsWith("__"))
+				localVariables.add(sym);
 		}
 
 		for (Scope subscope : scope.getSubScopes())
-			localVariables.addAll(getLocalVariables(subscope));
+			localVariables.addAll(getLocalVariables(subscope, parameters));
 
 		return localVariables;
 	}

@@ -33,6 +33,10 @@ public class Scope
 	 */
 	private final Set<String> globallyUniqueNames;
 
+	/**
+	 * If an identifier has linkage then this map contains mapping from that identifier to the
+	 * first declaration of that identifier. Contains both internal and external linkages.
+	 */
 	private final Map<String, Symbol> linkages;
 
 	/**
@@ -98,10 +102,15 @@ public class Scope
 	 */
 	public Symbol find(String name)
 	{
+		return find(name, true);
+	}
+
+	private Symbol find(String name, boolean incrementUseCount)
+	{
 		Symbol sym = symbols.get(name);
 		if (sym == null && parent != null)
-			sym = parent.find(name);
-		if (sym != null)
+			sym = parent.find(name, incrementUseCount);
+		if (sym != null && incrementUseCount)
 			sym.increaseUseCount();
 		return sym;
 	}
@@ -114,21 +123,15 @@ public class Scope
 	 * @return the symbol itself or existing symbol with same name if one exists already; if the
 	 * type of the existing symbol is conflicting then returns null
 	 */
-	public Symbol add(Symbol symbol)
+	public DeclarationResult add(Symbol symbol)
 	{
-		// Determine linkage based on type, storage class and scope.
-		Linkage linkage;
-		if (isGlobal() && symbol.getStorageClass() == StorageClass.Static)
-			linkage = Linkage.Internal;
-		else if (symbol.getStorageClass() == StorageClass.Extern || symbol.getType().isFunction())
-			linkage = Linkage.External;
-		else
-			linkage = Linkage.None;
+		Linkage linkage = getLinkage(symbol);
 
-		// If symbol already exists in current scope, return it. (Must have same type.)
+		// If symbol already exists in current scope, return it. (Must have same type and right
+		// linkage.)
 		Symbol prevSymbol = symbols.get(symbol.getName());
 		if (prevSymbol != null)
-			return prevSymbol.getType().equals(symbol.getType()) ? prevSymbol : null;
+			return checkCompatibility(symbol, prevSymbol, linkage);
 
 		// Link the symbol if it has linkage and determine global name.
 		String globalName;
@@ -136,14 +139,15 @@ public class Scope
 			// Internal/external linkage; get global name from earlier declaration.
 			Symbol linkedSymbol = linkages.get(symbol.getName());
 			if (linkedSymbol != null) {
-				if (!linkedSymbol.getType().equals(symbol.getType()))
-					return null;
-				symbol.setLinkedSymbol(linkedSymbol);
+				DeclarationResult declRes = checkCompatibility(symbol, linkedSymbol, linkage);
+				if (declRes.symbol == null)
+					return declRes;
 				globalName = linkedSymbol.getGlobalName();
 			} else {
 				linkages.put(symbol.getName(), symbol);
 				globalName = makeGloballyUniqueName(symbol.getName());
 			}
+			symbol.setLinkage(linkage, linkedSymbol);
 		} else {
 			// No linkage; generate new global name.
 			globalName = makeGloballyUniqueName(symbol.getName());
@@ -152,7 +156,59 @@ public class Scope
 
 		symbols.put(symbol.getName(), symbol);
 
-		return symbol;
+		return new DeclarationResult(symbol);
+	}
+
+	/**
+	 * Determines linkage of the added symbol based on its storage class, type, scope and possible
+	 * previously declared symbol that has linkage.
+	 */
+	private Linkage getLinkage(Symbol symbol)
+	{
+		// If extern or function without storage class, and a prior declaration with linkage is
+		// visible then use the same linkage. ($6.2.2/4-5)
+		if (symbol.getStorageClass() == StorageClass.Extern || (symbol.getType().isFunction()
+				&& symbol.getStorageClass() == null)) {
+			Symbol prevSymbol = find(symbol.getName(), false);
+			if (prevSymbol != null) {
+				return prevSymbol.getLinkage() != Linkage.None ? prevSymbol.getLinkage()
+						: Linkage.External;
+			}
+		}
+
+		// If no prior declaration with linkage, set linkage based on storage class and scope.
+		if (symbol.getStorageClass() == StorageClass.Extern || symbol.getStorageClass() == null)
+			return Linkage.External;
+		else if (isGlobal() && symbol.getStorageClass() == StorageClass.Static)
+			return Linkage.Internal;
+		else
+			return Linkage.None;
+	}
+
+	/**
+	 * Checks that the new declaration is compatible with previous declaration.
+	 */
+	private DeclarationResult checkCompatibility(Symbol sym, Symbol prevSymbol, Linkage linkage)
+	{
+		// ($6.7/4) and ($6.2.7/2)
+		if (!prevSymbol.getType().equals(sym.getType())) {
+			return new DeclarationResult("Redeclaration of \"" + sym.getName()
+					+ "\" with incompatible type.");
+		}
+
+		// ($6.7/3)
+		if (prevSymbol.getLinkage() == Linkage.None) {
+			return new DeclarationResult("Redeclaration of \"" + sym.getName()
+					+ "\" with no linkage.");
+		}
+
+		// ($6.7/3) and ($6.2.2/7)
+		if (prevSymbol.getLinkage() != linkage) {
+			return new DeclarationResult("Redeclaration of \"" + sym.getName()
+					+ "\" with different linkage.");
+		}
+
+		return new DeclarationResult(prevSymbol);
 	}
 
 	/**

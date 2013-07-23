@@ -74,8 +74,7 @@ public class CastExpression extends Expression
 	public CType getType(Scope scope) throws SyntaxException
 	{
 		DeclarationType declType = declarationSpecifiers.compile(scope);
-		declType.type = declarator.compile(declType.type, scope, null);
-		return declType.type;
+		return declarator.compile(declType, scope, null).type;
 	}
 
 	@Override

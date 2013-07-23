@@ -70,20 +70,27 @@ public class CompilerTest
 	@Test
 	public void errorWhenUsingUndeclaredVariable() throws IOException
 	{
-		testErr("\nint main() { x; }", "Undeclared identifier \"x\".", 1, 13);
-		testErr("\nint main() { { int x; } x; }", "Undeclared identifier \"x\".", 1, 24);
+		String msg = "Undeclared identifier \"a\".";
+		testErr("\nint main() { a; }", msg, 1, 13);
+		testErr("\nint main() { a; } int a = 0;", msg, 1, 13);
+		testErr("\nint main() { a; int a; }", msg, 1, 13);
+		testErr("\nint main() { { int a; } a; }", msg, 1, 24);
 	}
 
 	@Test
 	public void errorWhenUsingUndeclaredFunction() throws IOException
 	{
-		testErr("\nint main() { f(); }", "Undeclared identifier \"f\".", 1, 13);
+		String msg = "Undeclared identifier \"f\".";
+		testErr("\nint g() { f(); } void f() {}", msg, 1, 10);
+		testErr("\nint g() { f(); extern void f(); }", msg, 1, 10);
+		testErr("\nint g() { { void f(); } f(); }", msg, 1, 24);
+		testErr("\nvoid g1() { void f(); } int g2() { f(); }", msg, 1, 35);
 	}
 
 	@Test
-	public void errorWhenRedefiningAVariable() throws IOException
+	public void errorWhenRedeclaringSymbolNoLinkage() throws IOException
 	{
-		String msg = "Redefinition of \"a\".";
+		String msg = "Redeclaration of \"a\" with no linkage.";
 		testErr("\nvoid f() { int a = 0; int a; }", msg, 1, 26);
 		testErr("\nvoid f(int a) { int a; }", msg, 1, 20);
 		testErr("\nvoid f() { if(1){int a; int a;} }", msg, 1, 28);
@@ -92,39 +99,96 @@ public class CompilerTest
 		testErr("\nvoid f() { while(1) {int a; int a;} }", msg, 1, 32);
 		testErr("\nvoid f() { do{int a; int a;}while(1); }", msg, 1, 25);
 		testErr("\nvoid f() { {int a; int a;} }", msg, 1, 23);
-		testErr("\nint a = 0; int a = 0;", msg, 1, 15);
-		testErr("\nint a = 1, a = 1;", msg, 1, 11);
+		testErr("\nvoid f() { static int a; int a; }", msg, 1, 29);
+		testErr("\nvoid f() { int a; extern int a; }", msg, 1, 29);
+		testErr("\nvoid f() { register int a; int a; }", msg, 1, 31);
+		testErr("\nvoid f(int a, int a) { }", msg, 1, 18);
+		testErr("\nvoid f(int* a, int a[3]) { }", msg, 1, 19);
 	}
 
 	@Test
-	public void errorWhenRedefiningAParameter() throws IOException
+	public void errorWhenRedeclaringObjectInSameScopeWithDifferentLinkage() throws IOException
 	{
-		String msg2 = "Redefinition of \"a\".";
-		testErr("\nvoid f(int a, int a) { }", msg2, 1, 18);
-		testErr("\nvoid f(int* a, int a[3]) { }", msg2, 1, 19);
+		String msg = "Redeclaration of \"a\" with different linkage.";
+		testErr("\nextern int a = 1; static int a = 2;", msg, 1, 29);
+		testErr("\nint a; static int a = 0;", msg, 1, 18);
+		testErr("\nstatic int a[2]; int a[2];", msg, 1, 21);
+		testErr("\nvoid f() { extern int a; int a; }", msg, 1, 29);
+		testErr("\nvoid f() { extern int a; static int a = 3; }", msg, 1, 36);
+		testErr("\nvoid f() { extern int a[2]; auto int a[2]; }", msg, 1, 37);
+		testErr("\nvoid f() { extern int a[2]; register int a[2]; }", msg, 1, 41);
+	}
+
+	@Test
+	public void errorWhenRedeclaringFunctionInSameScopeWithDifferentLinkage() throws IOException
+	{
+		String msg = "Redeclaration of \"f\" with different linkage.";
+		testErr("\nextern int f(); static int f();", msg, 1, 27);
+		testErr("\nint f(); static int f() { }", msg, 1, 20);
+		testErr("\nextern int f() {} static int f() {}", msg, 1, 29);
+		testErr("\nint f() {} static int f();", msg, 1, 22);
+	}
+
+	@Test
+	public void errorWhenRedeclaringSymbolInAnotherScopeWithDifferentLinkage() throws IOException
+	{
+		String msg = "Redeclaration of \"a\" with different linkage.";
+		testErr("\nvoid g1() { extern int a; } static int a;", msg, 1, 39);
+		testErr("\nstatic int a; void g() { char a; { extern int a; } }", msg, 1, 46);
+		testErr("\nstatic int a; void g() { extern int a; { static int a; {"
+				+ " extern int a; } } }", msg, 1, 68);
+		// gcc doesn't give error for this, but it should still be UB according to ($6.2.2/7), so
+		// error message is ok.
+		testErr("\nstatic int a(); void g() { int a; { int a(); } }", msg, 1, 40);
+		testErr("\nvoid f() { int a(); } static int a();", msg, 1, 33);
+
+	}
+
+	@Test
+	public void errorWhenRedefiningAnObject() throws IOException
+	{
+		String msg = "Redefinition of \"a\".";
+		testErr("\nint a = 0; int a = 0;", msg, 1, 15);
+		testErr("\nint a = 1, a = 1;", msg, 1, 11);
+		testErr("\nextern int a = 2; extern int a = 2;", msg, 1, 29);
+		testErr("\nstatic int a = 3; extern int a = 3;", msg, 1, 29);
 	}
 
 	@Test
 	public void errorWhenRedefiningAFunction() throws IOException
 	{
-		testErr("\nint main() {}\nint main() {}", "Redefinition of \"main\".", 2, 4);
+		String msg = "Redefinition of \"f\".";
+		testErr("\nint f() {} int f() {}", msg, 1, 15);
+		testErr("\nextern int f() {} extern int f() {}", msg, 1, 29);
+		testErr("\nstatic int f() {} extern int f() {}", msg, 1, 29);
 	}
 
 	@Test
-	public void errorWhenRedefiningForLoopVariable() throws IOException
+	public void errorWhenRedeclaringForLoopVariable() throws IOException
 	{
-		testErr("\nvoid f() { for(int i,i;;); }", "Redefinition of \"i\".", 1, 21);
+		String msg = "Redeclaration of \"i\" with no linkage.";
+		testErr("\nvoid f() { for(int i,i;;); }", msg, 1, 21);
 	}
 
 	@Test
-	public void errorWhenRedeclaringAnObjectWithDifferentType() throws IOException
+	public void errorWhenRedeclaringObjectInSameScopeObjectWithDifferentType() throws IOException
 	{
 		String msg = "Redeclaration of \"a\" with incompatible type.";
 		testErr("\nint a; char a;", msg, 1, 12);
-		testErr("\nchar a[3]; char a[4];", msg, 1, 16);
+		testErr("\nextern char a[3]; extern char a[4];", msg, 1, 30);
 		testErr("\nint a; void a();", msg, 1, 12);
 		testErr("\nint a[3]; void a() {}", msg, 1, 15);
 		testErr("\nvoid g() { int a[2]; void a(); }", msg, 1, 26);
+		testErr("\nvoid g() { extern char a; extern int a; }", msg, 1, 37);
+	}
+
+	@Test
+	public void errorWhenRedeclaringLinkedSymbolWithDifferentType() throws IOException
+	{
+		String msg = "Redeclaration of \"a\" with incompatible type.";
+		testErr("\nvoid g1() { extern int a; } extern char a;", msg, 1, 40);
+		testErr("\nvoid a(); void g1() { extern int a; }", msg, 1, 33);
+		testErr("\nvoid g1() { extern int a[2]; } void g2() { void a(); }", msg, 1, 48);
 	}
 
 	@Test
@@ -150,12 +214,22 @@ public class CompilerTest
 	}
 
 	@Test
+	public void errorWhenObjectUndefined() throws IOException
+	{
+		String msg = "Undefined reference to a.";
+		testErr("extern int a; int main() { a = 0; int a = 0; }", msg, 0, 0);
+		testErr("int main() { extern int a[2]; a[0] = 0; }", msg, 0, 0);
+	}
+
+	@Test
 	public void errorWhenFunctionUndefined() throws IOException
 	{
 		String msg = "Undefined reference to f.";
 		testErr("int f(); int main() { f(); }", msg, 0, 0);
+		testErr("extern int f(); int main() { f(); }", msg, 0, 0);
+		testErr("static int f(); int main() { f(); }", msg, 0, 0);
 		testErr("int main() { void f(); f(); }", msg, 0, 0);
-		testErr("int main() { int f; {void f(); f();} }", msg, 0, 0);
+		testErr("int main() { int f; {extern void f(); f();} }", msg, 0, 0);
 	}
 
 	@Test
@@ -180,6 +254,14 @@ public class CompilerTest
 		String msg = "Initializer in function declaration.";
 		testErr("\nvoid f(); void g() = f;", msg, 1, 21);
 		testErr("\nvoid f() { void f() = 0; }", msg, 1, 22);
+		testErr("\nvoid f() { extern void f() = 0; }", msg, 1, 29);
+	}
+
+	@Test
+	public void errorWhenInitializerOnLocalObjectWithLinkage() throws IOException
+	{
+		String msg = "Initializer on block-scope object with linkage.";
+		testErr("\nvoid f() { extern int x = 0; }", msg, 1, 26);
 	}
 
 	@Test
@@ -188,6 +270,48 @@ public class CompilerTest
 		String msg = "Function declaration in for loop initialization.";
 		testErr("\nvoid g() { for(int f();;); }", msg, 1, 15);
 		testErr("\nvoid g() { for(int x, f();;); }", msg, 1, 15);
+	}
+
+	@Test
+	public void errorWhenIllegalStorageClassInForLoopInit() throws IOException
+	{
+		String msg = "Illegal storage class in for loop declaration.";
+		testErr("\nvoid g() { for(static int i;;); }", msg, 1, 15);
+		testErr("\nvoid g() { for(extern int i;;); }", msg, 1, 15);
+		//testErr("\nvoid g() { for(typedef int i;;); }", msg, 1, 26);
+	}
+
+	@Test
+	public void errorWhenIllegalStorageClassInForBlockScopeFunction() throws IOException
+	{
+		String msg = "Illegal storage class in block scope function declaration.";
+		testErr("\nvoid g() { static void f(); }", msg, 1, 23);
+		testErr("\nvoid g() { { auto void f(); } }", msg, 1, 23);
+		testErr("\nvoid g() { if (1) { register int f(int); } }", msg, 1, 33);
+	}
+
+	@Test
+	public void errorWhenIllegalStorageClassInExternalDeclaration() throws IOException
+	{
+		String msg = "Illegal storage class in external declaration.";
+		// Declarations.
+		testErr("\nauto void f();", msg, 1, 10);
+		testErr("\nregister void f();", msg, 1, 14);
+		testErr("\nauto int a;", msg, 1, 9);
+		testErr("\nregister int a[3];", msg, 1, 13);
+		// Function definitions.
+		testErr("\nauto int f() { }", msg, 1, 9);
+		testErr("\nregister void f(int a) {}", msg, 1, 14);
+	}
+
+	@Test
+	public void errorWhenIllegalStorageClassInParameter() throws IOException
+	{
+		String msg = "Illegal storage class for parameter.";
+		testErr("\nvoid f(auto int x);", msg, 1, 7);
+		testErr("\nvoid (*f)(int a, static int x);", msg, 1, 17);
+		testErr("\nvoid f(extern int a) { }", msg, 1, 7);
+		//testErr("\nvoid f(typedef int a);", msg, 1, 7);
 	}
 
 	@Test
@@ -323,8 +447,8 @@ public class CompilerTest
 	@Test
 	public void errorWhenGlobalVariableInitializerNotConstant() throws IOException
 	{
-		testErr("\nint a; int b = a;",
-				"Global variable must be initialized with a compile time constant.", 1, 15);
+		String msg = "Initializer for static object is not a constant.";
+		testErr("\nint a; int b = a;", msg, 1, 15);
 	}
 
 	@Test
@@ -775,13 +899,9 @@ public class CompilerTest
 	}
 
 	@Test
-	public void errorWhenUnsupportedStorageClass() throws IOException
+	public void errorWhenUnsupportedTypedef() throws IOException
 	{
-		String msg = "Storage classes are not supported yet.";
-		testErr("\nstatic int x;", msg, 1, 0);
-		testErr("\nextern void foo() { }", msg, 1, 0);
-		testErr("\nvoid f() { auto int x; }", msg, 1, 11);
-		testErr("\nvoid f(register int x) { }", msg, 1, 7);
+		String msg = "Typedef is not supported yet.";
 		testErr("\ntypedef int t;", msg, 1, 0);
 	}
 

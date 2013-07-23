@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
+import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
 import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
@@ -73,20 +74,18 @@ public class ForStatement extends Statement
 		Scope loopScope = new Scope(scope, "");
 		scope.addSubScope(loopScope);
 
+		// Loop initialization code.
+		compileInitStatement(ic, loopScope, stack);
+
 		// Symbols for break/continue.
-		Symbol breakSymbol = new Symbol("__Brk", CType.VOID, Symbol.Category.Internal,
-				null, false);
+		Symbol breakSymbol = new Symbol("__Brk", CType.VOID, StorageClass.Static, false);
 		loopScope.add(breakSymbol);
-		Symbol continueSymbol = new Symbol("__Cont", CType.VOID, Symbol.Category.Internal,
-				null, false);
+		Symbol continueSymbol = new Symbol("__Cont", CType.VOID, StorageClass.Static, false);
 		loopScope.add(continueSymbol);
 
 		// Reserve labels.
 		String loopStartLabel = loopScope.makeGloballyUniqueName("lbl");
 		String loopTestLabel = loopScope.makeGloballyUniqueName("lbl");
-
-		// Loop initialization code.
-		compileInitStatement(ic, loopScope, stack);
 
 		// Loop start; jump to the test.
 		ic.emit("jump", VirtualRegister.NONE, loopTestLabel);
@@ -115,12 +114,19 @@ public class ForStatement extends Statement
 	{
 		initStatement.compile(ic, scope, stack);
 
-		// Declaring functions not allowed in for loop declaration. ($6.8.5/3)
-		for (Symbol s : scope.getSymbols())
+		// Only object declarations with auto/register (or no) storage class are allowed. ($6.8.5/3)
+		for (Symbol s : scope.getSymbols()) {
 			if (s.getType().isFunction()) {
 				throw new SyntaxException("Function declaration in for loop initialization.",
 						initStatement.getPosition());
 			}
+
+			if (s.getStorageClass() != null && s.getStorageClass() != StorageClass.Auto
+					&& s.getStorageClass() != StorageClass.Register) {
+				throw new SyntaxException("Illegal storage class in for loop declaration.",
+						initStatement.getPosition());
+			}
+		}
 	}
 
 	@Override

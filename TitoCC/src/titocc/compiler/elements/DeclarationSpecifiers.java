@@ -192,10 +192,10 @@ public class DeclarationSpecifiers extends CodeElement
 			}
 		}
 
-		if (storageClass != null)
-			throw new SyntaxException("Storage classes are not supported yet.", getPosition());
+		if (storageClass == StorageClass.Typedef)
+			throw new SyntaxException("Typedef is not supported yet.", getPosition());
 
-		return null;
+		return storageClass;
 	}
 
 	private CType getType(List<String> specifiers) throws SyntaxException
@@ -227,8 +227,7 @@ public class DeclarationSpecifiers extends CodeElement
 
 	/**
 	 * Attempts to parse declaration specifiers from token stream. If parsing fails the
-	 * stream is
-	 * reset to its initial position.
+	 * stream is reset to its initial position.
 	 *
 	 * @param tokens source token stream
 	 * @return ParameterList object or null if tokens don't form valid declaration

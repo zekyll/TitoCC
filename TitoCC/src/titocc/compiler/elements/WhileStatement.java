@@ -3,6 +3,7 @@ package titocc.compiler.elements;
 import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Scope;
 import titocc.compiler.StackAllocator;
+import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
 import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.CType;
@@ -72,11 +73,9 @@ public class WhileStatement extends Statement
 		scope.addSubScope(loopScope);
 
 		// Symbols for break/continue.
-		Symbol breakSymbol = new Symbol("__Brk", CType.VOID, Symbol.Category.Internal,
-				null, false);
+		Symbol breakSymbol = new Symbol("__Brk", CType.VOID, StorageClass.Static, false);
 		loopScope.add(breakSymbol);
-		Symbol continueSymbol = new Symbol("__Cont", CType.VOID, Symbol.Category.Internal,
-				null, false);
+		Symbol continueSymbol = new Symbol("__Cont", CType.VOID, StorageClass.Static, false);
 		loopScope.add(continueSymbol);
 
 		// Loop start.

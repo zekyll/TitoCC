@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import titocc.compiler.Symbol.Category;
 import titocc.compiler.elements.Expression;
 import titocc.compiler.types.ArrayType;
 import titocc.compiler.types.CType;
@@ -38,32 +37,28 @@ public class ExpressionTest
 	public void setUp()
 	{
 		scope = new Scope(null, "");
-		scope.add(new Symbol("v", CType.VOID, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("c", CType.CHAR, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("uc", CType.UCHAR, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("sc", CType.SCHAR, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("s", CType.SHORT, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("us", CType.USHORT, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("i", CType.INT, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("u", CType.UINT, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("l", CType.LONG, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("ul", CType.ULONG, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("ll", CType.LLONG, Category.GlobalVariable, null, false));
-		scope.add(new Symbol("ull", CType.ULLONG, Category.GlobalVariable, null, false));
+		scope.add(new Symbol("v", CType.VOID, null, false));
+		scope.add(new Symbol("c", CType.CHAR, null, false));
+		scope.add(new Symbol("uc", CType.UCHAR, null, false));
+		scope.add(new Symbol("sc", CType.SCHAR, null, false));
+		scope.add(new Symbol("s", CType.SHORT, null, false));
+		scope.add(new Symbol("us", CType.USHORT, null, false));
+		scope.add(new Symbol("i", CType.INT, null, false));
+		scope.add(new Symbol("u", CType.UINT, null, false));
+		scope.add(new Symbol("l", CType.LONG, null, false));
+		scope.add(new Symbol("ul", CType.ULONG, null, false));
+		scope.add(new Symbol("ll", CType.LLONG, null, false));
+		scope.add(new Symbol("ull", CType.ULLONG, null, false));
 		scope.add(new Symbol("fv", new FunctionType(CType.VOID, new ArrayList<CType>()),
-				Category.GlobalVariable, null, false));
+				null, false));
 		scope.add(new Symbol("fi", new FunctionType(CType.INT, new ArrayList<CType>()),
-				Category.GlobalVariable, null, false));
-		scope.add(new Symbol("a", new ArrayType(CType.INT, 2), Category.GlobalVariable, null,
-				false));
-		scope.add(new Symbol("a2", new ArrayType(new ArrayType(CType.INT, 2), 3),
-				Category.GlobalVariable, null, false));
-		scope.add(new Symbol("pi", new PointerType(CType.INT), Category.GlobalVariable, null,
-				false));
-		scope.add(new Symbol("pv", new PointerType(CType.VOID), Category.GlobalVariable, null,
-				false));
+				null, false));
+		scope.add(new Symbol("a", new ArrayType(CType.INT, 2), null, false));
+		scope.add(new Symbol("a2", new ArrayType(new ArrayType(CType.INT, 2), 3), null, false));
+		scope.add(new Symbol("pi", new PointerType(CType.INT), null, false));
+		scope.add(new Symbol("pv", new PointerType(CType.VOID), null, false));
 		scope.add(new Symbol("pfv", new PointerType(new FunctionType(CType.VOID,
-				new ArrayList<CType>())), Category.GlobalVariable, null, false));
+				new ArrayList<CType>())), null, false));
 	}
 
 	// Tests the precedence of operators.

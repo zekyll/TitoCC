@@ -62,8 +62,7 @@ class Intrinsics
 		add(new Symbol(
 				"__m",
 				CType.INT,
-				Symbol.Category.GlobalVariable,
-				StorageClass.Static,
+				StorageClass.Extern,
 				false),
 				"int __m = 0x80000000;");
 
@@ -71,7 +70,6 @@ class Intrinsics
 		add(new Symbol(
 				"__udiv",
 				new FunctionType(CType.INT, CType.INT, CType.INT),
-				Symbol.Category.Function,
 				StorageClass.Extern,
 				false),
 				"int __udiv(int a, int b)"

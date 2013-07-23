@@ -9,14 +9,14 @@ public class ScopeTest
 {
 	private Scope globalScope;
 
-	private Symbol sym1, sym2, sym3;
+	private Symbol sym1, sym2;
 
 	@Before
 	public void setUp()
 	{
 		globalScope = new Scope(null, "prefix1_");
-		sym1 = new Symbol("aa", CType.INT, Symbol.Category.LocalVariable, StorageClass.Auto, false);
-		sym2 = new Symbol("bb", CType.INT, Symbol.Category.LocalVariable, StorageClass.Auto, false);
+		sym1 = new Symbol("aa", CType.INT, StorageClass.Extern, false);
+		sym2 = new Symbol("bb", CType.INT, StorageClass.Extern, false);
 	}
 
 	@Test
@@ -64,10 +64,9 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		globalScope.add(sym2);
-		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, Symbol.Category.LocalVariable,
-				StorageClass.Auto, false);
-		Symbol ret = globalScope.add(sym3);
-		assertSame(sym1, ret);
+		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, StorageClass.Extern, false);
+		DeclarationResult ret = globalScope.add(sym3);
+		assertSame(sym1, ret.symbol);
 		assertEquals(2, globalScope.getSymbols().size());
 	}
 
@@ -76,9 +75,8 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		globalScope.add(sym2);
-		Symbol sym3 = new Symbol(sym1.getName(), CType.UINT, Symbol.Category.LocalVariable,
-				StorageClass.Auto, false);
-		assertNull(globalScope.add(sym3));
+		Symbol sym3 = new Symbol(sym1.getName(), CType.UINT, StorageClass.Auto, false);
+		assertNull(globalScope.add(sym3).symbol);
 	}
 
 	@Test
@@ -104,8 +102,7 @@ public class ScopeTest
 	{
 		globalScope.add(sym1);
 		Scope subScope = new Scope(globalScope, "");
-		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, Symbol.Category.LocalVariable,
-				StorageClass.Auto, false);
+		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, StorageClass.Auto, false);
 		subScope.add(sym3);
 		assertSame(sym3, subScope.find(sym1.getName()));
 		assertSame(sym1, globalScope.find(sym1.getName()));
@@ -124,8 +121,7 @@ public class ScopeTest
 		myScope.addSubScope(subScope);
 
 		siblingScope.add(sym1);
-		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, Symbol.Category.LocalVariable,
-				StorageClass.Auto, false);
+		Symbol sym3 = new Symbol(sym1.getName(), CType.INT, StorageClass.Auto, false);
 		subScope.add(sym3);
 
 		assertNull(myScope.find(sym1.getName()));
