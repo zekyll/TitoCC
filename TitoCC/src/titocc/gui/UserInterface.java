@@ -68,6 +68,7 @@ public class UserInterface implements Runnable, ActionListener, DocumentListener
 
 		sourceTextArea.setDocument(sourceFile.getDocument());
 		sourceTextArea.getDocument().addDocumentListener(this);
+		sourceTextArea.setTabSize(4); // must be set after setDocument
 
 		sourceFile.createNewFile();
 		updateTitle(false);
