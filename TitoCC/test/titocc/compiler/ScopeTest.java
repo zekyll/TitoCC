@@ -181,8 +181,7 @@ public class ScopeTest
 	public void noDoubleUnderscoreInGlobalName()
 	{
 		Scope subScope = new Scope(globalScope, "prefix2_");
-		Symbol sym = new Symbol("__abc", null, Symbol.Category.LocalVariable, StorageClass.Auto,
-				false);
+		Symbol sym = new Symbol("__abc", CType.INT, StorageClass.Auto, false);
 		subScope.add(sym);
 		assertEquals("prefix1_prefix2_abc", sym.getGlobalName());
 	}
