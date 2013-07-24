@@ -95,7 +95,10 @@ public class Parameter extends CodeElement
 		if (name == null)
 			name = "__param" + idx;
 
-		Symbol sym = new Symbol(name, declType.type, StorageClass.Auto, false);
+		StorageClass storageCls = declType.storageClass != null ? declType.storageClass
+				: StorageClass.Auto;
+
+		Symbol sym = new Symbol(name, declType.type, storageCls, false);
 		DeclarationResult declRes = scope.add(sym);
 		if (declRes.symbol == null)
 			throw new SyntaxException(declRes.msg, declarator.getPosition());

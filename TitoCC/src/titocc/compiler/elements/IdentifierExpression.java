@@ -4,6 +4,7 @@ import titocc.compiler.IntermediateCompiler;
 import titocc.compiler.Lvalue;
 import titocc.compiler.Rvalue;
 import titocc.compiler.Scope;
+import titocc.compiler.StorageClass;
 import titocc.compiler.Symbol;
 import titocc.compiler.VirtualRegister;
 import titocc.compiler.types.ArrayType;
@@ -56,6 +57,13 @@ public class IdentifierExpression extends Expression
 					+ "\" is not an object or function.", getPosition());
 		}
 
+		// Using register array in expression (other than sizeof) is UB. ($6.3.2.1/3)
+		if (symbol.getType() instanceof ArrayType
+				&& symbol.getStorageClass() == StorageClass.Register) {
+			throw new SyntaxException("Taking address of an object with register storage class.",
+					getPosition());
+		}
+
 		// Load value to register (or address if we have an array/function).
 		VirtualRegister retReg = new VirtualRegister();
 		if (symbol.getType() instanceof ArrayType || symbol.getType().isFunction())
@@ -74,6 +82,12 @@ public class IdentifierExpression extends Expression
 
 		if (!addressOf)
 			requireLvalueType(scope);
+
+		// Taking address of register variable is not allowed. ($6.5.3.2/1)
+		if (addressOf && symbol.getStorageClass() == StorageClass.Register) {
+			throw new SyntaxException("Taking address of an object with register storage class.",
+					getPosition());
+		}
 
 		VirtualRegister retReg = new VirtualRegister();
 		ic.emit("load", retReg, symbol.getRhsOperand(false));

@@ -943,4 +943,15 @@ public class CompilerTest
 		testErr("\nvoid f() { void* x = (void*)(void)0; }", msg, 1, 21);
 		testErr("\nvoid f() { int x = (int)f(); }", msg, 1, 19);
 	}
+
+	@Test
+	public void errorWhenTakingAddrssOfRegisterObject() throws IOException
+	{
+		String msg = "Taking address of an object with register storage class.";
+		testErr("\nvoid f() { register int x; &x; }", msg, 1, 28);
+		testErr("\nvoid f(register int x) { &x; }", msg, 1, 26);
+		testErr("\nvoid f() { register int x[10]; &x; }", msg, 1, 32);
+		// Register array expressions
+		testErr("\nvoid f() { register int x[10]; x; }", msg, 1, 31);
+	}
 }
