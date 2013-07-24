@@ -119,7 +119,7 @@ public class SourceFile
 		} catch (SyntaxException e) {
 			int line = e.getPosition().line + 1;
 			int character = e.getPosition().column + 1;
-			log.logMessage("Compiler error (line " + line + ", ch " + character + "): "
+			log.logMessage("Compiler error (line " + line + ", col " + character + "): "
 					+ e.getMessage());
 		} catch (InternalCompilerException e) {
 			log.logMessage("Internal compiler error: " + e.getMessage());

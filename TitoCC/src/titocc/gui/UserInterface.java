@@ -12,29 +12,37 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import javax.swing.BoxLayout;
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.BadLocationException;
 
 /**
  * Graphical frontend for the compiler. Allows opening, editing, saving and
  * compiling source files.
  */
-public class UserInterface implements Runnable, ActionListener, DocumentListener
+public class UserInterface implements Runnable, ActionListener, DocumentListener, CaretListener
 {
 	/**
 	 * GUI components.
@@ -50,6 +58,8 @@ public class UserInterface implements Runnable, ActionListener, DocumentListener
 	private LogArea logArea;
 
 	private JFileChooser fileChooser;
+
+	private JLabel statusLabel;
 
 	/**
 	 * Source file object.
@@ -105,6 +115,7 @@ public class UserInterface implements Runnable, ActionListener, DocumentListener
 
 		sourceTextArea = new JTextArea();
 		sourceTextArea.setFont(new Font("Monospaced", 0, 12));
+		sourceTextArea.addCaretListener(this);
 
 		outputTextArea = new JTextArea("Compile the file from File -> Compile.");
 		outputTextArea.setEditable(false);
@@ -128,6 +139,16 @@ public class UserInterface implements Runnable, ActionListener, DocumentListener
 		clientSplitPane.setResizeWeight(1);
 		clientSplitPane.setContinuousLayout(true);
 		disableF6Shortcut(clientSplitPane);
+
+		// Status bar.
+		JPanel statusBar = new JPanel();
+		statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		frame.add(statusBar, BorderLayout.SOUTH);
+		statusBar.setPreferredSize(new Dimension(frame.getWidth(), 18));
+		statusBar.setLayout(new BoxLayout(statusBar, BoxLayout.X_AXIS));
+		statusLabel = new JLabel("-");
+		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		statusBar.add(statusLabel);
 
 		container.add(clientSplitPane);
 	}
@@ -370,5 +391,25 @@ public class UserInterface implements Runnable, ActionListener, DocumentListener
 					+ e.getMessage());
 		}
 		outputTextArea.setText(writer.toString());
+	}
+
+	/**
+	 * Tracks caret position and updates the status bar string.
+	 */
+	@Override
+	public void caretUpdate(CaretEvent ce)
+	{
+		int caretpos = sourceTextArea.getCaretPosition();
+		int row = 0, column = 0;
+		int lineLength = 0;
+		try {
+			row = sourceTextArea.getLineOfOffset(caretpos);
+			column = caretpos - sourceTextArea.getLineStartOffset(row);
+			lineLength = sourceTextArea.getLineEndOffset(row)
+					- sourceTextArea.getLineStartOffset(row);
+		} catch (BadLocationException e) {
+		}
+		statusLabel.setText("Line: " + (row + 1) + " / " + sourceTextArea.getLineCount()
+				+ "   Col: " + (column + 1) + " / " + lineLength);
 	}
 }
